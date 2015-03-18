@@ -32,5 +32,7 @@ int main(int argc, char **argv)
 	ret = lifecycle::start(argc, argv, "./");
 	g_assert(ret);
 
+	test_shared_ptr();
+
 	return g_test_run();
 }

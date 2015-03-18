@@ -80,6 +80,10 @@ add_custom_target(tests-packetgraph
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_packetgraph.sh ${PROJECT_SOURCE_DIR}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
+add_custom_target(tests-packetgraph++
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_packetgraph++.sh ${PROJECT_SOURCE_DIR}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
 add_custom_target(tests-packetgraph-style
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_packetgraph_style.sh ${PROJECT_SOURCE_DIR}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})

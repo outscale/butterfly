@@ -31,6 +31,14 @@ else
     echo "${GREEN}packetgraph test OK${NORMAL}"
 fi
 
+$BUTTERFLY_ROOT/scripts/tests_packetgraph++.sh $BUTTERFLY_ROOT
+if [ $? != 0 ]; then
+    echo "${RED}packetgraph++ test failed${NORMAL}"
+    exit 1
+else
+    echo "${GREEN}packetgraph++ test OK${NORMAL}"
+fi
+
 # Packet graph style test
 $BUTTERFLY_ROOT/scripts/tests_packetgraph_style.sh $BUTTERFLY_ROOT
 if [ $? != 0 ]; then
