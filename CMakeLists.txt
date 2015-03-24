@@ -16,10 +16,12 @@ find_package(GLIB2 REQUIRED)
 find_package(LibURCU REQUIRED)
 
 set(CMAKE_C_FLAGS "-g -O3 -march=core-avx-i -mtune=core-avx-i -fmessage-length=0  -Werror -Wall -Wextra -Wwrite-strings -Winit-self -Wcast-align -Wpointer-arith -Wstrict-aliasing -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wno-unused-parameter -Wuninitialized -Wold-style-definition -Wstrict-prototypes -Wmissing-prototypes")
+set(CMAKE_CXX_FLAGS "-std=c++11")
 
 include_directories(${GLIB2_INCLUDE_DIR} ${GLIB2_INTERNAL_INCLUDE_DIR}
 		    ${LIBURCU_INCLUDE_DIR}
 		    ${PROJECT_SOURCE_DIR}/packetgraph/include
+		    ${PROJECT_SOURCE_DIR}/packetgraph++/include
 		    ${DPDK_INSTALL_DIR}/include
 		    ${CCAN_INSTALL_DIR}/include)
 
@@ -52,6 +54,7 @@ set(CPPCHECK_COMMAND cppcheck -q  -f
 
 add_subdirectory(3rdparty)
 add_subdirectory(packetgraph)
+add_subdirectory(packetgraph++)
 
 set(DIRECTORIES packetgraph/bricks/ packetgraph/include/
 		packetgraph/packets/ packetgraph/utils/)
