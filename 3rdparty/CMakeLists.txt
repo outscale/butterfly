@@ -1,6 +1,7 @@
 set(DPDK_SOURCE_DIR ${3RDPARTY_DIR}/dpdk)
 set(BUILDROOT_SOURCE_DIR ${3RDPARTY_DIR}/buildroot)
 set(CCAN_SOURCE_DIR ${3RDPARTY_DIR}/ccan)
+set(PROTOBUF_SOURCE_DIR ${3RDPARTY_DIR}/protobuf)
 
 set(CMAKE_C_FLAGS "-g -Wall")
 
@@ -50,6 +51,17 @@ ExternalProject_Add(buildroot
 	BUILD_COMMAND make
 	INSTALL_COMMAND true
 	LOG_BUILD 1 Building buildroot)
+
+ExternalProject_Add(protobuf
+	SOURCE_DIR ${PROTOBUF_SOURCE_DIR}
+	CONFIGURE_COMMAND /bin/cp -r ${PROTOBUF_SOURCE_DIR} ${3RDPARTY_INSTALL_DIR} && cd ${PROTOBUF_INSTALL_DIR} && ./autogen.sh && ./configure
+	DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
+	DOWNLOAD_COMMAND git submodule update --init ${PROTOBUF_SOURCE_DIR}
+	BINARY_DIR ${PROTOBUF_INSTALL_DIR}
+	BUILD_COMMAND make -C ${PROTOBUF_INSTALL_DIR}
+	INSTALL_DIR ${PROTOBUF_INSTALL_DIR}
+	INSTALL_COMMAND true
+	LOG_BUILD 1 Building protobuf)
 
 # clean target
 add_custom_target(dependency-cleanup CLEAN
