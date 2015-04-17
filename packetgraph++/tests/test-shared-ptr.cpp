@@ -23,8 +23,7 @@ extern "C" {
 }
 
 #include "tests.h"
-#include "wrapper/brick.h"
-
+#include "wrapper/packetgraphpp.h"
 
 static void test_shared_ptr_simple()
 {
