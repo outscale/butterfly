@@ -37,4 +37,26 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
+rats > /dev/null
+if [ $? != 0 ]; then
+    echo "rats is not install, some tests a skipp"
+else
+    make rats
+    if [ $? != 0 ]; then
+	echo "rats tests failed"
+	exit 1
+    fi
+fi
+
+flawfinder > /dev/null
+if [ $? != 0 ]; then
+    echo "flawfinder is not install, some tests a skipp"
+else
+    make flawfinder
+    if [ $? != 0 ]; then
+	echo "flawfinder tests failed"
+	exit 1
+    fi
+fi
+
 exit 0
