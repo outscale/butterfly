@@ -17,11 +17,15 @@
 
 
 #include <string.h>
+#include <rte_config.h>
+#include <rte_mbuf.h>
 #include <ccan/build_assert/build_assert.h>
 
 #include "common.h"
 #include "bricks/brick.h"
 #include "packets/packets.h"
+#include "utils/bitmask.h"
+#include "utils/mempool.h"
 
 struct collect_state {
 	struct brick brick;
@@ -48,10 +52,14 @@ static int collect_burst(struct brick *brick, enum side side,
 		packets_free(state->pkts[side], state->pkts_mask[side]);
 
 	state->pkts_mask[side] = pkts_mask;
-	/* We made sure nb <= MAX_PKTS_BURST */
-	/* Flawfinder: ignore */
-	memcpy(state->pkts[side], pkts, nb * sizeof(struct rte_mbuf *));
-	packets_incref(state->pkts[side], state->pkts_mask[side]);
+	for (; pkts_mask;) {
+		uint16_t i;
+
+		low_bit_iterate(pkts_mask, i);
+		state->pkts[side][i] = rte_pktmbuf_clone(pkts[i],
+							 get_mempool());
+		state->pkts[side][i]->udata64 = pkts[i]->udata64;
+	}
 
 	return 1;
 }

@@ -20,6 +20,7 @@
 #include "bricks/brick.h"
 #include "utils/bitmask.h"
 #include "utils/config.h"
+#include "utils/mempool.h"
 #include "tests.h"
 
 #define NB_PKTS 3
@@ -28,17 +29,18 @@ static void test_brick_flow_west(void)
 {
 	struct brick_config *config = brick_config_new("mybrick", 4, 4);
 	struct brick *brick1, *brick2, *collect_west, *collect_east;
-	struct rte_mbuf mbufs[NB_PKTS];
 	struct rte_mbuf **result_pkts;
 	struct rte_mbuf *pkts[NB_PKTS];
+	struct rte_mempool *mbuf_pool = get_mempool();
 	uint16_t i;
 	uint64_t pkts_mask;
 	struct switch_error *error = NULL;
 
 	/* prepare the packets to send */
 	for (i = 0; i < NB_PKTS; i++) {
-		mbufs[i].udata64 = i;
-		pkts[i] = &mbufs[i];
+		pkts[i] = rte_pktmbuf_alloc(mbuf_pool);
+		g_assert(pkts[i]);
+		pkts[i]->udata64 = i;
 	}
 
 	/* create a chain of a few nop brick with collectors on each sides */
@@ -125,17 +127,18 @@ static void test_brick_flow_east(void)
 {
 	struct brick_config *config = brick_config_new("mybrick", 4, 4);
 	struct brick *brick1, *brick2, *collect_west, *collect_east;
-	struct rte_mbuf mbufs[NB_PKTS];
 	struct rte_mbuf **result_pkts;
 	struct rte_mbuf *pkts[NB_PKTS];
+	struct rte_mempool *mbuf_pool = get_mempool();
 	uint16_t i;
 	uint64_t pkts_mask;
 	struct switch_error *error = NULL;
 
 	/* prepare the packets to send */
 	for (i = 0; i < NB_PKTS; i++) {
-		mbufs[i].udata64 = i;
-		pkts[i] = &mbufs[i];
+		pkts[i] = rte_pktmbuf_alloc(mbuf_pool);
+		g_assert(pkts[i]);
+		pkts[i]->udata64 = i;
 	}
 
 	/* create a chain of a few nop brick with collectors on each sides */
