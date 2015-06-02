@@ -30,7 +30,7 @@ static int hub_burst(struct brick *brick, enum side from, uint16_t edge_index,
 	uint16_t j;
 
 	for (i = 0; i < MAX_SIDE; i++) {
-		struct brick_side *s = &brick->sides[flip_side(i)];
+		struct brick_side *s = &brick->sides[i];
 
 		for (j = 0; j < s->max; j++) {
 			if (!s->edges[j].link)
@@ -63,8 +63,6 @@ static struct brick_ops hub_ops = {
 
 	.init		= hub_init,
 
-	.west_link	= brick_generic_west_link,
-	.east_link	= brick_generic_east_link,
 	.unlink		= brick_generic_unlink,
 };
 
