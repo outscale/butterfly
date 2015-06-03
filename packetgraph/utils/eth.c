@@ -1,4 +1,4 @@
-/* Copyright 2014 Nodalink EURL
+/* Copyright 2015 Outscale SAS
  *
  * This file is part of Butterfly.
  *
@@ -15,31 +15,22 @@
  * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _TESTS_H_
-#define _TESTS_H_
+#include <rte_config.h>
+#include <rte_ethdev.h>
+#include "utils/eth.h"
 
-enum test_flags {
-	QUICK_TEST = 1,
-	PRINT_USAGE = 2,
-	FAIL = 4
-};
+int start_eth(uint8_t port_id)
+{
+	int ret;
 
-void test_brick_core(void);
-void test_brick_flow(void);
-void test_error(void);
-void test_switch(uint64_t test_flags);
-void test_diode(void);
-void test_vhost(void);
-void test_pkts_count(void);
-void test_hub(void);
-void test_nic(void);
+	ret = rte_eth_dev_start(port_id);
+	if (ret < 0)
+		return ret;
+	rte_eth_promiscuous_enable(port_id);
+	return 0;
+}
 
-/* dpdk driver init */
-void devinitfn_pmd_igb_drv(void);
-void devinitfn_rte_ixgbe_driver(void);
-void devinitfn_pmd_pcap_drv(void);
-void devinitfn_pmd_ring_drv(void);
-
-extern uint16_t  max_pkts;
-
-#endif
+void stop_eth(uint8_t port_id)
+{
+	rte_eth_dev_stop(port_id);
+}

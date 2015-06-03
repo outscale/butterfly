@@ -29,6 +29,13 @@ struct vhost_config {
 	enum side output;
 };
 
+struct nic_config {
+	enum side output;
+	uint32_t portid;
+	uint32_t rte_tx_desc;
+	uint32_t rte_rx_desc;
+};
+
 struct brick_config {
 	/* The unique name of the brick brick in the graph */
 	char *name;
@@ -39,6 +46,7 @@ struct brick_config {
 
 	struct diode_config *diode;
 	struct vhost_config *vhost;
+	struct nic_config *nic;
 };
 
 struct brick_config *diode_config_new(const char *name, uint32_t west_max,
@@ -55,6 +63,13 @@ struct brick_config *brick_config_new(const char *name, uint32_t west_max,
 struct brick_config *vhost_config_new(const char *name, uint32_t west_max,
 				      uint32_t east_max,
 				      enum side output);
+
+struct brick_config *nic_config_new(const char *name, uint32_t west_max,
+				    uint32_t east_max,
+				    uint8_t portid,
+				    uint16_t rte_tx_desc,
+				    uint16_t rte_rx_desc,
+				    enum side output);
 
 void brick_config_free(struct brick_config *config);
 

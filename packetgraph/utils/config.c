@@ -62,9 +62,28 @@ struct brick_config *vhost_config_new(const char *name, uint32_t west_max,
 	return brick_config_init(config, name, west_max, east_max);
 }
 
+struct brick_config *nic_config_new(const char *name, uint32_t west_max,
+				    uint32_t east_max,
+				    uint8_t portid,
+				    uint16_t rte_tx_desc,
+				    uint16_t rte_rx_desc,
+				    enum side output)
+{
+	struct brick_config *config = g_new0(struct brick_config, 1);
+	struct nic_config *nic_config = g_new0(struct nic_config, 1);
+
+	nic_config->portid = portid;
+	nic_config->output = output;
+	nic_config->rte_tx_desc = rte_tx_desc;
+	nic_config->rte_rx_desc = rte_rx_desc;
+	config->nic = nic_config;
+	return brick_config_init(config, name, west_max, east_max);
+}
+
 void brick_config_free(struct brick_config *config)
 {
 	g_free(config->vhost);
+	g_free(config->nic);
 	g_free(config->diode);
 	g_free(config->name);
 	g_free(config);
