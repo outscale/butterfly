@@ -52,6 +52,8 @@ struct brick *packetsgen_new(const char *name,
 			uint32_t west_max,
 			uint32_t east_max,
 			enum side output,
+			struct rte_mbuf **packets,
+			uint16_t packets_nb,
 			struct switch_error **errp);
 
 struct brick *diode_new(const char *name,
@@ -68,8 +70,24 @@ struct brick *switch_new(const char *name, uint32_t west_max,
 			uint32_t east_max,
 			struct switch_error **errp);
 
+struct brick *hub_new(const char *name, uint32_t west_max,
+			uint32_t east_max,
+			struct switch_error **errp);
+
+struct brick *collect_new(const char *name, uint32_t west_max,
+			uint32_t east_max,
+			struct switch_error **errp);
+
+struct brick *firewall_new(const char *name, uint32_t west_max,
+			uint32_t east_max, struct switch_error **errp);
 
 /* destructor */
 void brick_destroy(struct brick *brick);
+
+/* firewall specific API */
+int firewall_rule_add(struct brick *brick, const char *filter, enum side dir,
+		      int stateful);
+int firewall_rule_flush(struct brick *brick);
+int firewall_reload(struct brick *brick);
 
 #endif

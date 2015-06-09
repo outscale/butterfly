@@ -79,6 +79,7 @@ int main(int argc, char **argv)
 	test_diode();
 	test_hub();
 	test_pkts_count();
+	test_firewall();
 
 	return g_test_run();
 }
