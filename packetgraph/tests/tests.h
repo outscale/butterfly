@@ -32,5 +32,6 @@ void test_diode(void);
 void test_vhost(void);
 void test_pkts_count(void);
 void test_hub(void);
+void test_firewall(void);
 
 #endif

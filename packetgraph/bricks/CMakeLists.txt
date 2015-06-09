@@ -1,5 +1,5 @@
 set(SOURCES bricks.c nop-brick.c collect-brick.c switch-brick.c diode-brick.c
-	    vhost-user-brick.c hub-brick.c packetsgen-brick.c)
+	    vhost-user-brick.c hub-brick.c packetsgen-brick.c firewall-brick.c)
 
 set(BRICKS_SOURCE_DIR ${PROJECT_SOURCE_DIR}/packetgraph/bricks)
 
