@@ -72,6 +72,10 @@ struct brick *hub_new(const char *name, uint32_t west_max,
 			uint32_t east_max,
 			struct switch_error **errp);
 
+struct brick *collect_new(const char *name, uint32_t west_max,
+			uint32_t east_max,
+			struct switch_error **errp);
+
 /* destructor */
 void brick_destroy(struct brick *brick);
 
