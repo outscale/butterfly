@@ -12,6 +12,7 @@ set(CCAN_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/ccan)
 set(LIBZMQ_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/libzmq)
 set(ZMQPP_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/zmqpp)
 set(PROTOBUF_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/protobuf)
+set(NPF_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/npf)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
 
@@ -33,7 +34,11 @@ include_directories(${GLIB2_INCLUDE_DIR} ${GLIB2_INTERNAL_INCLUDE_DIR}
 		    ${LIBURCU_INCLUDE_DIR}
 		    ${PROJECT_SOURCE_DIR}/packetgraph/include
 		    ${DPDK_INSTALL_DIR}/include
-		    ${CCAN_INSTALL_DIR}/include)
+		    ${CCAN_INSTALL_DIR}/include
+		    ${3RDPARTY_INSTALL_DIR}
+		    ${NPF_INSTALL_DIR}/dpdk
+		    ${NPF_INSTALL_DIR}/src/libnpf
+		    ${NPF_INSTALL_DIR}/src/kern)
 
 link_directories(${GLIB2_LIBRARIES}
 		 ${DPDK_INSTALL_DIR}/lib
@@ -43,6 +48,11 @@ set(TARGET_LIBRARIES ${GLIB2_LIBRARIES}
 		     pthread
 		     dl
 		     urcu
+		     z
+		     cdb
+		     npf
+		     npfkern
+		     pcap
 		     ${CCAN_INSTALL_DIR}/lib/libccan.a
 		     ${DPDK_INSTALL_DIR}/lib/librte_hash.a
 		     ${DPDK_INSTALL_DIR}/lib/librte_mbuf.a
@@ -51,7 +61,9 @@ set(TARGET_LIBRARIES ${GLIB2_LIBRARIES}
 		     ${DPDK_INSTALL_DIR}/lib/librte_ring.a
 		     ${DPDK_INSTALL_DIR}/lib/librte_eal.a
 		     ${DPDK_INSTALL_DIR}/lib/librte_malloc.a
-		     ${DPDK_INSTALL_DIR}/lib/librte_vhost.a)
+		     ${DPDK_INSTALL_DIR}/lib/librte_vhost.a
+		     ${NPF_INSTALL_DIR}/dpdk/build/npf_dpdk.o
+             )
 
 add_subdirectory(3rdparty)
 add_subdirectory(packetgraph)
