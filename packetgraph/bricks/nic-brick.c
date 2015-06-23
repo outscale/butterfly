@@ -69,9 +69,13 @@ static int nic_burst(struct brick *brick, enum side from, uint16_t edge_index,
 	pkts_lost = rte_eth_tx_burst_wrap(state->portid, 0,
 					  exit_pkts,
 					  count);
-	if (unlikely(pkts_lost < count))
+
+
+	if (unlikely(pkts_lost < count)) {
 		packets_free(exit_pkts, mask_firsts(count) &
 			     ~mask_firsts(pkts_lost));
+	}
+
 	return 1;
 }
 
@@ -198,7 +202,7 @@ static int nic_init(struct brick *brick, struct brick_config *config,
 	}
 
 	/* Setup queues */
-	ret = rte_eth_rx_queue_setup(state->portid, 0, 64,
+	ret = rte_eth_rx_queue_setup(state->portid, 0, 128,
 				     rte_eth_dev_socket_id(state->portid),
 				     NULL,
 				     mp);
@@ -208,7 +212,7 @@ static int nic_init(struct brick *brick, struct brick_config *config,
 		return 0;
 	}
 
-	ret = rte_eth_tx_queue_setup(state->portid, 0, 64,
+	ret = rte_eth_tx_queue_setup(state->portid, 0, 128,
 				     rte_eth_dev_socket_id(state->portid),
 				     NULL);
 	if (ret < 0) {
