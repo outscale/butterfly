@@ -168,15 +168,9 @@ static void test_vhost_flow(void)
 	char *socket_path_0, *socket_path_1;
 	struct switch_error *error = NULL;
 	struct rte_mbuf **result_pkts;
-	int ret, qemu_pid, i;
+	int qemu_pid, i;
 	uint64_t pkts_mask;
 	int exit_status;
-
-	/* start vhost */
-	ret = vhost_start("/tmp", &error);
-	g_assert(ret);
-	g_assert(!error);
-
 
 	/* instanciate brick */
 	vhost_0 = brick_new("vhost-user", vhost_config_0, &error);
@@ -269,9 +263,6 @@ static void test_vhost_flow(void)
 	brick_config_free(vhost_config_0);
 	brick_config_free(vhost_config_1);
 	brick_config_free(collect_config);
-
-	/* stop vhost */
-	vhost_stop();
 }
 
 void test_vhost(void)

@@ -29,6 +29,9 @@
 
 #include "tests.h"
 
+#include "utils/lifecycle.h"
+
+
 static void print_usage(void)
 {
 	printf("tests usage: [EAL options] -- [-quick-test] [-help]\n");
@@ -57,20 +60,14 @@ int main(int argc, char **argv)
 {
 	int ret;
 	uint64_t test_flags;
+	struct switch_error *error = NULL;
 	/* tests in the same order as the header function declarations */
 	g_test_init(&argc, &argv, NULL);
 
 	/* initialize DPDK */
-	devinitfn_pmd_pcap_drv();
-	devinitfn_pmd_ring_drv();
-	#ifdef RTE_LIBRTE_IGB_PMD
-	devinitfn_pmd_igb_drv();
-	#endif
-	#ifdef RTE_LIBRTE_IXGBE_PMD
-	devinitfn_rte_ixgbe_driver();
-	#endif
-	ret = rte_eal_init(argc, argv);
-	g_assert(ret >= 0);
+	ret = packetgraph_start(argc, argv, "/tmp", &error);
+	g_assert(ret != -1);
+	g_assert(!error);
 	/* accounting program name */
 	ret += + 1;
 	argc -= ret;
@@ -91,5 +88,7 @@ int main(int argc, char **argv)
 	test_nic();
 	test_firewall();
 
-	return g_test_run();
+	ret = g_test_run();
+	packetgraph_stop();
+	return ret;
 }

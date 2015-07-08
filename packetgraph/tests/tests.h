@@ -35,12 +35,6 @@ void test_hub(void);
 void test_nic(void);
 void test_firewall(void);
 
-/* dpdk driver init */
-void devinitfn_pmd_igb_drv(void);
-void devinitfn_rte_ixgbe_driver(void);
-void devinitfn_pmd_pcap_drv(void);
-void devinitfn_pmd_ring_drv(void);
-
 extern uint16_t  max_pkts;
 
 #endif
