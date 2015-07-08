@@ -18,24 +18,51 @@
 #include <rte_config.h>
 #include <rte_eal.h>
 #include <rte_virtio_net.h>
+#include <rte_ethdev.h>
 
 #include "utils/lifecycle.h"
 #include "bricks/vhost-user-brick.h"
+
+static int vhost;
 
 int packetgraph_start(int argc, char **argv,
 		      const char *base_dir,
 		      struct switch_error **errp)
 {
-	if (rte_eal_init(argc, argv) < 0) {
+	int ret;
+
+	/* I should detect if RTE_LIBRTE_PMD_PCAP have been define,
+	* but it's appear as it's never define, so i call it without the check.
+	* The cmake of 3rdparty add it anyway */
+	devinitfn_pmd_pcap_drv();
+
+	#ifdef RTE_LIBRTE_PMD_RING
+	devinitfn_pmd_ring_drv();
+	#endif
+
+	#ifdef RTE_LIBRTE_IGB_PMD
+	devinitfn_pmd_igb_drv();
+	#endif
+
+	#ifdef RTE_LIBRTE_IXGBE_PMD
+	devinitfn_rte_ixgbe_driver();
+	#endif
+
+	ret = rte_eal_init(argc, argv);
+	if (ret < 0) {
 		error_new("error durring eal initialisation");
-		return 0;
+		return -1;
 	}
-	if (!vhost_start(base_dir, errp))
-		return 0;
-	return 1;
+	if (base_dir != NULL) {
+		if (!vhost_start(base_dir, errp))
+			return -1;
+		vhost = 1;
+	}
+	return ret;
 }
 
 void packetgraph_stop(void)
 {
-	vhost_stop();
+	if (vhost)
+		vhost_stop();
 }

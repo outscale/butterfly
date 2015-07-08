@@ -20,6 +20,12 @@
 
 #include "utils/errors.h"
 
+/* dpdk driver init */
+void devinitfn_pmd_igb_drv(void);
+void devinitfn_rte_ixgbe_driver(void);
+void devinitfn_pmd_pcap_drv(void);
+void devinitfn_pmd_ring_drv(void);
+
 int packetgraph_start(int argc, char **argv,
 		      const char *base_dir,
 		      struct switch_error **errp);
