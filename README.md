@@ -1,4 +1,5 @@
-WIP ALERT : This reprository is under active developpement and is subject to heavy modification.
+WIP ALERT : This reprository is under active developpement and is subject to
+heavy modification.
 
 Butterfly
 =========
@@ -13,29 +14,19 @@ network.
 
 # Architecture
 
-Butterfly has two main components: Packetgraph library and Butterfly.
+Butterfly is based on:
+- [DPDK](http://dpdk.org/)
+- [Packetgraph](http://github.com/outscale/packetgraph)
+- [ZeroMQ](http://zeromq.org/)
+- [Protobuf](https://github.com/google/protobuf/ "Google's protobuf")
 
-## Packetgraph
-
-
-Packetgraph library is build upon DPDK making a collection of network bricks
-you can connect them to form a network graph.
-Everyone is free to use this library to build up there own network
-infrastructure accelerated.
-Packetgraph has moved to a separate project:
-https://github.com/outscale/packetgraph
-
-## Butterfly
-
-Butterfly is built on top of packetgraph++ and build a network graph for
+Butterfly is built on top of packetgraph and build a network graph for
 it's own goal: connect virtual machines on different hosts on layer 2
 with the best performances.
 
 Here is the butterfly architecture 
 
-![Butterfly architecture](http://i.imgur.com/zQRXbTm.png)
-
-All the bricks use [Data Plane Development Kit (DPDK)](http://dpdk.org/)
+![Butterfly architecture](http://i.imgur.com/Mnxid6n.png)
 
 The software architecture is organized around the following
 connected bricks (from Packetgraph):

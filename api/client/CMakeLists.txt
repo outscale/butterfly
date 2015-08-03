@@ -10,7 +10,8 @@ add_dependencies(api_client api_protocol libzmq zmqpp)
 
 set_target_properties(api_client PROPERTIES OUTPUT_NAME butterfly-client)
 
-include_directories(${PROJECT_SOURCE_DIR}
+include_directories(${GLIB2_INCLUDE_DIR} ${GLIB2_INTERNAL_INCLUDE_DIR}
+                    ${PROJECT_SOURCE_DIR}
                     ${PROJECT_BINARY_DIR}
                     ${PROTOBUF_INCLUDE_DIR}
                     ${LIBZMQ_INCLUDE_DIR}
