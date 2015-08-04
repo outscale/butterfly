@@ -10,11 +10,14 @@ set(DPDK_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/x86_64-native-linuxapp-gcc)
 set(LIBZMQ_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/libzmq)
 set(ZMQPP_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/zmqpp)
 set(PROTOBUF_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/protobuf)
+set(PG_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/packetgraph)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
 
 find_package(GLIB2 REQUIRED)
 find_package(LibURCU REQUIRED)
+find_package(NPF REQUIRED)
+find_package(NPFKERN REQUIRED)
 
 set(PROTOBUF_LIBRARIES ${PROTOBUF_INSTALL_DIR}/src/.libs/libprotobuf-lite.a
                        ${PROTOBUF_INSTALL_DIR}/src/.libs/libprotobuf.a)
@@ -24,24 +27,48 @@ set(LIBZMQ_LIBRARIES ${LIBZMQ_INSTALL_DIR}/lib/libzmq-static.a)
 set(LIBZMQ_INCLUDE_DIR ${3RDPARTY_DIR}/libzmq/include)
 set(ZMQPP_LIBRARIES ${ZMQPP_INSTALL_DIR}/libzmqpp-static.a)
 set(ZMQPP_INCLUDE_DIR ${3RDPARTY_DIR}/zmqpp/src)
+set(PG_LIBRARIES ${PG_INSTALL_DIR}/build-brick-firewall/libpacketgraph-firewall.a
+                 ${PG_INSTALL_DIR}/build-brick-nic/libpacketgraph-nic.a
+                 ${PG_INSTALL_DIR}/build-brick-vhost/libpacketgraph-vhost.a
+                 ${PG_INSTALL_DIR}/build-core/libpacketgraph-core.a
+                 ${PG_INSTALL_DIR}/build-brick-hub/libpacketgraph-hub.a
+                 ${PG_INSTALL_DIR}/build-brick-print/libpacketgraph-print.a
+                 ${PG_INSTALL_DIR}/build-brick-vtep/libpacketgraph-vtep.a
+                 ${PG_INSTALL_DIR}/build-brick-diode/libpacketgraph-diode.a
+                 ${PG_INSTALL_DIR}/build-brick-switch/libpacketgraph-switch.a)
+set(PG_INCLUDE_DIR ${3RDPARTY_DIR}/core
+                   ${3RDPARTY_DIR}/brick-firewall
+                   ${3RDPARTY_DIR}/brick-nic
+                   ${3RDPARTY_DIR}/brick-vhost
+                   ${3RDPARTY_DIR}/brick-hub
+                   ${3RDPARTY_DIR}/brick-print
+                   ${3RDPARTY_DIR}/brick-vtep
+                   ${3RDPARTY_DIR}/brick-diode
+                   ${3RDPARTY_DIR}/brick-switch)
+set(DPDK_LIBRARIES ${DPDK_INSTALL_DIR}/lib/libethdev.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_hash.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_mbuf.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_mempool.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_table.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_ring.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_eal.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_malloc.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_vhost.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_pmd_pcap.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_pmd_ring.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_kvargs.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_pmd_e1000.a
+                   ${DPDK_INSTALL_DIR}/lib/librte_pmd_ixgbe.a)
+set(DPDK_INCLUDE_DIR ${DPDK_INSTALL_DIR}/include)
 
 set(CMAKE_C_FLAGS "-g -O3 -march=core-avx-i -mtune=core-avx-i -fmessage-length=0  -Werror -Wall -Wextra -Wwrite-strings -Winit-self -Wcast-align -Wpointer-arith -Wstrict-aliasing -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wno-unused-parameter -Wuninitialized -Wold-style-definition -Wstrict-prototypes -Wmissing-prototypes")
 
 add_subdirectory(3rdparty)
 add_subdirectory(api)
 
-set(DIRECTORIES ${PROJECT_SOURCE_DIR}/packetgraph/bricks/ ${PROJECT_SOURCE_DIR}/packetgraph/include/
-		${PROJECT_SOURCE_DIR}/packetgraph/packets/ ${PROJECT_SOURCE_DIR}/packetgraph/utils/)
-
-add_custom_target(flawfinder
-	COMMAND flawfinder -D --quiet ${DIRECTORIES})
-
-add_custom_target(rats
-	COMMAND rats  ${DIRECTORIES})
-
 # Add custom targets for tests
 
-add_custom_target(tests
+add_custom_target(tests-all
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_all.sh ${PROJECT_SOURCE_DIR}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 

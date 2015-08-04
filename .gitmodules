@@ -22,3 +22,6 @@
 [submodule "npf"]
 	path = 3rdparty/npf
 	url = https://github.com/rmind/npf.git
+[submodule "3rdparty/packetgraph"]
+	path = 3rdparty/packetgraph
+	url = https://github.com/outscale/packetgraph.git
