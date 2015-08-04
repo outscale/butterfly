@@ -21,7 +21,11 @@ include_directories(${GLIB2_INCLUDE_DIR} ${GLIB2_INTERNAL_INCLUDE_DIR}
                     ${PROJECT_BINARY_DIR}
                     ${LIBZMQ_INCLUDE_DIR}
                     ${ZMQPP_INCLUDE_DIR}
-                    ${PROTOBUF_INCLUDE_DIR})
+                    ${PROTOBUF_INCLUDE_DIR}
+                    ${LIBNPF_INCLUDE_DIR}
+                    ${PG_INCLUDE_DIR}
+                    ${DPDK_INCLUDE_DIR}
+                    )
 
 target_link_libraries(api_server
                       api_protocol
@@ -30,20 +34,10 @@ target_link_libraries(api_server
                       ${GLIB2_LIBRARIES}
                       ${LIBZMQ_LIBRARIES}
                       ${ZMQPP_LIBRARIES}
-		      ${DPDK_INSTALL_DIR}/lib/libethdev.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_hash.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_mbuf.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_mempool.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_table.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_ring.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_eal.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_malloc.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_vhost.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_pmd_pcap.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_pmd_ring.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_kvargs.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_pmd_e1000.a
-		      ${DPDK_INSTALL_DIR}/lib/librte_pmd_ixgbe.a
+                      ${PG_LIBRARIES}
+                      ${LIBNPF_LIBRARY}
+                      ${LIBNPFKERN_LIBRARY}
+                      ${DPDK_LIBRARIES}
 		      )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -Wall")
