@@ -94,7 +94,7 @@ void API_0::nic_add(const MessageV0_Request &req, MessageV0_Response *res) {
 
     app::Error error;
     std::string path;
-    if (!action_nic_add(nic, path, &error)) {
+    if (!action_nic_add(nic, &path, &error)) {
         build_nok_res(res, error);
         return;
     }
