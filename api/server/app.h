@@ -20,6 +20,7 @@
 
 #include <string>
 #include "api/server/model.h"
+#include "api/server/graph.h"
 
 // Usefull macros
 #define LOG_PRINT_(str, method) \
@@ -91,6 +92,7 @@ extern Config config;
 extern Stats stats;
 extern Model model;
 extern Log log;
+extern Graph graph;
 }  // namespace app
 
 #endif  // API_SERVER_APP_H_

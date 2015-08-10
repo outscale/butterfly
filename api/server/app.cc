@@ -23,6 +23,7 @@
 #include <fstream>
 #include <string>
 #include "api/server/app.h"
+#include "api/server/graph.h"
 #include "api/server/server.h"
 #include "api/server/simpleini/SimpleIni.hpp"
 #include "api/protocol/revision.h"
@@ -40,6 +41,17 @@ Config::Config() {
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
+    // First, remove dpdk parameters from args if we have "--"
+    int i;
+    for (i = 0; i < argc; i++)
+        if (g_strcmp0(argv[i], "--") == 0)
+            break;
+    if (i != argc) {
+        argc = argc - i;
+        argv = &argv[i];
+    }
+
+    // Next, look at the rest
     auto gfree = [](gchar *p) { g_free(p); };
     std::unique_ptr<gchar, decltype(gfree)> config_path_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> external_ip_cmd(nullptr, gfree);
@@ -274,9 +286,6 @@ bool LoadConfigFile(std::string config_path) {
 void SignalRegister() {
     signal(SIGINT, SignalHandler);
     signal(SIGQUIT, SignalHandler);
-    signal(SIGABRT, SignalHandler);
-    signal(SIGKILL, SignalHandler);
-    signal(SIGSEGV, SignalHandler);
     signal(SIGSTOP, SignalHandler);
 }
 
@@ -293,7 +302,7 @@ Config config;
 Stats stats;
 Model model;
 Log log;
-
+Graph graph;
 }  // namespace app
 
 int
@@ -328,8 +337,9 @@ main(int argc, char *argv[]) {
 
         app::log.info("butterfly starts");
 
-        // Prepare & run libbutterfly
-        // TODO(jerome.jutteau)
+        // Prepare & run packetgraph
+        if (!app::graph.start(argc, argv))
+	    return 0;
 
         // Prepare & run API server
         APIServer server(app::config.api_endpoint, &app::request_exit);
