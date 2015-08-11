@@ -25,8 +25,11 @@ $BUTTERFLY_ROOT/api/server/model.cc \
 $BUTTERFLY_ROOT/api/server/model.h \
 $BUTTERFLY_ROOT/api/server/api.cc \
 $BUTTERFLY_ROOT/api/server/api.h \
-$BUTTERFLY_ROOT/api/server/api_0.cc"
-
+$BUTTERFLY_ROOT/api/server/api_0.cc \
+$BUTTERFLY_ROOT/api/server/pg.cc \
+$BUTTERFLY_ROOT/api/server/pg.h \
+$BUTTERFLY_ROOT/api/server/graph.cc \
+$BUTTERFLY_ROOT/api/server/graph.h"
 
 $BUTTERFLY_ROOT/scripts/cpplint.py --filter=-build/c++11 --root=$BUTTERFLY_ROOT $sources
 if [ $? != 0 ]; then
