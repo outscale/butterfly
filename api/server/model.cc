@@ -42,6 +42,32 @@ Rule::Rule() {
     port_end = 0;
 }
 
+bool Cidr::operator== (const Cidr& a) const {
+    return (address == a.address &&
+            mask_size == a.mask_size);
+}
+
+bool Rule::operator== (const Rule& a) const {
+    return (direction == a.direction &&
+            protocol == a.protocol &&
+            port_start == a.port_start &&
+            port_end == a.port_end &&
+            cidr == a.cidr);
+}
+
+Sg Sg::operator= (const Sg& a) {
+    id = a.id;
+    members = a.members;
+    rules = a.rules;
+    return *this;
+}
+
+bool Sg::operator== (const Sg& a) const {
+    return (id == a.id &&
+            members == a.members &&
+            rules == rules);
+}
+
 Cidr::Cidr() {
     mask_size = 0;
 }
@@ -77,7 +103,7 @@ bool Ip::bytes(uint8_t *data) const {
     return true;
 }
 
-bool Ip::operator== (const Ip& a) {
+bool Ip::operator== (const Ip& a) const {
     return memcmp(data_, a.data_, 16) == 0;
 }
 
@@ -129,7 +155,7 @@ bool Mac::bytes(uint8_t *data) const {
     return true;
 }
 
-bool Mac::operator== (const Mac& a) {
+bool Mac::operator== (const Mac& a) const {
     return memcmp(data_, a.data_, 6) == 0;
 }
 
