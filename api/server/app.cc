@@ -38,6 +38,7 @@ Config::Config() {
     api_endpoint = "tcp://0.0.0.0:9999";
     log_level = "error";
     show_revision = false;
+    graph_core_id = 0;
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
@@ -59,6 +60,7 @@ bool Config::parse_cmd(int argc, char **argv) {
     std::unique_ptr<gchar, decltype(gfree)> log_level_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> pid_path_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> socket_folder_cmd(nullptr, gfree);
+    std::unique_ptr<gchar, decltype(gfree)> graph_core_id_cmd(nullptr, gfree);
 
     static GOptionEntry entries[] = {
         {"config", 'c', 0, G_OPTION_ARG_FILENAME, &config_path_cmd,
@@ -77,6 +79,9 @@ bool Config::parse_cmd(int argc, char **argv) {
          "Write PID of process in specified file", "FILE"},
         {"socket-dir", 's', 0, G_OPTION_ARG_FILENAME, &socket_folder_cmd,
          "Create network sockets in specified directory", "DIR"},
+        {"graph-cpu-core", 'u', 0, G_OPTION_ARG_STRING, &graph_core_id_cmd,
+         "Choose your CPU core where to run packet processing (default=0)",
+         "ID"},
         { nullptr }
     };
     GOptionContext *context = g_option_context_new("");
@@ -102,6 +107,8 @@ bool Config::parse_cmd(int argc, char **argv) {
         pid_path = std::string(&*pid_path_cmd);
     if (socket_folder_cmd != nullptr)
         socket_folder = std::string(&*socket_folder_cmd);
+    if (graph_core_id_cmd != nullptr)
+        graph_core_id = std::atoi(&*graph_core_id_cmd);
 
     // Load from configuration file if provided
     if (config_path.length() > 0 && !LoadConfigFile(config_path)) {
@@ -277,6 +284,14 @@ bool LoadConfigFile(std::string config_path) {
         config.socket_folder = v;
         std::string m = "LoadConfig: get socket-dir from config: " +
             config.socket_folder;
+        log.debug(m);
+    }
+
+    v = ini.GetValue("general", "graph-core-id", "_");
+    if (std::string(v) != "_") {
+        config.graph_core_id = std::stoi(v);
+        std::string m = "LoadConfig: get graph-core-id from config: " +
+            config.graph_core_id;
         log.debug(m);
     }
 

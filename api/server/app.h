@@ -42,6 +42,7 @@ struct Config {
     std::string log_level;
     std::string socket_folder;
     bool show_revision;
+    int graph_core_id;
 };
 
 struct Stats {

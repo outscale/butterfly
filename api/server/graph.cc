@@ -97,12 +97,10 @@ void *Graph::poller(void *graph) {
     uint64_t cnt = 0;
     uint16_t pkts_count;
 
-    /** TODO(jerome.jutteau) Set option in butterfly
-     * configuration.
-     */
-    Graph::set_cpu(0);
-
     g_async_queue_ref(g->queue);
+
+    // Set CPU affinity for packetgraph processing
+    Graph::set_cpu(app::config.graph_core_id);
 
     // TODO(jerome.jutteau) do we have to call firewall's garbage collector ?
     // Maybe this should be included in firewall's brick poll ?
