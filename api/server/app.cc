@@ -338,8 +338,10 @@ main(int argc, char *argv[]) {
         app::log.info("butterfly starts");
 
         // Prepare & run packetgraph
-        if (!app::graph.start(argc, argv))
-	    return 0;
+        if (!app::graph.start(argc, argv)) {
+            app::log.error("cannot start packetgraph, exiting");
+            app::request_exit = true;
+        }
 
         // Prepare & run API server
         APIServer server(app::config.api_endpoint, &app::request_exit);
