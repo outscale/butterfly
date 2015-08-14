@@ -184,9 +184,78 @@ bool Graph::poller_update(struct rpc_queue **list) {
 }
 
 std::string Graph::nic_add(const app::Nic &nic) {
-    std::string path = "";
-    // TODO(jerome.jutteau)
-    return path;
+    std::string name;
+
+    if (!started) {
+        LOG_ERROR_("Graph has not been stared");
+        return "";
+    }
+
+    // Create VNI if it does not exists
+    auto it = vnis.find(nic.vni);
+    if (it == vnis.end()) {
+        struct graph_vni v;
+        v.vni = nic.vni;
+        std::pair<uint32_t, struct graph_vni> p(nic.vni, v);
+        vnis.insert(p);
+        it = vnis.find(nic.vni);
+        if (it == vnis.end())
+            return "";
+    }
+    struct graph_vni &vni = it->second;
+
+    // Create vhost branch
+    struct graph_nic gn;
+    gn.id = nic.id;
+    name = "firewall-" + gn.id;
+    // TODO(jerome.jutteau) set the firewall brick here (not a switch)
+    gn.firewall = Brick(Pg::switch_new(name.c_str(), 1, 1), Pg::destroy);
+    name = "antispoof-" + gn.id;
+    // TODO(jerome.jutteau) set the antispoof brick here (not a switch)
+    gn.antispoof = Brick(Pg::switch_new(name.c_str(), 1, 1), Pg::destroy);
+    name = "vhost-" + gn.id;
+    gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, EAST_SIDE),
+                     Pg::destroy);
+    // Link branch (inside)
+    Pg::link(gn.firewall.get(), gn.antispoof.get());
+    Pg::link(gn.antispoof.get(), gn.vhost.get());
+
+    // Link branch to the vtep
+    if (vni.nics.size() == 0) {
+        // Link directly the firewall to the vtep
+        link(vtep, gn.firewall);
+        add_vni(vtep, gn.firewall, nic.vni);
+    } else if (vni.nics.size() == 1) {
+        // We have to insert a switch
+        // - unlink the first firewall from the graph
+        // - link a new switch to the vtep
+        // - add the vni on the vtep with the switch
+        // - link the first firewall to the switch
+        // - link the second firewall to the switch
+        name = "switch-" + std::to_string(nic.vni);
+        vni.sw = Brick(Pg::switch_new(name.c_str(), 1, 30), Pg::destroy);
+        Brick fw1 = vni.nics.begin()->second.firewall;
+        unlink(fw1);
+        link(vtep, vni.sw);
+        add_vni(vtep, vni.sw, vni.vni);
+        link(vni.sw, fw1);
+        link(vni.sw, vni.sw);
+    } else {
+        // Switch already exists, just link the firewall the switch
+        link(vni.sw, gn.firewall);
+    }
+
+    // Add branch to the list of NICs
+    std::pair<std::string, struct graph_nic> p(nic.id, gn);
+    vni.nics.insert(p);
+
+    // Update the list of pollable bricks
+    update_pollable_bricks();
+
+    // Reload the firewall configuration
+    fw_update(nic);
+
+    return std::string(app::config.socket_folder + "qemu-" + nic.id);
 }
 void Graph::nic_del(std::string id) {
     if (!started) {
