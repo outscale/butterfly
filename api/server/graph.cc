@@ -306,13 +306,70 @@ void Graph::nic_config_ip(std::string id, const std::vector<app::Ip> &ip_list) {
     // TODO(jerome.jutteau)
 }
 
+std::string Graph::fw_build_sg(const app::Sg &sg) {
+    // TODO(jerome.jutteau)
+    return "dst net 0.0.0.0/0";
+}
+
 void Graph::fw_update(const app::Nic &nic) {
     if (!started) {
         LOG_ERROR_("Graph has not been stared");
         return;
     }
 
-    // TODO(jerome.jutteau)
+    // Get firewall brick
+    auto itvni = vnis.find(nic.vni);
+    if (itvni == vnis.end())
+        return;
+    auto itnic = itvni->second.nics.find(nic.id);
+    if (itnic == itvni->second.nics.end())
+        return;
+    Brick &fw = itnic->second.firewall;
+
+    // For each security groups, build rules inside a BIG one
+    std::string in_rules;
+    for (auto it = nic.security_groups.begin();
+          it != nic.security_groups.end();) {
+        auto sit = app::model.security_groups.find(*it);
+        if (sit == app::model.security_groups.end()) {
+            it++;
+            continue;
+        }
+        in_rules += "( " + fw_build_sg(sit->second) + " )";
+        if (++it != nic.security_groups.end())
+            in_rules += " || ";
+    }
+
+    // Set rules for the outgoing traffic: allow NIC's IPs
+    std::string out_rules;
+    for (auto it = nic.ip_list.begin(); it != nic.ip_list.end();) {
+        out_rules += "(src host " + it->str() + ")";
+        if (++it != nic.ip_list.end())
+            out_rules += " || ";
+    }
+
+    // Push rules to the firewall
+    Pg::firewall_rule_flush(fw.get());
+    std::string m;
+    m = "rules (in) for nic " + nic.id + ": " + in_rules;
+    app::log.debug(m);
+    m = "rules (out) for nic " + nic.id + ": " + out_rules;
+    app::log.debug(m);
+    if (in_rules.length() > 0 &&
+        Pg::firewall_rule_add(fw.get(), in_rules, WEST_SIDE, 0)) {
+        std::string m = "cannot build rules (in) for nic " + nic.id;
+        app::log.error(m);
+        return;
+    }
+    if (out_rules.length() > 0 &&
+        Pg::firewall_rule_add(fw.get(), out_rules, EAST_SIDE, 1)) {
+        std::string m = "cannot build rules (out) for nic " + nic.id;
+        app::log.error(m);
+        return;
+    }
+
+    // Reload firewall
+    firewall_reload(fw);
 }
 
 void Graph::fw_add_rule(std::string nic_id, const app::Rule &rule) {
