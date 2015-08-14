@@ -2,7 +2,7 @@ messages {
   revision: 0
   message_0 {
     request {
-      nic_export_req: "nic-1"
+      nic_export: "nic-1"
     }
   }
 }

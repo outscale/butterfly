@@ -2,7 +2,7 @@ messages {
   revision: 0
   message_0 {
     request {
-      nic_update_req {
+      nic_update {
         id: "nic-1"
         ip_anti_spoof: false
         ip: "4.3.2.1"

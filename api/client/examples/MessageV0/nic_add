@@ -2,7 +2,7 @@ messages {
   revision: 0
   message_0 {
     request {
-      nic_add_req {
+      nic_add {
         id: "nic-1"
         mac: "52:54:00:00:d7:11"
         vni: 321

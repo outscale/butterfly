@@ -2,7 +2,7 @@ messages {
   revision: 0
   message_0 {
     request {
-      sg_add_req {
+      sg_add {
         id: "sg-1"
         member: "1.2.3.4"
         member: "1.2.3.5"

@@ -2,7 +2,7 @@ messages {
   revision: 0
   message_0 {
     request {
-      sg_rule_del_req {
+      sg_rule_del {
         sg_id: "sg-1"
         rule {
           direction: INBOUND
