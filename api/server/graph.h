@@ -164,6 +164,12 @@ class Graph {
     inline bool poller_update(struct rpc_queue **list);
 
     /**
+     * Build a big rule string based on a security group
+     * @param   a list of security groups to apply
+     */
+    std::string fw_build_sg(const app::Sg &sg);
+
+    /**
      * Convert a VNI to a mutlicast IP
      * @param   vni vni integer to convert
      * @return  multicast IP
