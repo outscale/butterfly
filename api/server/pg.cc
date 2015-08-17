@@ -284,4 +284,26 @@ namespace {
         }
         return std::string(buf);
     }
+
+    struct pg_brick *antispoof_new(const char *name,
+                                   uint32_t west_max,
+                                   uint32_t east_max,
+                                   enum pg_side outside,
+                                   struct ether_addr mac) {
+        struct pg_brick *ret = pg_antispoof_new(name, west_max, east_max,
+                                                outside, mac, &errp);
+        if (!ret)
+            print_and_free_errp();
+        return ret;
+    }
+
+    void antispoof_arp_enable(struct pg_brick *brick, std::string ip) {
+        uint32_t a;
+        if (inet_pton(AF_INET, ip.c_str(), static_cast<uint32_t*>(&a)))
+            pg_antispoof_arp_enable(brick, a);
+    }
+
+    void antispoof_arp_disable(struct pg_brick *brick) {
+        pg_antispoof_arp_disable(brick);
+    }
 }  // namespace Pg
