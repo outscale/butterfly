@@ -92,35 +92,43 @@ bool Graph::start(int argc, char **argv) {
 
 void *Graph::poller(void *graph) {
     Graph *g = reinterpret_cast<Graph *>(graph);
-    struct rpc_update_pollable_bricks *list = NULL;
+    struct rpc_update_poll *list = NULL;
     struct rpc_queue *q = NULL;
     uint64_t cnt = 0;
     uint16_t pkts_count;
+    struct pg_brick *nic = g->nic.get();
 
     g_async_queue_ref(g->queue);
 
     // Set CPU affinity for packetgraph processing
     Graph::set_cpu(app::config.graph_core_id);
 
-    // TODO(jerome.jutteau) do we have to call firewall's garbage collector ?
-    // Maybe this should be included in firewall's brick poll ?
-
     /* The main packet poll loop. */
     for (;;) {
         /* Let's see if there is any update every 100 000 pools. */
-        if (cnt++ % 100000 == 0) {
+        if (cnt++ == 100000) {
+            cnt = 0;
             if (g->poller_update(&q)) {
-                list = q ? &q->update_pollable_bricks : NULL;
+                list = q ? &q->update_poll : NULL;
             } else {
                 LOG_DEBUG_("poll thread will now exit");
                 break;
             }
         }
 
-        /* Poll all pollable NICs. */
         if (list != NULL) {
+            /* Poll NIC. */
+            Pg::poll(nic, &pkts_count);
+
+            /* Poll all pollable vhosts. */
             for (uint32_t v = 0; v < list->size; v++)
-                Pg::poll(list->bricks[v], &pkts_count);
+                Pg::poll(list->pollables[v], &pkts_count);
+
+            /* Call firewall garbage callector. */
+            if (cnt == 50000) {
+                for (uint32_t v = 0; v < list->size; v++)
+                    Pg::firewall_gc(list->firewalls[v]);
+            }
         }
     }
     g_async_queue_unref(g->queue);
@@ -166,7 +174,7 @@ bool Graph::poller_update(struct rpc_queue **list) {
                                  a->add_vni.vni,
                                  a->add_vni.multicast_ip);
                 break;
-            case UPDATE_POLLABLE_BRICKS:
+            case UPDATE_POLL:
                 // Swap with the old list
                 tmp = a;
                 a = *list;
@@ -251,7 +259,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     vni.nics.insert(p);
 
     // Update the list of pollable bricks
-    update_pollable_bricks();
+    update_poll();
 
     // Reload the firewall configuration
     fw_update(nic);
@@ -426,17 +434,16 @@ void Graph::add_vni(Brick vtep, Brick neighbor, uint32_t vni) {
     g_async_queue_push(queue, a);
 }
 
-void Graph::update_pollable_bricks() {
+void Graph::update_poll() {
     // Create a table with all pollable bricks
     std::map<uint32_t, struct graph_vni>::iterator vni_it;
     std::map<std::string, struct graph_nic>::iterator nic_it;
     struct rpc_queue *a = g_new(struct rpc_queue, 1);
-    struct rpc_update_pollable_bricks &p = a->update_pollable_bricks;
+    struct rpc_update_poll &p = a->update_poll;
 
-    a->action = UPDATE_POLLABLE_BRICKS;
+    a->action = UPDATE_POLL;
     // Add physical NIC brick
-    p.size = 1;
-    p.bricks[0] = nic.get();
+    p.size = 0;
     // Add all vhost bricks
     for (vni_it = vnis.begin();
             vni_it != vnis.end();
@@ -448,7 +455,8 @@ void Graph::update_pollable_bricks() {
                 LOG_ERROR_("Not enough pollable bricks slot available");
                 break;
             }
-            p.bricks[p.size] = nic_it->second.vhost.get();
+            p.pollables[p.size] = nic_it->second.vhost.get();
+            p.firewalls[p.size] = nic_it->second.firewall.get();
             p.size++;
         }
     }
