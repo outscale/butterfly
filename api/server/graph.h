@@ -165,8 +165,16 @@ class Graph {
     inline bool poller_update(struct rpc_queue **list);
 
     /**
+     * Build a rule string based on a rule model
+     * @param   a list of security groups to apply
+     * @return  return a pcap filter string of the rule
+     */
+    std::string fw_build_rule(const app::Rule &rule);
+
+    /**
      * Build a big rule string based on a security group
      * @param   a list of security groups to apply
+     * @return  return a pcap filter rule of the whole SG
      */
     std::string fw_build_sg(const app::Sg &sg);
 
