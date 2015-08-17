@@ -17,6 +17,7 @@
 
 #include <glib.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/sysinfo.h>
 #include <utility>
 #include "api/server/app.h"
@@ -315,9 +316,74 @@ void Graph::nic_config_ip(std::string id, const std::vector<app::Ip> &ip_list) {
     // TODO(jerome.jutteau)
 }
 
+std::string Graph::fw_build_rule(const app::Rule &rule) {
+    // Note that we only take into account inbound rules
+    if (rule.direction == app::Rule::OUTBOUND)
+        return "";
+
+    std::string r;
+
+    // Build source
+    if (rule.security_group.length() == 0) {
+        r += "src net " + rule.cidr.address.str() +
+             "/" +  std::to_string(rule.cidr.mask_size);
+    } else {
+        auto sg = app::model.security_groups.find(rule.security_group);
+        if (sg == app::model.security_groups.end()) {
+            std::string m = "security group " + rule.security_group +
+                            " not available";
+            app::log.error(m);
+            return "";
+        }
+        r += " (";
+        for (auto ip = sg->second.members.begin();
+             ip != sg->second.members.end();) {
+            r += " src host " + ip->str();
+            if (++ip != sg->second.members.end())
+                r += " or";
+        }
+    }
+
+    // Build protocol part
+    r += " and";
+
+    if (rule.protocol == IPPROTO_ICMP)
+        r += " ip proto icmp";
+
+    if (rule.protocol == IPPROTO_TCP)
+        r += " tcp";
+
+    if (rule.protocol == IPPROTO_UDP)
+        r += " udp";
+
+    if (rule.protocol == IPPROTO_TCP || rule.protocol == IPPROTO_UDP) {
+        if (rule.port_start < 65536 && rule.port_end < 65536) {
+            if (rule.port_start == rule.port_end) {
+                r += " dst port " + std::to_string(rule.port_end);
+            } else if (rule.port_start < rule.port_end) {
+                r += " dst portrange " + std::to_string(rule.port_start) +
+                     "-" + std::to_string(rule.port_end);
+            } else {
+                LOG_ERROR_("invalid port range");
+                return "";
+            }
+        } else {
+            LOG_ERROR_("invalid port range");
+            return "";
+        }
+    }
+
+    return r;
+}
+
 std::string Graph::fw_build_sg(const app::Sg &sg) {
-    // TODO(jerome.jutteau)
-    return "dst net 0.0.0.0/0";
+    std::string r;
+    for (auto it = sg.rules.begin(); it != sg.rules.end();) {
+        r += "(" + fw_build_rule(it->second) + ")";
+        if (++it != sg.rules.end())
+            r += " || ";
+    }
+    return r;
 }
 
 void Graph::fw_update(const app::Nic &nic) {
