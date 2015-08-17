@@ -109,7 +109,7 @@ bool API::action_nic_add(const app::Nic &nic, std::string *path,
         std::string m = "NIC already exists with id " + nic.id;
         app::log.warning(m);
         // Disable NIC in packetgraph
-        app::graph.nic_del(nic.id);
+        app::graph.nic_del(nic);
         // Remove NIC from model
         app::model.nics.erase(nic.id);
         // Retry !
@@ -142,13 +142,13 @@ bool API::action_nic_update(const API::NicUpdate &update,
     if (update.has_ip_anti_spoof &&
         n.ip_anti_spoof != update.ip_anti_spoof) {
         n.ip_anti_spoof = update.ip_anti_spoof;
-        app::graph.nic_config_anti_spoof(n.id, update.ip_anti_spoof);
+        app::graph.nic_config_anti_spoof(n, update.ip_anti_spoof);
     }
 
     // Update IP if needed
     if (n.ip_list != update.ip) {
         n.ip_list = update.ip;
-        app::graph.nic_config_ip(n.id, update.ip);
+        app::graph.nic_config_ip(n, update.ip);
     }
 
     // Update security groups if needed
@@ -160,14 +160,15 @@ bool API::action_nic_update(const API::NicUpdate &update,
 }
 
 bool API::action_nic_del(std::string id, app::Error *error) {
+    auto nic = app::model.nics.find(id);
     // Do we have this NIC ?
-    if (app::model.nics.find(id) == app::model.nics.end()) {
+    if (nic == app::model.nics.end()) {
         std::string m = "NIC does not exist with this id " + id;
         app::log.warning(m);
         return true;
     }
 
-    app::graph.nic_del(id);
+    app::graph.nic_del(nic->second);
 
     // Remove NIC from model
     app::model.nics.erase(id);
@@ -181,7 +182,8 @@ bool API::action_nic_export(std::string id, std::string *data,
     if (data == nullptr)
         return false;
     // Do we have this NIC ?
-    if (app::model.nics.find(id) == app::model.nics.end()) {
+    auto nic = app::model.nics.find(id);
+    if (nic == app::model.nics.end()) {
         std::string m = "NIC does not exist with id " + id;
         app::log.error(m);
         if (error != nullptr)
@@ -189,7 +191,7 @@ bool API::action_nic_export(std::string id, std::string *data,
         return false;
     }
 
-    *data = app::graph.nic_export(id);
+    *data = app::graph.nic_export(nic->second);
 
     return true;
 }
@@ -198,7 +200,17 @@ bool API::action_nic_stats(std::string id, uint64_t *in, uint64_t *out,
     app::Error *error) {
     if (in == nullptr || out == nullptr)
         return false;
-    app::graph.nic_get_stats(id, in, out);
+
+    auto nic = app::model.nics.find(id);
+    if (nic == app::model.nics.end()) {
+        std::string m = "NIC does not exist with id " + id;
+        app::log.error(m);
+        if (error != nullptr)
+            error->description = m;
+        return false;
+    }
+
+    app::graph.nic_get_stats(nic->second, in, out);
     return true;
 }
 

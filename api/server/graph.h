@@ -50,28 +50,29 @@ class Graph {
     /** Remove a NIC from the graph with related dependencies.
      * @param  id NIC id to delete.
      */
-    void nic_del(std::string id);
+    void nic_del(const app::Nic &nic);
     /** Get a snapshot containing the current firewall state attached to the NIC.
      * @param  id id of the NIC attached to the firewall.
      * @return an opaque string containing firewall's state data.
      */
-    std::string nic_export(std::string id);
+    std::string nic_export(const app::Nic &nic);
     /** Get NIC statistics.
      * @param  id id of the NIC
      * @param  in number of bytes who has been received by the NIC
      * @param  out number of bytes who has been transmitted by the NIC
      */
-    void nic_get_stats(std::string id, uint64_t *in, uint64_t *out);
+    void nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out);
     /** Enable on disable IP antispoof on the NIC.
      * @param  id id of the NIC
      * @param  enable true to enable IP antispoof, false otherwise
      */
-    void nic_config_anti_spoof(std::string nic_id, bool enable);
+    void nic_config_anti_spoof(const app::Nic &nic, bool enable);
     /** Update all ip of a NIC
      * @param  id id of the NIC
      * @param  ip_list list of all IP the NIC have
      */
-    void nic_config_ip(std::string id, const std::vector<app::Ip> &ip_list);
+    void nic_config_ip(const app::Nic &nic,
+                       const std::vector<app::Ip> &ip_list);
     /** Rebuild all firewall rules of a NIC
      * @param  nic model of the NIC
      */

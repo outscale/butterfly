@@ -267,7 +267,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
 
     return std::string(app::config.socket_folder + "qemu-" + nic.id);
 }
-void Graph::nic_del(std::string id) {
+void Graph::nic_del(const app::Nic &nic) {
     if (!started) {
         LOG_ERROR_("Graph has not been stared");
         return;
@@ -277,7 +277,7 @@ void Graph::nic_del(std::string id) {
     // WAIT that queue is done before cleaning bricks
 }
 
-std::string Graph::nic_export(std::string id) {
+std::string Graph::nic_export(const app::Nic &nic) {
     if (!started) {
         LOG_ERROR_("Graph has not been stared");
         return "";
@@ -288,7 +288,7 @@ std::string Graph::nic_export(std::string id) {
     return data;
 }
 
-void Graph::nic_get_stats(std::string id, uint64_t *in, uint64_t *out) {
+void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
     if (!started) {
         LOG_ERROR_("Graph has not been stared");
         return;
@@ -298,7 +298,7 @@ void Graph::nic_get_stats(std::string id, uint64_t *in, uint64_t *out) {
     *in = *out = 42;
 }
 
-void Graph::nic_config_anti_spoof(std::string nic_id, bool enable) {
+void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
     if (!started) {
         LOG_ERROR_("Graph has not been stared");
         return;
@@ -307,7 +307,8 @@ void Graph::nic_config_anti_spoof(std::string nic_id, bool enable) {
     // TODO(jerome.jutteau)
 }
 
-void Graph::nic_config_ip(std::string id, const std::vector<app::Ip> &ip_list) {
+void Graph::nic_config_ip(const app::Nic &nic,
+                          const std::vector<app::Ip> &ip_list) {
     if (!started) {
         LOG_ERROR_("Graph has not been stared");
         return;
