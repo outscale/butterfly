@@ -30,6 +30,7 @@ extern "C" {
 #include <packetgraph/hub.h>
 #include <packetgraph/print.h>
 #include <packetgraph/vtep.h>
+#include <packetgraph/antispoof.h>
 }
 #include <string>
 
@@ -143,6 +144,17 @@ namespace Pg {
 
     void print_set_flags(struct pg_brick *brick, int flags);
     std::string graph_dot(struct pg_brick *brick);
+
+    struct pg_brick *antispoof_new(const char *name,
+                                   uint32_t west_max,
+                                   uint32_t east_max,
+                                   enum pg_side outside,
+                                   struct ether_addr mac);
+
+    void antispoof_arp_enable(struct pg_brick *brick, std::string ip);
+
+    void antispoof_arp_disable(struct pg_brick *brick);
+
 }  // namespace Pg
 
 #endif  // API_SERVER_PG_H_

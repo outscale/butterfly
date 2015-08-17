@@ -35,6 +35,7 @@ set(PG_LIBRARIES ${PG_INSTALL_DIR}/build-brick-firewall/libpacketgraph-firewall.
                  ${PG_INSTALL_DIR}/build-brick-print/libpacketgraph-print.a
                  ${PG_INSTALL_DIR}/build-brick-vtep/libpacketgraph-vtep.a
                  ${PG_INSTALL_DIR}/build-brick-diode/libpacketgraph-diode.a
+                 ${PG_INSTALL_DIR}/build-brick-antispoof/libpacketgraph-antispoof.a
                  ${PG_INSTALL_DIR}/build-brick-switch/libpacketgraph-switch.a)
 set(PG_INCLUDE_DIR ${3RDPARTY_DIR}/packetgraph/core
                    ${3RDPARTY_DIR}/packetgraph/brick-firewall
@@ -44,6 +45,7 @@ set(PG_INCLUDE_DIR ${3RDPARTY_DIR}/packetgraph/core
                    ${3RDPARTY_DIR}/packetgraph/brick-print
                    ${3RDPARTY_DIR}/packetgraph/brick-vtep
                    ${3RDPARTY_DIR}/packetgraph/brick-diode
+                   ${3RDPARTY_DIR}/packetgraph/brick-antispoof
                    ${3RDPARTY_DIR}/packetgraph/brick-switch)
 set(DPDK_LIBRARIES ${DPDK_INSTALL_DIR}/lib/libethdev.a
                    ${DPDK_INSTALL_DIR}/lib/librte_hash.a

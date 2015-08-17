@@ -210,10 +210,12 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "firewall-" + gn.id;
     gn.firewall = Brick(Pg::firewall_new(name.c_str(), 1, 1), Pg::destroy);
     name = "antispoof-" + gn.id;
-    // TODO(jerome.jutteau) set the antispoof brick here (not a switch)
-    gn.antispoof = Brick(Pg::switch_new(name.c_str(), 1, 1), Pg::destroy);
+    struct ether_addr mac;
+    nic.mac.bytes(mac.addr_bytes);
+    gn.antispoof = Brick(Pg::antispoof_new(name.c_str(), 1, 1, EAST_SIDE, mac),
+                         Pg::destroy);
     name = "vhost-" + gn.id;
-    gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, EAST_SIDE),
+    gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, WEST_SIDE),
                      Pg::destroy);
     // Link branch (inside)
     Pg::link(gn.firewall.get(), gn.antispoof.get());
