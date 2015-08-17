@@ -2,7 +2,7 @@ messages {
   revision: 0
   message_0 {
     request {
-      sg_del_req: "sg-1"
+      sg_del: "sg-1"
     }
   }
 }

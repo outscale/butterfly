@@ -38,7 +38,7 @@ class Ip {
     type_t type();
     std::string str() const;
     bool bytes(uint8_t *data) const;
-    bool operator== (const Ip& a);
+    bool operator== (const Ip& a) const;
     Ip operator= (const std::string &a);
  private:
     std::string ip_;
@@ -53,7 +53,7 @@ class Mac {
     explicit Mac(std::string mac_string);
     std::string str() const;
     bool bytes(uint8_t *data) const;
-    bool operator== (const Mac& a);
+    bool operator== (const Mac& a) const;
     Mac operator= (const std::string &a);
  private:
     std::string mac_;
@@ -65,6 +65,7 @@ struct Cidr {
     Cidr();
     Ip address;
     uint32_t mask_size;
+    bool operator== (const Cidr& a) const;
 };
 
 struct Nic {
@@ -92,6 +93,7 @@ struct Rule {
     int32_t port_end;
     Cidr cidr;
     std::string security_group;
+    bool operator== (const Rule& a) const;
 };
 
 struct Sg {
@@ -99,6 +101,8 @@ struct Sg {
     std::vector<Ip> members;
     // hash(rule) -> rule
     std::map<std::size_t, Rule> rules;
+    Sg operator= (const Sg &a);
+    bool operator== (const Sg& a) const;
 };
 
 struct Model {

@@ -59,7 +59,7 @@ class API {
      *               can be NULL to ommit it.
      * @return  true if NIC has been created, false otherwise
      */
-    static bool action_nic_add(const app::Nic &nic, std::string path,
+    static bool action_nic_add(const app::Nic &nic, std::string *path,
         app::Error *error);
     /* Update a NIC by replacing provided NIC parameters
      * This method centralize NIC update for all API versions
@@ -168,6 +168,19 @@ class API {
      * This method centralize program shutdown for all API versions
      */
     static void action_app_quit();
+
+ private:
+    /* Find all NICs who are concerned by a specific SG and update the
+     * corresponding firewall.
+     * @param  sg security group to update in graph
+     */
+    static void sg_update(const app::Sg &sg);
+    /* Find all NICs who are concerned by a specific SG and only add a
+     * single rule in the corresponding firewall.
+     * @param  sg security group to update in graph
+     * @param  rule rule to add in security group
+     */
+    static void sg_update(const app::Sg &sg, const app::Rule &rule);
 };
 
 class API_0: public API {

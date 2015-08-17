@@ -23,6 +23,7 @@
 #include <fstream>
 #include <string>
 #include "api/server/app.h"
+#include "api/server/graph.h"
 #include "api/server/server.h"
 #include "api/server/simpleini/SimpleIni.hpp"
 #include "api/protocol/revision.h"
@@ -37,9 +38,21 @@ Config::Config() {
     api_endpoint = "tcp://0.0.0.0:9999";
     log_level = "error";
     show_revision = false;
+    graph_core_id = 0;
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
+    // First, remove dpdk parameters from args if we have "--"
+    int i;
+    for (i = 0; i < argc; i++)
+        if (g_strcmp0(argv[i], "--") == 0)
+            break;
+    if (i != argc) {
+        argc = argc - i;
+        argv = &argv[i];
+    }
+
+    // Next, look at the rest
     auto gfree = [](gchar *p) { g_free(p); };
     std::unique_ptr<gchar, decltype(gfree)> config_path_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> external_ip_cmd(nullptr, gfree);
@@ -47,6 +60,7 @@ bool Config::parse_cmd(int argc, char **argv) {
     std::unique_ptr<gchar, decltype(gfree)> log_level_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> pid_path_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> socket_folder_cmd(nullptr, gfree);
+    std::unique_ptr<gchar, decltype(gfree)> graph_core_id_cmd(nullptr, gfree);
 
     static GOptionEntry entries[] = {
         {"config", 'c', 0, G_OPTION_ARG_FILENAME, &config_path_cmd,
@@ -65,6 +79,9 @@ bool Config::parse_cmd(int argc, char **argv) {
          "Write PID of process in specified file", "FILE"},
         {"socket-dir", 's', 0, G_OPTION_ARG_FILENAME, &socket_folder_cmd,
          "Create network sockets in specified directory", "DIR"},
+        {"graph-cpu-core", 'u', 0, G_OPTION_ARG_STRING, &graph_core_id_cmd,
+         "Choose your CPU core where to run packet processing (default=0)",
+         "ID"},
         { nullptr }
     };
     GOptionContext *context = g_option_context_new("");
@@ -90,6 +107,8 @@ bool Config::parse_cmd(int argc, char **argv) {
         pid_path = std::string(&*pid_path_cmd);
     if (socket_folder_cmd != nullptr)
         socket_folder = std::string(&*socket_folder_cmd);
+    if (graph_core_id_cmd != nullptr)
+        graph_core_id = std::atoi(&*graph_core_id_cmd);
 
     // Load from configuration file if provided
     if (config_path.length() > 0 && !LoadConfigFile(config_path)) {
@@ -268,15 +287,20 @@ bool LoadConfigFile(std::string config_path) {
         log.debug(m);
     }
 
+    v = ini.GetValue("general", "graph-core-id", "_");
+    if (std::string(v) != "_") {
+        config.graph_core_id = std::stoi(v);
+        std::string m = "LoadConfig: get graph-core-id from config: " +
+            config.graph_core_id;
+        log.debug(m);
+    }
+
     return true;
 }
 
 void SignalRegister() {
     signal(SIGINT, SignalHandler);
     signal(SIGQUIT, SignalHandler);
-    signal(SIGABRT, SignalHandler);
-    signal(SIGKILL, SignalHandler);
-    signal(SIGSEGV, SignalHandler);
     signal(SIGSTOP, SignalHandler);
 }
 
@@ -293,7 +317,7 @@ Config config;
 Stats stats;
 Model model;
 Log log;
-
+Graph graph;
 }  // namespace app
 
 int
@@ -328,8 +352,11 @@ main(int argc, char *argv[]) {
 
         app::log.info("butterfly starts");
 
-        // Prepare & run libbutterfly
-        // TODO(jerome.jutteau)
+        // Prepare & run packetgraph
+        if (!app::graph.start(argc, argv)) {
+            app::log.error("cannot start packetgraph, exiting");
+            app::request_exit = true;
+        }
 
         // Prepare & run API server
         APIServer server(app::config.api_endpoint, &app::request_exit);

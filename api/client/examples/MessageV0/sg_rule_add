@@ -2,7 +2,7 @@ messages {
   revision: 0
   message_0 {
     request {
-      sg_rule_add_req {
+      sg_rule_add {
         sg_id: "sg-1"
         rule {
           direction: INBOUND

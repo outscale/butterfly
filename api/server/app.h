@@ -20,6 +20,7 @@
 
 #include <string>
 #include "api/server/model.h"
+#include "api/server/graph.h"
 
 // Usefull macros
 #define LOG_PRINT_(str, method) \
@@ -41,6 +42,7 @@ struct Config {
     std::string log_level;
     std::string socket_folder;
     bool show_revision;
+    int graph_core_id;
 };
 
 struct Stats {
@@ -91,6 +93,7 @@ extern Config config;
 extern Stats stats;
 extern Model model;
 extern Log log;
+extern Graph graph;
 }  // namespace app
 
 #endif  // API_SERVER_APP_H_

@@ -2,7 +2,7 @@ messages {
   revision: 0
   message_0 {
     request {
-      app_config_req {
+      app_config {
         log_level: "info"
       }
     }

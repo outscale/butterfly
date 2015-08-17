@@ -68,7 +68,12 @@ APIServer::prepare() {
     socket_ = std::make_shared < zmqpp::socket >(
         context_,
         zmqpp::socket_type::reply);
-    socket_->bind(endpoint_);
+    try {
+        socket_->bind(endpoint_);
+    } catch (std::exception & e) {
+        LOG_ERROR_("failed to bind API socket");
+        throw;
+    }
 }
 
 void
