@@ -208,8 +208,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     struct graph_nic gn;
     gn.id = nic.id;
     name = "firewall-" + gn.id;
-    // TODO(jerome.jutteau) set the firewall brick here (not a switch)
-    gn.firewall = Brick(Pg::switch_new(name.c_str(), 1, 1), Pg::destroy);
+    gn.firewall = Brick(Pg::firewall_new(name.c_str(), 1, 1), Pg::destroy);
     name = "antispoof-" + gn.id;
     // TODO(jerome.jutteau) set the antispoof brick here (not a switch)
     gn.antispoof = Brick(Pg::switch_new(name.c_str(), 1, 1), Pg::destroy);
