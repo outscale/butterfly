@@ -102,7 +102,7 @@ class Graph {
         UNLINK,
         FIREWALL_RELOAD,
         ADD_VNI,
-        UPDATE_POLLABLE_BRICKS
+        UPDATE_POLL
     };
 
     struct rpc_link {
@@ -126,8 +126,9 @@ class Graph {
     };
 
     // This rpc message is kept by the poller
-    struct rpc_update_pollable_bricks {
-        struct pg_brick *bricks[GRAPH_VHOST_MAX_SIZE];
+    struct rpc_update_poll {
+        struct pg_brick *pollables[GRAPH_VHOST_MAX_SIZE];
+        struct pg_brick *firewalls[GRAPH_VHOST_MAX_SIZE];
         uint32_t size;
     };
 
@@ -137,7 +138,7 @@ class Graph {
         struct rpc_unlink unlink;
         struct rpc_firewall_reload firewall_reload;
         struct rpc_add_vni add_vni;
-        struct rpc_update_pollable_bricks update_pollable_bricks;
+        struct rpc_update_poll update_poll;
     };
 
     /* Wrappers to ease RPC actions. */
@@ -146,7 +147,7 @@ class Graph {
     void unlink(Brick b);
     void firewall_reload(Brick b);
     void add_vni(Brick vtep, Brick neighbor, uint32_t vni);
-    void update_pollable_bricks();
+    void update_poll();
 
     /** Threaded function to poll graph. */
     static void *poller(void *g);
@@ -158,7 +159,7 @@ class Graph {
     static inline int set_cpu(int core_id);
     /**
      * Update bricks to poll, called by the poller thread.
-     * @param    list list of bricks to update in queue->update_pollable_bricks
+     * @param    list list of bricks the poller needs (struct rpc_update_poll)
      * @return  true if poller must continue polling, otherwhise exit.
      */
     inline bool poller_update(struct rpc_queue **list);
