@@ -180,10 +180,14 @@ namespace {
                                   uint32_t west_max,
                                   uint32_t east_max) {
         struct pg_brick *ret = pg_firewall_new(name, west_max,
-                               east_max, &errp);
+                               east_max, PG_NO_CONN_WORKER, &errp);
         if (!ret)
             print_and_free_errp();
         return ret;
+    }
+
+    void firewall_gc(struct pg_brick *brick) {
+        ::pg_firewall_gc(brick);
     }
 
     void firewall_rule_flush(struct pg_brick *brick) {

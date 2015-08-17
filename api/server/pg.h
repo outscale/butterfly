@@ -98,6 +98,8 @@ namespace Pg {
                    uint32_t west_max,
                    uint32_t east_max);
 
+    void firewall_gc(struct pg_brick *brick);
+
     void firewall_rule_flush(struct pg_brick *brick);
 
     int firewall_rule_add(struct pg_brick *brick, std::string filter,
