@@ -227,7 +227,7 @@ void API::sg_update(const app::Sg &sg, const app::Rule &rule) {
              sg_it != nic.security_groups.end();
              sg_it++) {
             if (*sg_it == sg.id)
-                app::graph.fw_add_rule(nic.id, rule);
+                app::graph.fw_add_rule(nic, rule);
         }
     }
 }

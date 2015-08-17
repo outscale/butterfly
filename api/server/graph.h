@@ -77,10 +77,10 @@ class Graph {
      */
     void fw_update(const app::Nic &nic);
     /** Add a single rule in the corresponding firewall of a NIC.
-     * @param  id id of the NIC
+     * @param  nic nic model
      * @param  rule model of the rule
      */
-    void fw_add_rule(std::string nic_id, const app::Rule &rule);
+    void fw_add_rule(const app::Nic &nic, const app::Rule &rule);
     /** Build a graphic description in dot language (graphviz project).
      * @return  a string describing the whole graph
      */
