@@ -149,6 +149,7 @@ class Graph {
     void firewall_reload(Brick b);
     void add_vni(Brick vtep, Brick neighbor, uint32_t vni);
     void update_poll();
+    void wait_empty_queue();
 
     /** Threaded function to poll graph. */
     static void *poller(void *g);
@@ -192,6 +193,8 @@ class Graph {
        Brick firewall;
        Brick antispoof;
        Brick vhost;
+       // If we should add this branch or not to our poll updates
+       bool enable;
     };
 
     /* VNI branch. */

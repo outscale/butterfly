@@ -20,6 +20,8 @@
 #include <netinet/in.h>
 #include <sys/sysinfo.h>
 #include <utility>
+#include <thread>
+#include <chrono>
 #include "api/server/app.h"
 #include "api/server/pg.h"
 #include "api/server/graph.h"
@@ -215,6 +217,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
 
     // Create vhost branch
     struct graph_nic gn;
+    gn.enable = true;
     gn.id = nic.id;
     name = "firewall-" + gn.id;
     gn.firewall = Brick(Pg::firewall_new(name.c_str(), 1, 1), Pg::destroy);
@@ -273,8 +276,52 @@ void Graph::nic_del(const app::Nic &nic) {
         return;
     }
 
-    // TODO(jerome.jutteau)
-    // WAIT that queue is done before cleaning bricks
+    auto vni_it = app::graph.vnis.find(nic.vni);
+    if (vni_it == app::graph.vnis.end()) {
+        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
+            std::to_string(nic.vni) + " don't seems to exist.");
+        return;
+    }
+    struct graph_vni &vni = vni_it->second;
+
+    auto nic_it = vni.nics.find(nic.id);
+    if (nic_it == vni.nics.end()) {
+        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
+            std::to_string(nic.vni) + " don't seems to exist in branch.");
+        return;
+    }
+
+    // Disable branch and update poller
+    struct graph_nic &n = nic_it->second;
+    n.enable = false;
+    update_poll();
+
+    // Disconnect branch from vtep or switch
+    if (vni.nics.size() == 1) {
+        // We should only have the firewall directly connected to the vtep
+        unlink(n.firewall);
+    } else if (vni.nics.size() == 2) {
+        // We have do:
+        // - unlink the switch (which unlink all firewalls).
+        // - connect the other firewall to the vtep
+        // - destroy the switch
+
+        auto it = vni.nics.begin();
+        if (it->second.id == nic.id)
+            it++;
+        struct graph_nic &other = it->second;
+        unlink(vni.sw);
+        link(app::graph.vtep, other.firewall);
+        wait_empty_queue();
+        vni.sw.reset();
+    } else {
+        // We just have to unlink the firewall from the switch
+        unlink(n.firewall);
+    }
+
+    // Wait that queue is done before removing bricks
+    wait_empty_queue();
+    vni.nics.erase(nic_it);
 }
 
 std::string Graph::nic_export(const app::Nic &nic) {
@@ -547,6 +594,8 @@ void Graph::update_poll() {
                 LOG_ERROR_("Not enough pollable bricks slot available");
                 break;
             }
+            if (!nic_it->second.enable)
+                continue;
             p.pollables[p.size] = nic_it->second.vhost.get();
             p.firewalls[p.size] = nic_it->second.firewall.get();
             p.size++;
@@ -555,6 +604,11 @@ void Graph::update_poll() {
 
     // Pass this new listing to packetgraph thread
     g_async_queue_push(queue, a);
+}
+
+void Graph::wait_empty_queue() {
+    while (g_async_queue_length_unlocked(queue) > 0)
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 uint32_t Graph::build_multicast_ip(uint32_t vni) {
