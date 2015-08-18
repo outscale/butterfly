@@ -27,26 +27,26 @@ set(LIBZMQ_LIBRARIES ${LIBZMQ_INSTALL_DIR}/lib/libzmq-static.a)
 set(LIBZMQ_INCLUDE_DIR ${3RDPARTY_DIR}/libzmq/include)
 set(ZMQPP_LIBRARIES ${ZMQPP_INSTALL_DIR}/libzmqpp-static.a)
 set(ZMQPP_INCLUDE_DIR ${3RDPARTY_DIR}/zmqpp/src)
-set(PG_LIBRARIES ${PG_INSTALL_DIR}/build-brick-firewall/libpacketgraph-firewall.a
-                 ${PG_INSTALL_DIR}/build-brick-nic/libpacketgraph-nic.a
-                 ${PG_INSTALL_DIR}/build-brick-vhost/libpacketgraph-vhost.a
+set(PG_LIBRARIES ${PG_INSTALL_DIR}/build-firewall/libpacketgraph-firewall.a
+                 ${PG_INSTALL_DIR}/build-nic/libpacketgraph-nic.a
+                 ${PG_INSTALL_DIR}/build-vhost/libpacketgraph-vhost.a
                  ${PG_INSTALL_DIR}/build-core/libpacketgraph-core.a
-                 ${PG_INSTALL_DIR}/build-brick-hub/libpacketgraph-hub.a
-                 ${PG_INSTALL_DIR}/build-brick-print/libpacketgraph-print.a
-                 ${PG_INSTALL_DIR}/build-brick-vtep/libpacketgraph-vtep.a
-                 ${PG_INSTALL_DIR}/build-brick-diode/libpacketgraph-diode.a
-                 ${PG_INSTALL_DIR}/build-brick-antispoof/libpacketgraph-antispoof.a
-                 ${PG_INSTALL_DIR}/build-brick-switch/libpacketgraph-switch.a)
+                 ${PG_INSTALL_DIR}/build-hub/libpacketgraph-hub.a
+                 ${PG_INSTALL_DIR}/build-print/libpacketgraph-print.a
+                 ${PG_INSTALL_DIR}/build-vtep/libpacketgraph-vtep.a
+                 ${PG_INSTALL_DIR}/build-diode/libpacketgraph-diode.a
+                 ${PG_INSTALL_DIR}/build-antispoof/libpacketgraph-antispoof.a
+                 ${PG_INSTALL_DIR}/build-switch/libpacketgraph-switch.a)
 set(PG_INCLUDE_DIR ${3RDPARTY_DIR}/packetgraph/core
-                   ${3RDPARTY_DIR}/packetgraph/brick-firewall
-                   ${3RDPARTY_DIR}/packetgraph/brick-nic
-                   ${3RDPARTY_DIR}/packetgraph/brick-vhost
-                   ${3RDPARTY_DIR}/packetgraph/brick-hub
-                   ${3RDPARTY_DIR}/packetgraph/brick-print
-                   ${3RDPARTY_DIR}/packetgraph/brick-vtep
-                   ${3RDPARTY_DIR}/packetgraph/brick-diode
-                   ${3RDPARTY_DIR}/packetgraph/brick-antispoof
-                   ${3RDPARTY_DIR}/packetgraph/brick-switch)
+                   ${3RDPARTY_DIR}/packetgraph/firewall
+                   ${3RDPARTY_DIR}/packetgraph/nic
+                   ${3RDPARTY_DIR}/packetgraph/vhost
+                   ${3RDPARTY_DIR}/packetgraph/hub
+                   ${3RDPARTY_DIR}/packetgraph/print
+                   ${3RDPARTY_DIR}/packetgraph/vtep
+                   ${3RDPARTY_DIR}/packetgraph/diode
+                   ${3RDPARTY_DIR}/packetgraph/antispoof
+                   ${3RDPARTY_DIR}/packetgraph/switch)
 set(DPDK_LIBRARIES ${DPDK_INSTALL_DIR}/lib/libethdev.a
                    ${DPDK_INSTALL_DIR}/lib/librte_hash.a
                    ${DPDK_INSTALL_DIR}/lib/librte_mbuf.a
