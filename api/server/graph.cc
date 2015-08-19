@@ -369,7 +369,37 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
         return;
     }
 
-    // TODO(jerome.jutteau)
+    auto vni_it = app::graph.vnis.find(nic.vni);
+    if (vni_it == app::graph.vnis.end()) {
+        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
+            std::to_string(nic.vni) + " don't seems to exist.");
+        return;
+    }
+    struct graph_vni &vni = vni_it->second;
+
+    auto nic_it = vni.nics.find(nic.id);
+    if (nic_it == vni.nics.end()) {
+        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
+            std::to_string(nic.vni) + " don't seems to exist in branch.");
+        return;
+    }
+
+    Brick &vhost = nic_it->second.vhost;
+    if (enable) {
+        if (nic.ip_list.size() == 0) {
+            LOG_ERROR_("cannot enable ARP antispoof with no given ip for nic " +
+                       nic.id);
+            return;
+        }
+        // TODO(jerome.jutteau) patch this when antispoof brick will support
+        // several IP for arp antispoofing.
+        // Get the first IP of the VM
+        std::string ip = nic.ip_list.front().str();
+        Pg::antispoof_arp_enable(vhost.get(), ip);
+
+    } else {
+        Pg::antispoof_arp_disable(vhost.get());
+    }
 }
 
 void Graph::nic_config_ip(const app::Nic &nic,
