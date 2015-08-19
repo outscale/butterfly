@@ -95,6 +95,8 @@ namespace Pg {
     void nic_get_mac(struct pg_brick *brick,
              struct ether_addr *addr);
 
+    void nic_get_stats(struct pg_brick *brick, struct pg_nic_stats *stats);
+
     struct pg_brick *firewall_new(const char *name,
                    uint32_t west_max,
                    uint32_t east_max);

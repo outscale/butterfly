@@ -340,9 +340,27 @@ void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
         LOG_ERROR_("Graph has not been stared");
         return;
     }
+    *in = *out = 0;
 
-    // TODO(jerome.jutteau)
-    *in = *out = 42;
+    auto vni_it = app::graph.vnis.find(nic.vni);
+    if (vni_it == app::graph.vnis.end()) {
+        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
+            std::to_string(nic.vni) + " don't seems to exist.");
+        return;
+    }
+    struct graph_vni &vni = vni_it->second;
+
+    auto nic_it = vni.nics.find(nic.id);
+    if (nic_it == vni.nics.end()) {
+        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
+            std::to_string(nic.vni) + " don't seems to exist in branch.");
+        return;
+    }
+
+    struct pg_nic_stats stats;
+    Pg::nic_get_stats(nic_it->second.vhost.get(), &stats);
+    *in = stats.ibytes;
+    *out = stats.obytes;
 }
 
 void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {

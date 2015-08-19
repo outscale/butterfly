@@ -176,6 +176,10 @@ namespace {
         return ::pg_nic_get_mac(brick, addr);
     }
 
+    void nic_get_stats(struct pg_brick *brick, struct pg_nic_stats *stats) {
+        pg_nic_get_stats(brick, stats);
+    }
+
     struct pg_brick *firewall_new(const char *name,
                                   uint32_t west_max,
                                   uint32_t east_max) {
