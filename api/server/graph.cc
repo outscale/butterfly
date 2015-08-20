@@ -168,9 +168,6 @@ bool Graph::poller_update(struct rpc_queue **list) {
             case UNLINK:
                 Pg::unlink(a->unlink.b);
                 break;
-            case FIREWALL_RELOAD:
-                Pg::firewall_reload(a->firewall_reload.b);
-                break;
             case ADD_VNI:
                 Pg::vtep_add_vni(a->add_vni.vtep,
                                  a->add_vni.neighbor,
@@ -541,7 +538,7 @@ void Graph::fw_update(const app::Nic &nic) {
     }
 
     // Reload firewall
-    firewall_reload(fw);
+    Pg::firewall_reload(fw.get());
 }
 
 void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
@@ -575,7 +572,7 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
         app::log.debug(r);
         return;
     }
-    firewall_reload(fw);
+    Pg::firewall_reload(fw.get());
 }
 
 std::string Graph::dot() {
@@ -601,13 +598,6 @@ void Graph::unlink(Brick b) {
     struct rpc_queue *a = g_new(struct rpc_queue, 1);
     a->action = UNLINK;
     a->unlink.b = b.get();
-    g_async_queue_push(queue, a);
-}
-
-void Graph::firewall_reload(Brick b) {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
-    a->action = FIREWALL_RELOAD;
-    a->firewall_reload.b = b.get();
     g_async_queue_push(queue, a);
 }
 

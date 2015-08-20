@@ -101,7 +101,6 @@ class Graph {
         EXIT,
         LINK,
         UNLINK,
-        FIREWALL_RELOAD,
         ADD_VNI,
         UPDATE_POLL
     };
@@ -112,10 +111,6 @@ class Graph {
     };
 
     struct rpc_unlink {
-        struct pg_brick *b;
-    };
-
-    struct rpc_firewall_reload {
         struct pg_brick *b;
     };
 
@@ -137,7 +132,6 @@ class Graph {
         enum rpc_action action;
         struct rpc_link link;
         struct rpc_unlink unlink;
-        struct rpc_firewall_reload firewall_reload;
         struct rpc_add_vni add_vni;
         struct rpc_update_poll update_poll;
     };
