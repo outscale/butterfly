@@ -99,7 +99,8 @@ namespace Pg {
 
     struct pg_brick *firewall_new(const char *name,
                    uint32_t west_max,
-                   uint32_t east_max);
+                   uint32_t east_max,
+                   uint64_t flags);
 
     void firewall_gc(struct pg_brick *brick);
 

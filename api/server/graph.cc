@@ -220,7 +220,8 @@ std::string Graph::nic_add(const app::Nic &nic) {
     gn.enable = true;
     gn.id = nic.id;
     name = "firewall-" + gn.id;
-    gn.firewall = Brick(Pg::firewall_new(name.c_str(), 1, 1), Pg::destroy);
+    gn.firewall = Brick(Pg::firewall_new(name.c_str(),
+                        1, 1, PG_NO_CONN_WORKER), Pg::destroy);
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.addr_bytes);

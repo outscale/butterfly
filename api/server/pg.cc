@@ -182,9 +182,10 @@ namespace {
 
     struct pg_brick *firewall_new(const char *name,
                                   uint32_t west_max,
-                                  uint32_t east_max) {
+                                  uint32_t east_max,
+                                  uint64_t flags) {
         struct pg_brick *ret = pg_firewall_new(name, west_max,
-                               east_max, PG_NO_CONN_WORKER, &errp);
+                               east_max, flags, &errp);
         if (!ret)
             print_and_free_errp();
         return ret;
