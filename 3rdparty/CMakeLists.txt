@@ -70,3 +70,4 @@ add_custom_target(dependency-cleanup CLEAN
 
 add_custom_target(3rdparty)
 
+add_dependencies(packetgraph dpdk protobuf libzmq zmqpp)
