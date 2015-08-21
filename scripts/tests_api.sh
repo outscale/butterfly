@@ -21,13 +21,21 @@ client=$BUTTERFLY_BUILD_ROOT/api/client/butterfly-client
 server=$BUTTERFLY_BUILD_ROOT/api/server/butterfly-server
 err=false
 for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
+    tput setaf 2
+    echo -n "$(basename $request) scenario: "
+    tput setaf 7
     expected=$(echo $request | sed -e 's/_in$/_out/')
     $run $client $server $request $expected
     if [ $? -ne 0 ]; then
-        echo "$(basename $request) scenario failed"
+	tput setaf 1
+        echo FAILED !
         err=true
+	tput setaf 7
+	exit 1
     else
-        echo "$(basename $request) scenario OK"
+	tput setaf 2
+        echo OK
+	tput setaf 7
     fi
 done
 
