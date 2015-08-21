@@ -46,8 +46,13 @@ if [ $err = true ]; then
     exit 1
 fi
 
+# prepare out.txt
+echo ----------- $request_file ------------ >> out.txt
+echo >> out.txt
+echo >> out.txt # add some blank lines
+
 # Start server
-$server -c1 -n1 --vdev=eth_ring0 -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:8765 &> /dev/null &
+$server -c1 -n1 --vdev=eth_ring0 -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:8765 &>> out.txt &
 server_pid=$!
 sleep 1
 kill -s 0 $server_pid
@@ -58,14 +63,14 @@ fi
 
 # Prepare client to run
 output=/tmp/butterfly_test_api
-client_cmd="$client --endpoint=tcp://127.0.0.1:8765 -i $request_file -o $output"
+client_cmd="$client --endpoint=tcp://127.0.0.1:8765 -i $request_file -o $output -v"
 if [ -n "$learn_mode" ]; then
     output=$expected_response
     client_cmd="$client --endpoint=tcp://127.0.0.1:8765 -i $request_file -o $output -v"
 fi
 
 # Run client
-$client_cmd &
+$client_cmd  &> client_out.txt &
 client_pid=$!
 sleep 1
 kill -s 0 $client_pid &> /dev/null

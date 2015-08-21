@@ -16,6 +16,9 @@ if [ ! -d $BUTTERFLY_ROOT/api ]; then
     exit 1
 fi
 
+#remove out.txt
+rm out.txt
+
 run=$BUTTERFLY_ROOT/api/tests/run_scenario.sh
 client=$BUTTERFLY_BUILD_ROOT/api/client/butterfly-client
 server=$BUTTERFLY_BUILD_ROOT/api/server/butterfly-server
