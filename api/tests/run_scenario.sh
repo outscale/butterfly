@@ -47,10 +47,10 @@ if [ $err = true ]; then
 fi
 
 # Start server
-sudo $server -c1 -n1 --vdev=eth_ring0 -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:8765 &> /dev/null &
+$server -c1 -n1 --vdev=eth_ring0 -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:8765 &> /dev/null &
 server_pid=$!
 sleep 1
-sudo kill -s 0 $server_pid
+kill -s 0 $server_pid
 if [ $? -ne 0 ]; then
     echo "server stopped running"
     exit 1
@@ -75,18 +75,18 @@ if [ $? -eq 0 ]; then
 fi
 
 # Is server still alive ?
-sudo kill -s 0 $server_pid
+kill -s 0 $server_pid
 if [ $? -ne 0 ]; then
     echo "server stopped unexpectedly"
     exit 1
 fi
 
 # Gently stop server
-sudo kill -s 2 $server_pid
-sudo kill -s 0 $server_pid &> /dev/null
+kill -s 2 $server_pid
+kill -s 0 $server_pid &> /dev/null
 state=$?
 while [ $state -eq 0 ]; do
-    sudo kill -s 0 $server_pid &> /dev/null
+    kill -s 0 $server_pid &> /dev/null
     state=$?
 done
 
