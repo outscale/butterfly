@@ -23,12 +23,13 @@
 #include "api/server/graph.h"
 
 // Usefull macros
-#define LOG_PRINT_(str, method) \
-    method(str, __FILE__, __PRETTY_FUNCTION__, __LINE__)
-#define LOG_DEBUG_(str) LOG_PRINT_(str, app::log.debug)
-#define LOG_INFO_(str) LOG_PRINT_(str, app::log.info)
-#define LOG_WARNING_(str) LOG_PRINT_(str, app::log.warning)
-#define LOG_ERROR_(str) LOG_PRINT_(str, app::log.error)
+#define LOG_PRINT_(str, method, args...)				\
+	(method("(%s, %s, %d): " str, __FILE__,				\
+		__PRETTY_FUNCTION__, __LINE__, ## args))
+#define LOG_DEBUG_(str, args...) LOG_PRINT_(str, app::log.debug, ## args)
+#define LOG_INFO_(str, args...) LOG_PRINT_(str, app::log.info, ## args)
+#define LOG_WARNING_(str, args...) LOG_PRINT_(str, app::log.warning, ## args)
+#define LOG_ERROR_(str, args...) LOG_PRINT_(str, app::log.error, ## args)
 
 namespace app {
 struct Config {
@@ -56,22 +57,16 @@ class Log {
     Log();
     ~Log();
     bool set_log_level(std::string level);
-    void debug(const char *message, const char *file = NULL,
-               const char *func = NULL, int line = -1);
-    void debug(const std::string &message, const char *file = NULL,
-               const char *func = NULL, int line = -1);
-    void info(const char *message, const char *file = NULL,
-              const char *func = NULL, int line = -1);
-    void info(const std::string &message, const char *file = NULL,
-              const char *func = NULL, int line = -1);
-    void warning(const char *message, const char *file = NULL,
-                 const char *func = NULL, int line = -1);
-    void warning(const std::string &message, const char *file = NULL,
-                 const char *func = NULL, int line = -1);
-    void error(const char *message, const char *file = NULL,
-               const char *func = NULL, int line = -1);
-    void error(const std::string &message, const char *file = NULL,
-               const char *func = NULL, int line = -1);
+    void debug(const char *message, ...);
+    void debug(const std::string &message, ...);
+    void info(const char *message, ...);
+    void info(const std::string &message, ...);
+    void warning(const char *message, ...);
+    void warning(const std::string &message, ...);
+    void error(const char *message, ...);
+    void error(const std::string &message, ...);
+    static void reopen();
+
  private:
     std::string build_details(const char *message, const char *file,
                               const char *func, int line);

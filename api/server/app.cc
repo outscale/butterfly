@@ -168,63 +168,47 @@ bool Log::set_log_level(std::string level) {
     return true;
 }
 
-std::string Log::build_details(const char *message, const char *file,
-                               const char *func, int line) {
-    std::string o;
-    if (message != nullptr)
-        o += std::string(message);
-    if (file != nullptr)
-        o += std::string(" ") + std::string(file);
-    if (func != nullptr)
-        o += std::string(" (") + std::string(func) + std::string(")");
-    if (line != -1)
-        o += std::string(":") + std::to_string(line);
-    return o;
+#define DEBUG_INTERNAL(TYPE) do {                                       \
+        va_list ap;                                                     \
+                                                                        \
+        va_start(ap, message);                                          \
+        vsyslog(LOG_##TYPE, (std::string("<"#TYPE"> ") + message).c_str(), ap); \
+        va_end(ap);                                                     \
+    } while (0)
+
+void Log::debug(const char *message, ...) {
+    DEBUG_INTERNAL(DEBUG);
 }
 
-void Log::debug(const char *message, const char *file,
-                const char *func, int line) {
-    std::string o = build_details(message, file, func, line);
-    syslog(LOG_DEBUG, "<debug> %s", o.c_str());
+void Log::info(const char *message, ...) {
+    DEBUG_INTERNAL(INFO);
 }
 
-void Log::info(const char *message, const char *file,
-               const char *func, int line) {
-    std::string o = build_details(message, file, func, line);
-    syslog(LOG_INFO, "<info> %s", o.c_str());
+void Log::warning(const char *message, ...) {
+    DEBUG_INTERNAL(WARNING);
 }
 
-void Log::warning(const char *message, const char *file,
-                  const char *func, int line) {
-    std::string o = build_details(message, file, func, line);
-    syslog(LOG_WARNING, "<warning> %s", o.c_str());
+void Log::error(const char *message, ...) {
+    DEBUG_INTERNAL(ERR);
 }
 
-void Log::error(const char *message, const char *file,
-                const char *func, int line) {
-    std::string o = build_details(message, file, func, line);
-    syslog(LOG_ERR, "<error> %s", o.c_str());
+void Log::debug(const std::string &message, ...) {
+    DEBUG_INTERNAL(DEBUG);
 }
 
-void Log::debug(const std::string &message, const char *file,
-                const char *func, int line) {
-    debug(message.c_str(), file, func, line);
+void Log::info(const std::string &message, ...) {
+    DEBUG_INTERNAL(INFO);
 }
 
-void Log::info(const std::string &message, const char *file,
-               const char *func, int line) {
-    info(message.c_str(), file, func, line);
+void Log::warning(const std::string &message, ...) {
+    DEBUG_INTERNAL(WARNING);
 }
 
-void Log::warning(const std::string &message, const char *file,
-                  const char *func, int line) {
-    warning(message.c_str(), file, func, line);
+void Log::error(const std::string &message, ...) {
+    DEBUG_INTERNAL(ERR);
 }
 
-void Log::error(const std::string &message, const char *file,
-                const char *func, int line) {
-    error(message.c_str(), file, func, line);
-}
+#undef DEBUG_INTERNAL
 
 void WritePid(std::string pid_path) {
     std::ofstream f;
@@ -365,7 +349,7 @@ main(int argc, char *argv[]) {
         while (!app::request_exit)
             std::this_thread::sleep_for(std::chrono::seconds(1));
     } catch (std::exception & e) {
-        LOG_ERROR_(e.what());
+        LOG_ERROR_("%s", e.what());
     }
 
     // Ask graph to stop

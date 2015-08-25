@@ -49,7 +49,7 @@ APIServer::loop() {
         }
     } catch (std::exception &e) {
         std::string m = "got exception: " + std::string(e.what());
-        LOG_ERROR_(m);
+        LOG_ERROR_("%s", m);
     }
 }
 

@@ -22,7 +22,7 @@
 #include "api/server/app.h"
 #include "api/server/pg.h"
 
-#define PG_ERROR_(e) if (e) { LOG_ERROR_((e)->message); }
+#define PG_ERROR_(e) if (e) { LOG_ERROR_("%s", (e)->message); }
 
 namespace Pg {
     thread_local static pg_error *errp = NULL;

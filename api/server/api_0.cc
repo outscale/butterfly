@@ -480,7 +480,7 @@ void API_0::build_nok_res(MessageV0_Response *res) {
 void API_0::build_nok_res(MessageV0_Response *res, std::string description) {
     if (res == nullptr)
         return;
-    LOG_DEBUG_(description);
+    LOG_DEBUG_("%s", description);
     build_nok_res(res);
     auto s = res->mutable_status();
     s->set_allocated_error(new MessageV0_Error);

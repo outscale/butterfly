@@ -379,7 +379,7 @@ bool API::action_sg_member_add(std::string sg_id, const app::Ip &ip,
         m = app::model.security_groups.find(sg_id);
         if (m == app::model.security_groups.end()) {
             ms = "Really cannot create security group with id" + sg_id;
-            LOG_ERROR_(ms);
+            LOG_ERROR_("%s", ms);
             return false;
         }
     }
