@@ -65,7 +65,7 @@ class Log {
     void warning(const std::string &message, ...);
     void error(const char *message, ...);
     void error(const std::string &message, ...);
-    static void reopen();
+    static void open();
 
  private:
     std::string build_details(const char *message, const char *file,

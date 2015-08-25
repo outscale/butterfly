@@ -143,11 +143,16 @@ Log::Log() {
     set_log_level("error");
 
     // Openlog
-    openlog("butterfly", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL0);
+    open();
 }
 
 Log::~Log() {
     closelog();
+}
+
+void Log::open() {
+    openlog("butterfly", LOG_CONS | LOG_PID | LOG_NDELAY | LOG_PERROR,
+            LOG_LOCAL0);
 }
 
 bool Log::set_log_level(std::string level) {

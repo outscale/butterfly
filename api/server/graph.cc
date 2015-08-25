@@ -71,6 +71,7 @@ bool Graph::start(int argc, char **argv) {
     // Init global for certain bricks
     Pg::nic_start();
     Pg::vhost_start(app::config.socket_folder);
+    app::Log::open();
 
     // Create nic brick
     nic = Brick(Pg::nic_new_by_id("port 0", 1, 1, WEST_SIDE, 0),
