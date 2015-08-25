@@ -400,16 +400,6 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
     }
 }
 
-void Graph::nic_config_ip(const app::Nic &nic,
-                          const std::vector<app::Ip> &ip_list) {
-    if (!started) {
-        LOG_ERROR_("Graph has not been stared");
-        return;
-    }
-
-    // TODO(jerome.jutteau)
-}
-
 std::string Graph::fw_build_rule(const app::Rule &rule) {
     // Note that we only take into account inbound rules
     if (rule.direction == app::Rule::OUTBOUND)

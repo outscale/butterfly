@@ -67,12 +67,6 @@ class Graph {
      * @param  enable true to enable IP antispoof, false otherwise
      */
     void nic_config_anti_spoof(const app::Nic &nic, bool enable);
-    /** Update all ip of a NIC
-     * @param  id id of the NIC
-     * @param  ip_list list of all IP the NIC have
-     */
-    void nic_config_ip(const app::Nic &nic,
-                       const std::vector<app::Ip> &ip_list);
     /** Rebuild all firewall rules of a NIC
      * @param  nic model of the NIC
      */
