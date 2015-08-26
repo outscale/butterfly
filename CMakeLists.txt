@@ -74,10 +74,10 @@ add_custom_target(tests-all
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_all.sh ${PROJECT_SOURCE_DIR}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
-add_custom_target(tests-api-style
+add_custom_target(style
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api_style.sh ${PROJECT_SOURCE_DIR}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
-add_custom_target(tests-api
+add_custom_target(tests
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api.sh ${PROJECT_SOURCE_DIR}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
