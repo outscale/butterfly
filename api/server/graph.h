@@ -43,6 +43,8 @@ class Graph {
      * @return true if graph has started correctly, false otherwise
      */
     bool start(int argc, char **argv);
+    /** Exit and clean graph. */
+    void stop(void);
     /** Inject a NIC in packetgraph including all needed bricks
      * @param  nic model and informations of the NIC.
      */

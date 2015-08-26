@@ -33,6 +33,10 @@ Graph::Graph(void) {
 }
 
 Graph::~Graph(void) {
+    stop();
+}
+
+void Graph::stop() {
     struct rpc_queue *a;
 
     if (!started)
