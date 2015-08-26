@@ -201,7 +201,7 @@ void API_0::nic_stats(const MessageV0_Request &req,
     if (res == nullptr)
         return;
     app::log.info("NIC stats");
-    std::string nic_id = req.nic_export();
+    std::string nic_id = req.nic_stats();
     uint64_t in, out = 0;
     app::Error err;
     if (!action_nic_stats(nic_id, &in, &out, &err)) {

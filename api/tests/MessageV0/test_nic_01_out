@@ -88,8 +88,8 @@ messages {
         status: true
       }
       nic_stats {
-        in: 42
-        out: 42
+        in: 0
+        out: 0
       }
     }
   }
