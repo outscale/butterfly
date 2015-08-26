@@ -369,8 +369,8 @@ bool API::action_sg_member_add(std::string sg_id, const app::Ip &ip,
     // Do we have this security group ?
     auto m = app::model.security_groups.find(sg_id);
     if (m == app::model.security_groups.end()) {
-        std::string ms = "Security group does not exist with this id " + sg_id;
-        app::log.warning(ms);
+        app::log.warning("Security group does not exist with this id",
+                         sg_id.c_str());
         // Create missing security group
         app::Sg nsg;
         nsg.id = sg_id;
@@ -378,8 +378,8 @@ bool API::action_sg_member_add(std::string sg_id, const app::Ip &ip,
         app::model.security_groups.insert(p);
         m = app::model.security_groups.find(sg_id);
         if (m == app::model.security_groups.end()) {
-            ms = "Really cannot create security group with id" + sg_id;
-            LOG_ERROR_("%s", ms);
+            LOG_ERROR_("Really cannot create security group with id %s",
+                       sg_id.c_str());
             return false;
         }
     }
@@ -389,9 +389,8 @@ bool API::action_sg_member_add(std::string sg_id, const app::Ip &ip,
     // Does member already exist in security group ?
     auto res = std::find(sg.members.begin(), sg.members.end(), ip);
     if (res != sg.members.end()) {
-        std::string m = "member " + ip.str() + " already exist in security " \
-            "group " + sg_id;
-        app::log.warning(m);
+        app::log.warning("member %s already exist in security group %s",
+                         res->str().c_str(), sg_id.c_str());
         return true;
     }
 
@@ -409,9 +408,8 @@ bool API::action_sg_member_del(std::string sg_id, const app::Ip &ip,
     // Do we have this security group ?
     auto m = app::model.security_groups.find(sg_id);
     if (m == app::model.security_groups.end()) {
-        std::string m = "Can't delete member from a non-existing security " \
-            "group " + sg_id;
-        app::log.warning(m);
+        app::log.warning("Can't delete member from a non-existing security " \
+            "group %s", sg_id.c_str());
         return true;
     }
 
@@ -420,9 +418,8 @@ bool API::action_sg_member_del(std::string sg_id, const app::Ip &ip,
      // Does member exist in security group ?
     auto res = std::find(sg.members.begin(), sg.members.end(), ip);
     if (res == sg.members.end()) {
-        std::string m = "Can't delete non-existing member from security " \
-            "group " + sg_id;
-        app::log.warning(m);
+        app::log.warning("Can't delete non-existing member from security " \
+            "group ", sg_id.c_str());
         return true;
     }
 
