@@ -61,7 +61,7 @@ ExternalProject_Add(packetgraph
 	BUILD_COMMAND true
 	INSTALL_DIR ${PG_INSTALL_DIR}
 	INSTALL_COMMAND true
-	LOG_BUILD 1 Building libzmq)
+	LOG_BUILD 1 Building packetgraph)
 
 # clean target
 add_custom_target(dependency-cleanup CLEAN
