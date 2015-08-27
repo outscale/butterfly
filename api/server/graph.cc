@@ -325,6 +325,10 @@ void Graph::nic_del(const app::Nic &nic) {
     // Wait that queue is done before removing bricks
     wait_empty_queue();
     vni.nics.erase(nic_it);
+
+    // Remove empty vni
+    if (vni.nics.empty())
+        vnis.erase(vni.vni);
 }
 
 std::string Graph::nic_export(const app::Nic &nic) {
