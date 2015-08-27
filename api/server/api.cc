@@ -104,12 +104,13 @@ void API::dispatch(const proto::Message &req, proto::Message *rep) {
 
 bool API::action_nic_add(const app::Nic &nic, std::string *path,
     app::Error *error) {
+    auto it = app::model.nics.find(nic.id);
     // Do we already have this NIC ?
-    if (app::model.nics.find(nic.id) != app::model.nics.end()) {
+    if (it != app::model.nics.end()) {
         std::string m = "NIC already exists with id " + nic.id;
         app::log.warning(m);
         // Disable NIC in packetgraph
-        app::graph.nic_del(nic);
+        app::graph.nic_del(it->second);
         // Remove NIC from model
         app::model.nics.erase(nic.id);
         // Retry !
