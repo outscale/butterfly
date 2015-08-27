@@ -55,6 +55,7 @@ void Graph::stop() {
     g_async_queue_unref(queue);
 
     // Byby packetgraph
+    vnis.clear();
     Pg::vhost_stop();
     Pg::stop();
     started = false;
