@@ -392,7 +392,7 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
         return;
     }
 
-    Brick &vhost = nic_it->second.vhost;
+    Brick &antispoof = nic_it->second.antispoof;
     if (enable) {
         if (nic.ip_list.size() == 0) {
             LOG_ERROR_("cannot enable ARP antispoof with no given ip for nic " +
@@ -403,10 +403,10 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
         // several IP for arp antispoofing.
         // Get the first IP of the VM
         std::string ip = nic.ip_list.front().str();
-        Pg::antispoof_arp_enable(vhost.get(), ip);
+        Pg::antispoof_arp_enable(antispoof.get(), ip);
 
     } else {
-        Pg::antispoof_arp_disable(vhost.get());
+        Pg::antispoof_arp_disable(antispoof.get());
     }
 }
 
