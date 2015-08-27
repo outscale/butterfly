@@ -90,7 +90,7 @@ void API::dispatch(const proto::Message &req, proto::Message *rep) {
     rep->set_revision(PROTOS_REVISION);
 
     if (req.has_message_0()) {
-        LOG_DEBUG_("dispatch to MessageV0");
+        app::log.debug("dispatch to MessageV0");
         rep->set_allocated_message_0(new MessageV0);
         auto req_0 = req.message_0();
         auto rep_0 = rep->mutable_message_0();
