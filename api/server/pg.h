@@ -21,6 +21,7 @@
 extern "C" {
 #include <packetgraph/packetgraph.h>
 #include <packetgraph/common.h>
+#include <packetgraph/brick.h>
 #include <packetgraph/utils/errors.h>
 #include <packetgraph/switch.h>
 #include <packetgraph/diode.h>

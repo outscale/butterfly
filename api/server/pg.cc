@@ -19,6 +19,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cstddef>
+#include <string.h>
 #include "api/server/app.h"
 #include "api/server/pg.h"
 
@@ -173,10 +174,12 @@ namespace {
     }
 
     void nic_get_mac(struct pg_brick *brick, struct ether_addr * addr) {
+        g_assert(strcmp(brick->ops->name, "nic") == 0);
         return ::pg_nic_get_mac(brick, addr);
     }
 
     void nic_get_stats(struct pg_brick *brick, struct pg_nic_stats *stats) {
+        g_assert(strcmp(brick->ops->name, "nic") == 0);
         pg_nic_get_stats(brick, stats);
     }
 
@@ -192,6 +195,7 @@ namespace {
     }
 
     void firewall_gc(struct pg_brick *brick) {
+        g_assert(strcmp(brick->ops->name, "firewall") == 0);
         ::pg_firewall_gc(brick);
     }
 
@@ -201,6 +205,7 @@ namespace {
 
     int firewall_rule_add(struct pg_brick *brick, std::string filter,
                           enum pg_side dir, int stateful) {
+        g_assert(strcmp(brick->ops->name, "firewall") == 0);
         int ret;
         ret = pg_firewall_rule_add(brick, filter.c_str(), dir,
                                    stateful, &errp);
@@ -210,6 +215,7 @@ namespace {
     }
 
     int firewall_reload(struct pg_brick *brick) {
+        g_assert(strcmp(brick->ops->name, "firewall") == 0);
         return pg_firewall_reload(brick, &errp);
     }
 
@@ -250,6 +256,7 @@ namespace {
     }
 
     struct ether_addr *vtep_get_mac(struct pg_brick *brick) {
+        g_assert(strcmp(brick->ops->name, "vtep") == 0);
         return ::pg_vtep_get_mac(brick);
     }
 
@@ -257,6 +264,7 @@ namespace {
                       struct pg_brick *neighbor,
                       uint32_t vni,
                       uint32_t multicast_ip) {
+        g_assert(strcmp(brick->ops->name, "vtep") == 0);
         ::pg_vtep_add_vni(brick, neighbor, vni, multicast_ip, &errp);
         if (errp != NULL)
             print_and_free_errp();
@@ -277,6 +285,7 @@ namespace {
     }
 
     void print_set_flags(struct pg_brick *brick, int flags) {
+        g_assert(strcmp(brick->ops->name, "print") == 0);
         ::pg_print_set_flags(brick, flags);
     }
 
@@ -304,11 +313,13 @@ namespace {
 
     void antispoof_arp_enable(struct pg_brick *brick, std::string ip) {
         uint32_t a;
+        g_assert(strcmp(brick->ops->name, "antispoof") == 0);
         if (inet_pton(AF_INET, ip.c_str(), static_cast<uint32_t*>(&a)))
             pg_antispoof_arp_enable(brick, a);
     }
 
     void antispoof_arp_disable(struct pg_brick *brick) {
+        g_assert(strcmp(brick->ops->name, "antispoof") == 0);
         pg_antispoof_arp_disable(brick);
     }
 }  // namespace Pg
