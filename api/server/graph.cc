@@ -186,6 +186,9 @@ bool Graph::poller_update(struct rpc_queue **list) {
                 a = *list;
                 *list = tmp;
                 break;
+            case FW_RELOAD:
+                Pg::firewall_reload(a->fw_reload.firewall);
+                break;
             default:
                 LOG_ERROR_("brick poller has wrong RPC value");
                 break;
@@ -541,7 +544,7 @@ void Graph::fw_update(const app::Nic &nic) {
     }
 
     // Reload firewall
-    Pg::firewall_reload(fw.get());
+    fw_reload(fw);
 }
 
 void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
@@ -601,6 +604,13 @@ void Graph::unlink(Brick b) {
     struct rpc_queue *a = g_new(struct rpc_queue, 1);
     a->action = UNLINK;
     a->unlink.b = b.get();
+    g_async_queue_push(queue, a);
+}
+
+void Graph::fw_reload(Brick b) {
+    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    a->action = FW_RELOAD;
+    a->fw_reload.firewall = b.get();
     g_async_queue_push(queue, a);
 }
 
