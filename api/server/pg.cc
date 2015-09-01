@@ -191,6 +191,7 @@ namespace {
                                east_max, flags, &errp);
         if (!ret)
             print_and_free_errp();
+        printf("\n");
         return ret;
     }
 
@@ -217,6 +218,11 @@ namespace {
     int firewall_reload(struct pg_brick *brick) {
         g_assert(strcmp(brick->ops->name, "firewall") == 0);
         return pg_firewall_reload(brick, &errp);
+    }
+
+    void firewall_thread_register(struct pg_brick *brick) {
+        g_assert(strcmp(brick->ops->name, "firewall") == 0);
+        pg_firewall_thread_register(brick);
     }
 
     struct pg_brick *hub_new(const char *name,

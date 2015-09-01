@@ -189,6 +189,9 @@ bool Graph::poller_update(struct rpc_queue **list) {
             case FW_RELOAD:
                 Pg::firewall_reload(a->fw_reload.firewall);
                 break;
+            case FW_THREAD_REGISTER:
+                Pg::firewall_thread_register(a->fw_thread_register.firewall);
+                break;
             default:
                 LOG_ERROR_("brick poller has wrong RPC value");
                 break;
@@ -228,6 +231,8 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "firewall-" + gn.id;
     gn.firewall = Brick(Pg::firewall_new(name.c_str(),
                         1, 1, PG_NO_CONN_WORKER), Pg::destroy);
+    fw_thread_register(gn.firewall);
+    wait_empty_queue();
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.addr_bytes);
@@ -611,6 +616,13 @@ void Graph::fw_reload(Brick b) {
     struct rpc_queue *a = g_new(struct rpc_queue, 1);
     a->action = FW_RELOAD;
     a->fw_reload.firewall = b.get();
+    g_async_queue_push(queue, a);
+}
+
+void Graph::fw_thread_register(Brick b) {
+    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    a->action = FW_THREAD_REGISTER;
+    a->fw_thread_register.firewall = b.get();
     g_async_queue_push(queue, a);
 }
 

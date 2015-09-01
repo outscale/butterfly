@@ -122,6 +122,8 @@ namespace Pg {
 
     int firewall_reload(struct pg_brick *brick);
 
+    void firewall_thread_register(struct pg_brick *brick);
+
     struct pg_brick *hub_new(const char *name,
                   uint32_t west_max,
                   uint32_t east_max);

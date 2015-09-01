@@ -99,7 +99,8 @@ class Graph {
         UNLINK,
         ADD_VNI,
         UPDATE_POLL,
-        FW_RELOAD
+        FW_RELOAD,
+        FW_THREAD_REGISTER,
     };
 
     struct rpc_link {
@@ -122,6 +123,10 @@ class Graph {
         struct pg_brick *firewall;
     };
 
+    struct rpc_fw_thread_register {
+        struct pg_brick *firewall;
+    };
+
     // This rpc message is kept by the poller
     struct rpc_update_poll {
         struct pg_brick *pollables[GRAPH_VHOST_MAX_SIZE];
@@ -136,6 +141,7 @@ class Graph {
         struct rpc_add_vni add_vni;
         struct rpc_update_poll update_poll;
         struct rpc_fw_reload fw_reload;
+        struct rpc_fw_thread_register fw_thread_register;
     };
 
     /* Wrappers to ease RPC actions. */
@@ -145,6 +151,7 @@ class Graph {
     void add_vni(Brick vtep, Brick neighbor, uint32_t vni);
     void update_poll();
     void fw_reload(Brick b);
+    void fw_thread_register(Brick b);
     void wait_empty_queue();
 
     /** Threaded function to poll graph. */
