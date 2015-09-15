@@ -26,6 +26,6 @@ target_link_libraries(api_client
                       ${LIBZMQ_LIBRARIES}
                       ${ZMQPP_LIBRARIES})
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -Wall -static-libgcc -static-libstdc++")
 
 unset (SOURCES_P)
