@@ -52,7 +52,7 @@ echo >> out.txt
 echo >> out.txt # add some blank lines
 
 # Start server
-$server -c1 -n1 --vdev=eth_ring0 -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:8765 &>> out.txt &
+$server -c1 -n1 --vdev=eth_ring0 -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:8765 --packet-trace &>> out.txt &
 server_pid=$!
 sleep 1
 kill -s 0 $server_pid

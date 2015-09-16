@@ -190,13 +190,21 @@ class Graph {
      */
     uint32_t build_multicast_ip(uint32_t vni);
 
+    /**
+     * Try to link @eastBrick to @westBrick, and add @sniffer betwin those
+     * bricks
+     */
+    bool linkAndStalk(Graph::Brick eastBrick, Graph::Brick westBrick,
+		      Graph::Brick sniffer);
+    
     /* VM branch. */
     struct graph_nic {
        std::string id;
        Brick firewall;
        Brick antispoof;
-       Brick vhost;
-       // If we should add this branch or not to our poll updates
+       Brick vhost; 
+       Brick sniffer;
+      // If we should add this branch or not to our poll updates
        bool enable;
     };
 
@@ -212,6 +220,7 @@ class Graph {
     /* Global branch. */
     Brick nic;
     Brick vtep;
+    Brick sniffer;
     /* vni -> vni branch */
     std::map<uint32_t, struct graph_vni> vnis;
 

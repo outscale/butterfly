@@ -39,6 +39,7 @@ Config::Config() {
     log_level = "error";
     show_revision = false;
     graph_core_id = 0;
+    packet_trace = false;
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
@@ -82,6 +83,8 @@ bool Config::parse_cmd(int argc, char **argv) {
         {"graph-cpu-core", 'u', 0, G_OPTION_ARG_STRING, &graph_core_id_cmd,
          "Choose your CPU core where to run packet processing (default=0)",
          "ID"},
+        {"packet-trace", 't', 0, G_OPTION_ARG_NONE, &config.packet_trace,
+         "Trace packets going through Butterfly", nullptr},
         { nullptr }
     };
     GOptionContext *context = g_option_context_new("");
@@ -109,7 +112,6 @@ bool Config::parse_cmd(int argc, char **argv) {
         socket_folder = std::string(&*socket_folder_cmd);
     if (graph_core_id_cmd != nullptr)
         graph_core_id = std::atoi(&*graph_core_id_cmd);
-
     // Load from configuration file if provided
     if (config_path.length() > 0 && !LoadConfigFile(config_path)) {
         std::cerr << "Failed to open configuration file" << std::endl;

@@ -36,6 +36,23 @@ Graph::~Graph(void) {
     stop();
 }
 
+bool Graph::linkAndStalk(Graph::Brick eastBrick, Graph::Brick westBrick,
+			 Graph::Brick sniffer) {
+    if (app::config.packet_trace) {
+        if (!Pg::link(eastBrick.get(), sniffer.get()) ||
+            !Pg::link(sniffer.get(), westBrick.get())) {
+            LOG_ERROR_("Link fail");
+            return false;
+        }
+    } else {
+        if (!Pg::link(eastBrick.get(), westBrick.get())) {
+            LOG_ERROR_("Link fail");
+            return false;
+        }
+    }
+    return true;
+}
+
 void Graph::stop() {
     struct rpc_queue *a;
 
@@ -241,10 +258,13 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "vhost-" + gn.id;
     gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, WEST_SIDE),
                      Pg::destroy);
+    name = "sniffer-" + gn.id;
+    gn.sniffer = Brick(Pg::print_new(name.c_str(), 1, 1, NULL,
+                                     PG_PRINT_FLAG_MAX, NULL),
+		       Pg::destroy);
     // Link branch (inside)
     Pg::link(gn.firewall.get(), gn.antispoof.get());
-    Pg::link(gn.antispoof.get(), gn.vhost.get());
-
+    linkAndStalk(gn.antispoof, gn.vhost, gn.sniffer);
     // Link branch to the vtep
     if (vni.nics.size() == 0) {
         // Link directly the firewall to the vtep
