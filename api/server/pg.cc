@@ -72,6 +72,7 @@ namespace {
     }
 
     bool link(struct pg_brick *target, struct pg_brick *brick) {
+        LOG_DEBUG_("link [%s] to [%s]\n", Pg::brick_name(target), Pg::brick_name(brick));
         bool ret = pg_brick_link(target, brick, &errp);
         if (!ret)
             print_and_free_errp();
