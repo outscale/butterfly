@@ -313,6 +313,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
 
     return std::string(app::config.socket_folder + "qemu-" + nic.id);
 }
+
 void Graph::nic_del(const app::Nic &nic) {
     if (!started) {
         LOG_ERROR_("Graph has not been stared");
