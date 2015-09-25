@@ -51,6 +51,9 @@ bool Config::parse_cmd(int argc, char **argv) {
     if (i != argc) {
         argc = argc - i;
         argv = &argv[i];
+    } else {
+        std::cerr << "no DPDK arguments set" << std::endl;
+        return false;
     }
 
     // Next, look at the rest
@@ -88,6 +91,9 @@ bool Config::parse_cmd(int argc, char **argv) {
         { nullptr }
     };
     GOptionContext *context = g_option_context_new("");
+    g_option_context_set_summary(context, "butterfly-server [EAL options] -- [butterfly options]");
+    g_option_context_set_description(context,"example:\n"
+                                     "butterfly-server -c0xF -n1  --socket-mem 64 -- -i 43.0.0.1 -e tcp://127.0.0.1:8765 -s /tmp");
     g_option_context_add_main_entries(context, entries, nullptr);
 
     GError *error = nullptr;
