@@ -83,6 +83,8 @@ namespace Pg {
 
     void vhost_stop(void);
 
+    const char *vhost_socket_path(struct pg_brick *vhost);
+
     struct pg_brick *diode_new(const char *name,
                 uint32_t west_max,
                 uint32_t east_max,
