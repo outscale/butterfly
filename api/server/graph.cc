@@ -311,7 +311,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     // Reload the firewall configuration
     fw_update(nic);
 
-    return std::string(app::config.socket_folder + "qemu-" + nic.id);
+    return std::string(Pg::vhost_socket_path(gn.vhost.get()));
 }
 
 void Graph::nic_del(const app::Nic &nic) {

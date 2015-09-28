@@ -6,7 +6,7 @@ messages {
         status: true
       }
       nic_add {
-        path: "/tmp/qemu-nic-1"
+        path: "/tmp/qemu-vhost-nic-1"
       }
     }
   }
@@ -19,7 +19,7 @@ messages {
         status: true
       }
       nic_add {
-        path: "/tmp/qemu-nic-2"
+        path: "/tmp/qemu-vhost-nic-2"
       }
     }
   }
