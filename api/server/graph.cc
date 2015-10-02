@@ -266,7 +266,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
         link(vni.sw, fw1);
         link(vni.sw, vni.sw);
     } else {
-        // Switch already exists, just link the firewall the switch
+        // Switch already exist, just link the firewall to the switch
         link(vni.sw, gn.firewall);
     }
 
