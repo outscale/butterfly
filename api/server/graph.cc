@@ -92,10 +92,19 @@ bool Graph::start(int argc, char **argv) {
     app::Log::open();
 
     // Create nic brick
-    nic = Brick(Pg::nic_new_by_id("port 0", 1, 1, WEST_SIDE, 0),
+    nic = Brick(Pg::nic_new_by_id("port-0", 1, 1, WEST_SIDE, 0),
                 Pg::destroy);
     if (nic.get() == NULL) {
         LOG_ERROR_("brick-nic failed");
+        return false;
+    }
+
+    // Create sniffer brick
+    sniffer = Brick(Pg::print_new("main-sniffer", 1, 1, NULL,
+                                  PG_PRINT_FLAG_MAX, NULL),
+                    Pg::destroy);
+    if (sniffer.get() == NULL) {
+        LOG_ERROR_("brick-sniffer failed");
         return false;
     }
 
@@ -108,6 +117,8 @@ bool Graph::start(int argc, char **argv) {
         LOG_ERROR_("brick-vtep failed");
         return false;
     }
+
+    linkAndStalk(nic, vtep, sniffer);
 
     // Run poller
     pthread_create(&poller_thread, NULL, Graph::poller, this);
