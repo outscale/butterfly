@@ -295,7 +295,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
         link(vtep, vni.sw);
         add_vni(vtep, vni.sw, vni.vni);
         link(vni.sw, fw1);
-        link(vni.sw, vni.sw);
+        link(vni.sw, gn.firewall);
     } else {
         // Switch already exist, just link the firewall to the switch
         link(vni.sw, gn.firewall);
