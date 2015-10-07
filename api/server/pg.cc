@@ -308,7 +308,10 @@ const char *vhost_socket_path(struct pg_brick *vhost) {
             print_and_free_errp();
             return std::string("");
         }
-        return std::string(buf);
+        fflush(fd);
+        std::string ret(buf);
+        fclose(fd);
+        return ret;
     }
 
     struct pg_brick *antispoof_new(const char *name,
