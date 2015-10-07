@@ -267,7 +267,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     gn.antispoof = Brick(Pg::antispoof_new(name.c_str(), 1, 1, EAST_SIDE, mac),
                          Pg::destroy);
     name = "vhost-" + gn.id;
-    gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, WEST_SIDE),
+    gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, EAST_SIDE),
                      Pg::destroy);
     name = "sniffer-" + gn.id;
     gn.sniffer = Brick(Pg::print_new(name.c_str(), 1, 1, NULL,
