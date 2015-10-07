@@ -287,6 +287,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
         // - link a new switch to the vtep
         // - add the vni on the vtep with the switch
         // - link the first firewall to the switch
+        // - re-link the first firewall to it's antispoof
         // - link the second firewall to the switch
         name = "switch-" + std::to_string(nic.vni);
         vni.sw = Brick(Pg::switch_new(name.c_str(), 1, 30), Pg::destroy);
@@ -295,6 +296,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
         link(vtep, vni.sw);
         add_vni(vtep, vni.sw, vni.vni);
         link(vni.sw, fw1);
+        link(fw1, vni.nics.begin()->second.antispoof);
         link(vni.sw, gn.firewall);
     } else {
         // Switch already exist, just link the firewall to the switch
