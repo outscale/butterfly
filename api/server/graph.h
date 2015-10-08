@@ -95,6 +95,7 @@ class Graph {
      */
     enum rpc_action {
         EXIT,
+        VHOST_START,
         LINK,
         UNLINK,
         ADD_VNI,
@@ -146,6 +147,7 @@ class Graph {
 
     /* Wrappers to ease RPC actions. */
     void exit();
+    void vhost_start();
     void link(Brick w, Brick e);
     void unlink(Brick b);
     void add_vni(Brick vtep, Brick neighbor, uint32_t vni);

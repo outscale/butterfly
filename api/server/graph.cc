@@ -86,12 +86,14 @@ bool Graph::start(int argc, char **argv) {
         return false;
     }
 
-    // Init global for certain bricks
-    Pg::nic_start();
-    Pg::vhost_start(app::config.socket_folder);
+    // DPDK open log for us sur we WANT our logs back !
     app::Log::open();
 
+    // Start Vhost
+    vhost_start();
+
     // Create nic brick
+    Pg::nic_start();
     nic = Brick(Pg::nic_new_by_id("port-0", 1, 1, WEST_SIDE, 0),
                 Pg::destroy);
     if (nic.get() == NULL) {
@@ -196,6 +198,11 @@ bool Graph::poller_update(struct rpc_queue **list) {
         switch (a->action) {
             case EXIT:
                 return false;
+            case VHOST_START:
+                if (!Pg::vhost_start(app::config.socket_folder)) {
+                    LOG_ERROR_("brick-vhost failed");
+                }
+                break;
             case LINK:
                 Pg::link(a->link.w, a->link.e);
                 break;
@@ -628,6 +635,12 @@ std::string Graph::dot() {
 void Graph::exit() {
     struct rpc_queue *a = g_new(struct rpc_queue, 1);
     a->action = EXIT;
+    g_async_queue_push(queue, a);
+}
+
+void Graph::vhost_start() {
+    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    a->action = VHOST_START;
     g_async_queue_push(queue, a);
 }
 
