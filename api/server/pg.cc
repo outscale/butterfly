@@ -80,6 +80,7 @@ namespace {
     }
 
     void unlink(struct pg_brick *brick) {
+        LOG_DEBUG_("unlink [%s]\n", Pg::brick_name(brick));
         pg_brick_unlink(brick, &errp);
         if (errp)
             print_and_free_errp();
