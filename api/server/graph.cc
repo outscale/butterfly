@@ -299,11 +299,12 @@ std::string Graph::nic_add(const app::Nic &nic) {
         name = "switch-" + std::to_string(nic.vni);
         vni.sw = Brick(Pg::switch_new(name.c_str(), 1, 30), Pg::destroy);
         Brick fw1 = vni.nics.begin()->second.firewall;
+        Brick as1 = vni.nics.begin()->second.antispoof;
         unlink(fw1);
         link(vtep, vni.sw);
         add_vni(vtep, vni.sw, vni.vni);
         link(vni.sw, fw1);
-        link(fw1, vni.nics.begin()->second.antispoof);
+        link(fw1, as1);
         link(vni.sw, gn.firewall);
     } else {
         // Switch already exist, just link the firewall to the switch
