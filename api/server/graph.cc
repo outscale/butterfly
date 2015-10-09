@@ -59,6 +59,9 @@ void Graph::stop() {
     if (!started)
         return;
 
+    // Stop vhost
+    vhost_stop();
+
     // Stop poller thread
     exit();
     pthread_join(poller_thread, NULL);
@@ -73,7 +76,6 @@ void Graph::stop() {
 
     // Byby packetgraph
     vnis.clear();
-    Pg::vhost_stop();
     Pg::stop();
     started = false;
 }
@@ -203,6 +205,8 @@ bool Graph::poller_update(struct rpc_queue **list) {
                     LOG_ERROR_("brick-vhost failed");
                 }
                 break;
+            case VHOST_STOP:
+                Pg::vhost_stop();
             case LINK:
                 Pg::link(a->link.w, a->link.e);
                 break;
@@ -642,6 +646,12 @@ void Graph::exit() {
 void Graph::vhost_start() {
     struct rpc_queue *a = g_new(struct rpc_queue, 1);
     a->action = VHOST_START;
+    g_async_queue_push(queue, a);
+}
+
+void Graph::vhost_stop() {
+    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    a->action = VHOST_STOP;
     g_async_queue_push(queue, a);
 }
 
