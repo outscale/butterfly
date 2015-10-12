@@ -275,8 +275,17 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.addr_bytes);
-    gn.antispoof = Brick(Pg::antispoof_new(name.c_str(), 1, 1, EAST_SIDE, mac),
+    gn.antispoof = Brick(Pg::antispoof_new(name.c_str(), 1, 1, WEST_SIDE, mac),
                          Pg::destroy);
+
+    if (nic.ip_anti_spoof) {
+        // TODO(jerome.jutteau) patch this when antispoof brick will support
+        // several IP for arp antispoofing.
+        // Get the first IP of the VM
+        std::string ip = nic.ip_list.front().str();
+        Pg::antispoof_arp_enable(gn.antispoof.get(), ip);
+    }
+
     name = "vhost-" + gn.id;
     gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, EAST_SIDE),
                      Pg::destroy);
