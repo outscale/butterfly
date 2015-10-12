@@ -115,7 +115,7 @@ bool Graph::start(int argc, char **argv) {
     // Create vtep brick
     Pg::nic_get_mac(nic.get(), &mac);
     vtep = Brick(Pg::vtep_new("vxlan", 1, 50, WEST_SIDE,
-                       app::config.external_ip, mac, 1),
+                       app::config.external_ip, mac, 0),
                        Pg::destroy);
     if (nic.get() == NULL) {
         LOG_ERROR_("brick-vtep failed");
