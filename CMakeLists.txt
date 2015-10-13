@@ -27,16 +27,16 @@ set(LIBZMQ_LIBRARIES ${LIBZMQ_INSTALL_DIR}/lib/libzmq-static.a)
 set(LIBZMQ_INCLUDE_DIR ${3RDPARTY_DIR}/libzmq/include)
 set(ZMQPP_LIBRARIES ${ZMQPP_INSTALL_DIR}/libzmqpp-static.a)
 set(ZMQPP_INCLUDE_DIR ${3RDPARTY_DIR}/zmqpp/src)
-set(PG_LIBRARIES ${PG_INSTALL_DIR}/build-firewall/libpacketgraph-firewall.a
-                 ${PG_INSTALL_DIR}/build-nic/libpacketgraph-nic.a
-                 ${PG_INSTALL_DIR}/build-vhost/libpacketgraph-vhost.a
-                 ${PG_INSTALL_DIR}/build-core/libpacketgraph-core.a
-                 ${PG_INSTALL_DIR}/build-hub/libpacketgraph-hub.a
-                 ${PG_INSTALL_DIR}/build-print/libpacketgraph-print.a
-                 ${PG_INSTALL_DIR}/build-vtep/libpacketgraph-vtep.a
-                 ${PG_INSTALL_DIR}/build-diode/libpacketgraph-diode.a
-                 ${PG_INSTALL_DIR}/build-antispoof/libpacketgraph-antispoof.a
-                 ${PG_INSTALL_DIR}/build-switch/libpacketgraph-switch.a)
+set(PG_LIBRARIES ${PG_INSTALL_DIR}/firewall/libpacketgraph-firewall.a
+                 ${PG_INSTALL_DIR}/nic/libpacketgraph-nic.a
+                 ${PG_INSTALL_DIR}/vhost/libpacketgraph-vhost.a
+                 ${PG_INSTALL_DIR}/core/libpacketgraph-core.a
+                 ${PG_INSTALL_DIR}/hub/libpacketgraph-hub.a
+                 ${PG_INSTALL_DIR}/print/libpacketgraph-print.a
+                 ${PG_INSTALL_DIR}/vtep/libpacketgraph-vtep.a
+                 ${PG_INSTALL_DIR}/diode/libpacketgraph-diode.a
+                 ${PG_INSTALL_DIR}/antispoof/libpacketgraph-antispoof.a
+                 ${PG_INSTALL_DIR}/switch/libpacketgraph-switch.a)
 set(PG_INCLUDE_DIR ${3RDPARTY_DIR}/packetgraph/core
                    ${3RDPARTY_DIR}/packetgraph/firewall
                    ${3RDPARTY_DIR}/packetgraph/nic
