@@ -54,7 +54,6 @@ set(DPDK_LIBRARIES ${DPDK_INSTALL_DIR}/lib/libethdev.a
                    ${DPDK_INSTALL_DIR}/lib/librte_table.a
                    ${DPDK_INSTALL_DIR}/lib/librte_ring.a
                    ${DPDK_INSTALL_DIR}/lib/librte_eal.a
-                   ${DPDK_INSTALL_DIR}/lib/librte_malloc.a
                    ${DPDK_INSTALL_DIR}/lib/librte_vhost.a
                    ${DPDK_INSTALL_DIR}/lib/librte_pmd_pcap.a
                    ${DPDK_INSTALL_DIR}/lib/librte_pmd_ring.a
