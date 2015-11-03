@@ -105,7 +105,8 @@ bool Graph::start(int argc, char **argv) {
 
     // Create sniffer brick
     sniffer = Brick(Pg::print_new("main-sniffer", 1, 1, NULL,
-                                  PG_PRINT_FLAG_MAX, NULL),
+                                  PG_PRINT_FLAG_MAX & ~PG_PRINT_FLAG_RAW,
+                                  NULL),
                     Pg::destroy);
     if (sniffer.get() == NULL) {
         LOG_ERROR_("brick-sniffer failed");
@@ -291,7 +292,8 @@ std::string Graph::nic_add(const app::Nic &nic) {
                      Pg::destroy);
     name = "sniffer-" + gn.id;
     gn.sniffer = Brick(Pg::print_new(name.c_str(), 1, 1, NULL,
-                                     PG_PRINT_FLAG_MAX, NULL),
+                                     PG_PRINT_FLAG_MAX & ~PG_PRINT_FLAG_RAW,
+                                     NULL),
 		       Pg::destroy);
     // Link branch (inside)
     Pg::link(gn.firewall.get(), gn.antispoof.get());
