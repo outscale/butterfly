@@ -507,16 +507,23 @@ std::string Graph::fw_build_rule(const app::Rule &rule) {
     }
 
     // Build protocol part
-    r += " and";
-
-    if (rule.protocol == IPPROTO_ICMP)
-        r += " ip proto icmp";
-
-    if (rule.protocol == IPPROTO_TCP)
-        r += " tcp";
-
-    if (rule.protocol == IPPROTO_UDP)
-        r += " udp";
+    switch (rule.protocol) {
+    case IPPROTO_ICMP:
+        r += " and ip proto icmp";
+        break;
+    case IPPROTO_TCP:
+        r += " and ip proto tcp";
+        break;
+    case IPPROTO_UDP:
+        r += " and ip proto udp";
+        break;
+    case -1:
+        // Allow all
+        break;
+    default:
+        LOG_ERROR_("unsupported protocol");
+        return "";
+    }
 
     if (rule.protocol == IPPROTO_TCP || rule.protocol == IPPROTO_UDP) {
         if (rule.port_start < 65536 && rule.port_end < 65536) {
