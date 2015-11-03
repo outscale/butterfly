@@ -18,8 +18,8 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <cstring>
 #include <cstddef>
-#include <string.h>
 #include "api/server/app.h"
 #include "api/server/pg.h"
 
@@ -72,7 +72,9 @@ namespace {
     }
 
     bool link(struct pg_brick *target, struct pg_brick *brick) {
-        LOG_DEBUG_("link [%s] to [%s]\n", Pg::brick_name(target), Pg::brick_name(brick));
+        LOG_DEBUG_("link [%s] to [%s]\n",
+                Pg::brick_name(target),
+                Pg::brick_name(brick));
         bool ret = pg_brick_link(target, brick, &errp);
         if (!ret)
             print_and_free_errp();
@@ -181,7 +183,7 @@ const char *vhost_socket_path(struct pg_brick *vhost) {
     }
 
     void nic_get_mac(struct pg_brick *brick, struct ether_addr * addr) {
-	    g_assert(strcmp(pg_brick_type(brick), "nic") == 0);
+        g_assert(strcmp(pg_brick_type(brick), "nic") == 0);
         return ::pg_nic_get_mac(brick, addr);
     }
 
@@ -203,7 +205,7 @@ const char *vhost_socket_path(struct pg_brick *vhost) {
     }
 
     void firewall_gc(struct pg_brick *brick) {
-	    g_assert(strcmp(pg_brick_type(brick), "firewall") == 0);
+        g_assert(strcmp(pg_brick_type(brick), "firewall") == 0);
         ::pg_firewall_gc(brick);
     }
 

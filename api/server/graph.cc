@@ -37,7 +37,7 @@ Graph::~Graph(void) {
 }
 
 bool Graph::linkAndStalk(Graph::Brick eastBrick, Graph::Brick westBrick,
-			 Graph::Brick sniffer) {
+        Graph::Brick sniffer) {
     if (app::config.packet_trace) {
         if (!Pg::link(eastBrick.get(), sniffer.get()) ||
             !Pg::link(sniffer.get(), westBrick.get())) {
@@ -294,7 +294,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     gn.sniffer = Brick(Pg::print_new(name.c_str(), 1, 1, NULL,
                                      PG_PRINT_FLAG_MAX & ~PG_PRINT_FLAG_RAW,
                                      NULL),
-		       Pg::destroy);
+            Pg::destroy);
     // Link branch (inside)
     Pg::link(gn.firewall.get(), gn.antispoof.get());
     linkAndStalk(gn.antispoof, gn.vhost, gn.sniffer);

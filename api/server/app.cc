@@ -91,9 +91,11 @@ bool Config::parse_cmd(int argc, char **argv) {
         { nullptr }
     };
     GOptionContext *context = g_option_context_new("");
-    g_option_context_set_summary(context, "butterfly-server [EAL options] -- [butterfly options]");
-    g_option_context_set_description(context,"example:\n"
-                                     "butterfly-server -c0xF -n1  --socket-mem 64 -- -i 43.0.0.1 -e tcp://127.0.0.1:8765 -s /tmp");
+    g_option_context_set_summary(context,
+            "butterfly-server [EAL options] -- [butterfly options]");
+    g_option_context_set_description(context, "example:\n"
+            "butterfly-server -c0xF -n1  --socket-mem 64"
+            "-- -i 43.0.0.1 -e tcp://127.0.0.1:8765 -s /tmp");
     g_option_context_add_main_entries(context, entries, nullptr);
 
     GError *error = nullptr;
@@ -185,7 +187,8 @@ bool Log::set_log_level(std::string level) {
         va_list ap;                                                     \
                                                                         \
         va_start(ap, message);                                          \
-        vsyslog(LOG_##TYPE, (std::string("<"#TYPE"> ") + message).c_str(), ap); \
+        vsyslog(LOG_##TYPE, \
+            (std::string("<"#TYPE"> ") + message).c_str(), ap);         \
         va_end(ap);                                                     \
     } while (0)
 

@@ -23,9 +23,9 @@
 #include "api/server/graph.h"
 
 // Usefull macros
-#define LOG_PRINT_(str, method, args...)				\
-	(method("(%s, %s, %d): " str, __FILE__,				\
-		__PRETTY_FUNCTION__, __LINE__, ## args))
+#define LOG_PRINT_(str, method, args...) \
+    (method("(%s, %s, %d): " str, __FILE__, \
+            __PRETTY_FUNCTION__, __LINE__, ## args))
 #define LOG_DEBUG_(str, args...) LOG_PRINT_(str, app::log.debug, ## args)
 #define LOG_INFO_(str, args...) LOG_PRINT_(str, app::log.info, ## args)
 #define LOG_WARNING_(str, args...) LOG_PRINT_(str, app::log.warning, ## args)

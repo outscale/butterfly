@@ -199,14 +199,14 @@ class Graph {
      * bricks
      */
     bool linkAndStalk(Graph::Brick eastBrick, Graph::Brick westBrick,
-		      Graph::Brick sniffer);
-    
+            Graph::Brick sniffer);
+
     /* VM branch. */
     struct graph_nic {
        std::string id;
        Brick firewall;
        Brick antispoof;
-       Brick vhost; 
+       Brick vhost;
        Brick sniffer;
       // If we should add this branch or not to our poll updates
        bool enable;

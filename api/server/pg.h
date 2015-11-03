@@ -60,14 +60,12 @@ namespace Pg {
 
     void destroy(struct pg_brick *brick);
 
-    static inline const char *brick_name(struct pg_brick *brick)
-    {
-	    return pg_brick_name(brick);
+    static inline const char *brick_name(struct pg_brick *brick) {
+        return pg_brick_name(brick);
     }
 
-    static inline const char *brick_type(struct pg_brick *brick)
-    {
-	    return pg_brick_type(brick);
+    static inline const char *brick_type(struct pg_brick *brick) {
+        return pg_brick_type(brick);
     }
 
     struct pg_brick *switch_new(const char *name,
