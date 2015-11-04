@@ -227,30 +227,46 @@ bool API::action_nic_stats(std::string id, uint64_t *in, uint64_t *out,
 void API::sg_update(const app::Sg &sg) {
     std::map<std::string, app::Nic>::iterator it;
     std::vector<std::string>::iterator sg_it;
+    auto found = false;
     // Iterate for each NICs and check if we need to update the firewall.
     for (it = app::model.nics.begin(); it != app::model.nics.end(); it++) {
         app::Nic &nic = it->second;
         for (sg_it = nic.security_groups.begin();
             sg_it != nic.security_groups.end();
             sg_it++) {
-            if (*sg_it == sg.id)
+            if (*sg_it == sg.id) {
                 app::graph.fw_update(nic);
+                found = true;
+            }
         }
+    }
+    if (!found) {
+        std::string m = "security group " + sg.id +
+            " update didn't updated any NIC";
+        app::log.warning(m);
     }
 }
 
 void API::sg_update(const app::Sg &sg, const app::Rule &rule) {
     std::map<std::string, app::Nic>::iterator it;
     std::vector<std::string>::iterator sg_it;
+    auto found = false;
     // Iterate for each NICs and check if we need to update the firewall.
     for (it = app::model.nics.begin(); it != app::model.nics.end(); it++) {
         app::Nic &nic = it->second;
         for (sg_it = nic.security_groups.begin();
              sg_it != nic.security_groups.end();
              sg_it++) {
-            if (*sg_it == sg.id)
+            if (*sg_it == sg.id) {
                 app::graph.fw_add_rule(nic, rule);
+                found = true;
+            }
         }
+    }
+    if (!found) {
+        std::string m = "security group " + sg.id +
+            " update didn't add a rule in any NIC";
+        app::log.warning(m);
     }
 }
 
@@ -267,7 +283,6 @@ bool API::action_sg_add(const app::Sg &sg, app::Error *error) {
             return true;
         // If not, let's update model
         original_sg = sg;
-        // Update graph
     } else {
         std::pair<std::string, app::Sg> p(sg.id, sg);
         app::model.security_groups.insert(p);
