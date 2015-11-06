@@ -40,6 +40,16 @@ else
     echo "${GREEN}API style test OK${NORMAL}"
 fi
 
+# Scenario test
+$BUTTERFLY_ROOT/scripts/tests_scenario.sh $BUTTERFLY_ROOT
+if [ $? != 0 ]; then
+    echo "${RED}API scenario test failed${NORMAL}"
+    exit 1
+else
+    echo "${GREEN}API scenario test OK${NORMAL}"
+fi
+
+
 echo "${GREEN}All test succeded${NORMAL}"
 exit 0
 
