@@ -218,6 +218,7 @@ bool Graph::poller_update(struct rpc_queue **list) {
                 break;
             case VHOST_STOP:
                 Pg::vhost_stop();
+                break;
             case LINK:
                 Pg::link(a->link.w, a->link.e);
                 break;
