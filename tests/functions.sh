@@ -8,6 +8,7 @@ function usage {
 }
 
 declare -A qemu_pids
+declare -A server_pids
 declare -A socat_pids
 
 function ssh_run {
@@ -74,23 +75,19 @@ function qemu_stop {
 }
 
 function server_start {
-    echo "starting butterfly $id"
     id=$1
+    echo "starting butterfly $id"
 
-    # Create TAP interface
-    sudo ip tuntap add mode tap but$id
-    if [ $? -ne 0 ]; then
-        echo "failed to initialize interface but$id "
-        exit 1
-    fi
-    sudo ip link set but$id up
+    # Remove lock file to run other butterfly on the same host
+    # Don't do this at home
+    sudo rm -rf /var/run/.rte_config &> /dev/null
 
-    sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:876$id &> /dev/null  &
+    CMD="sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:876$id -t"
+    exec $CMD &> /dev/null &
     pid=$!
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
         echo "failed to start butterfly"
-        sudo ip tuntap del mode tap but$id
         exit 1
     fi
 
@@ -101,7 +98,28 @@ function server_stop {
     id=$1
     echo "stopping butterfly $id"
     sudo kill -9 $(ps --ppid ${server_pids[$id]} -o pid=)
-    sudo ip tuntap del mode tap but$id
+}
+
+function network_connect {
+    id1=$1
+    id2=$2
+    echo "network connect but$id1 <--> but$id2"
+    sudo socat TUN:192.168.42.$id1/24,tun-type=tap,iff-running,iff-up,iff-promisc,tun-name=but$id1 TUN:192.168.42.$id2/24,tun-type=tap,iff-running,iff-promisc,iff-up,tun-name=but$id2 &
+    pid=$!
+    sleep 1
+    sudo kill -s 0 $pid
+    if [ $? -ne 0 ]; then
+        echo "failed connect but$id1 and but$id2"
+        exit 1
+    fi
+    socat_pids["$id1$id2"]=$pid
+}
+
+function network_disconnect {
+    id1=$1
+    id2=$2
+    echo "network disconnect but$id1 <--> but$id2"
+    sudo kill -9 $(ps --ppid ${socat_pids[$id1$id2]} -o pid=)
 }
 
 function download {
@@ -131,8 +149,7 @@ function client_add_nic {
     f=/tmp/butterfly-client.req
     echo "add nic $nic_id in butterfly $but_id in vni $vni"
 
-    echo -e "
-messages {
+    echo -e "messages {
   revision: 0
   message_0 {
     request {
@@ -169,7 +186,7 @@ messages {
    
     $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
     ret=$?
-    rm $f
+    #rm $f
     if [ ! "$ret" == "0" ]; then
         echo "client failed to send message to butterfly $but_id"
         exit 1
