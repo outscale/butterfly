@@ -371,9 +371,6 @@ main(int argc, char *argv[]) {
     // Ask graph to stop
     app::graph.stop();
 
-    // Wait few seconds to give a chance to detached threads to exit cleanly
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-
     app::log.info("butterfly exit");
     return 0;
 }
