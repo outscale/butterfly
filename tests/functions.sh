@@ -217,6 +217,7 @@ fi
 
 download $IMG_URL $IMG_MD5 $BUTTERFLY_BUILD_ROOT/vm.qcow
 download $KEY_URL $KEY_MD5 $BUTTERFLY_BUILD_ROOT/vm.rsa
+chmod og-r $BUTTERFLY_BUILD_ROOT/vm.rsa
 
 # Check some binaries
 check_bin sudo -h
