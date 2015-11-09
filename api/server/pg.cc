@@ -229,11 +229,6 @@ const char *vhost_socket_path(struct pg_brick *vhost) {
         return pg_firewall_reload(brick, &errp);
     }
 
-    void firewall_thread_register(struct pg_brick *brick) {
-        g_assert(strcmp(pg_brick_type(brick), "firewall") == 0);
-        pg_firewall_thread_register(brick);
-    }
-
     struct pg_brick *hub_new(const char *name,
                              uint32_t west_max,
                              uint32_t east_max) {
