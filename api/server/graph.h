@@ -103,6 +103,7 @@ class Graph {
         UPDATE_POLL,
         FW_RELOAD,
         FW_NEW,
+        BRICK_DESTROY,
     };
 
     struct rpc_link {
@@ -133,6 +134,10 @@ class Graph {
         struct pg_brick **result;
     };
 
+    struct rpc_brick_destroy {
+        struct pg_brick *b;
+    };
+
     // This rpc message is kept by the poller
     struct rpc_update_poll {
         struct pg_brick *pollables[GRAPH_VHOST_MAX_SIZE];
@@ -148,6 +153,7 @@ class Graph {
         struct rpc_update_poll update_poll;
         struct rpc_fw_reload fw_reload;
         struct rpc_fw_new fw_new;
+        struct rpc_brick_destroy brick_destroy;
     };
 
     /* Wrappers to ease RPC actions. */
@@ -164,6 +170,7 @@ class Graph {
                 uint32_t east_max,
                 uint64_t flags,
                 struct pg_brick **result);
+    void brick_destroy(Brick b);
     void wait_empty_queue();
 
     /** Threaded function to poll graph. */

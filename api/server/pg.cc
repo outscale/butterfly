@@ -51,14 +51,6 @@ namespace {
         /* Start NIC */
         nic_start();
 
-        /* Start Vhost */
-        pg_vhost_start(app::config.socket_folder.c_str(), &errp);
-        if (errp) {
-            LOG_ERROR_("packetgraph vhost start failed");
-            print_and_free_errp();
-            return false;
-        }
-
         return true;
     }
 
@@ -101,6 +93,10 @@ namespace {
 
     void destroy(struct pg_brick *brick) {
         pg_brick_destroy(brick);
+        return;
+    }
+
+    void fake_destroy(struct pg_brick *brick) {
         return;
     }
 

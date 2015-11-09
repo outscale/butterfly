@@ -56,9 +56,17 @@ bool Graph::linkAndStalk(Graph::Brick eastBrick, Graph::Brick westBrick,
 
 void Graph::stop() {
     struct rpc_queue *a;
+    std::map<std::string, app::Nic>::iterator n_it;
 
     if (!started)
         return;
+
+    // Remove all NICs
+    for (n_it = app::model.nics.begin();
+         n_it != app::model.nics.end();
+         n_it++) {
+        nic_del(n_it->second);
+    }
 
     // Stop vhost
     vhost_stop();
@@ -237,6 +245,10 @@ bool Graph::poller_update(struct rpc_queue **list) {
                                                        a->fw_new.east_max,
                                                        a->fw_new.flags);
                 break;
+            case BRICK_DESTROY:
+                Pg::destroy(a->brick_destroy.b);
+                break;
+
             default:
                 LOG_ERROR_("brick poller has wrong RPC value");
                 break;
@@ -282,7 +294,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
         LOG_ERROR_("Firewall creation failed");
         return "";
     }
-    gn.firewall = Brick(tmp_fw, Pg::destroy);
+    gn.firewall = Brick(tmp_fw, Pg::fake_destroy);
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.addr_bytes);
@@ -397,6 +409,9 @@ void Graph::nic_del(const app::Nic &nic) {
         // We just have to unlink the firewall from the switch
         unlink(n.firewall);
     }
+
+    // Delete firewall in the processing thread
+    brick_destroy(n.firewall);
 
     // Wait that queue is done before removing bricks
     wait_empty_queue();
@@ -717,6 +732,13 @@ void Graph::fw_new(const char *name,
     a->fw_new.east_max = east_max;
     a->fw_new.flags = flags;
     a->fw_new.result = result;
+    g_async_queue_push(queue, a);
+}
+
+void Graph::brick_destroy(Brick b) {
+    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    a->action = BRICK_DESTROY;
+    a->brick_destroy.b = b.get();
     g_async_queue_push(queue, a);
 }
 
