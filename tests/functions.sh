@@ -194,6 +194,15 @@ messages {
 
 }
 
+function check_bin {
+    run=${@:1}
+    $run &> /dev/null
+    if [ ! "$?" == "0" ]; then
+        echo "cannot execute $run: not found"
+        exit 1
+    fi
+}
+
 if [ ! -f $BUTTERFLY_SRC_ROOT/LICENSE ]; then
     echo "Butterfly's source root not found"
     usage
@@ -208,6 +217,12 @@ fi
 
 download $IMG_URL $IMG_MD5 $BUTTERFLY_BUILD_ROOT/vm.qcow
 download $KEY_URL $KEY_MD5 $BUTTERFLY_BUILD_ROOT/vm.rsa
+
+# Check some binaries
+check_bin sudo -h
+check_bin ssh -V
+check_bin sudo qemu-system-x86_64 -h
+check_bin sudo socat -h
 
 # run sudo one time
 sudo echo "ready to roll !"
