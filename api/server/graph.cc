@@ -19,6 +19,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/sysinfo.h>
+#include <unistd.h>
 #include <utility>
 #include <thread>
 #include <chrono>
@@ -104,7 +105,8 @@ bool Graph::start(int argc, char **argv) {
     }
 
     // Create sniffer brick
-    sniffer = Brick(Pg::print_new("main-sniffer", 1, 1, NULL,
+    std::string sniffer_name="main-sniffer-" + std::to_string(getpid());
+    sniffer = Brick(Pg::print_new(sniffer_name.c_str(), 1, 1, NULL,
                                   PG_PRINT_FLAG_MAX & ~PG_PRINT_FLAG_RAW,
                                   NULL),
                     Pg::destroy);
@@ -229,8 +231,11 @@ bool Graph::poller_update(struct rpc_queue **list) {
             case FW_RELOAD:
                 Pg::firewall_reload(a->fw_reload.firewall);
                 break;
-            case FW_THREAD_REGISTER:
-                Pg::firewall_thread_register(a->fw_thread_register.firewall);
+            case FW_NEW:
+                *(a->fw_new.result) = Pg::firewall_new(a->fw_new.name,
+                                                       a->fw_new.west_max,
+                                                       a->fw_new.east_max,
+                                                       a->fw_new.flags);
                 break;
             default:
                 LOG_ERROR_("brick poller has wrong RPC value");
@@ -266,13 +271,18 @@ std::string Graph::nic_add(const app::Nic &nic) {
 
     // Create vhost branch
     struct graph_nic gn;
+    struct pg_brick *tmp_fw = NULL;
+
     gn.enable = true;
     gn.id = nic.id;
     name = "firewall-" + gn.id;
-    gn.firewall = Brick(Pg::firewall_new(name.c_str(),
-                        1, 1, PG_NO_CONN_WORKER), Pg::destroy);
-    fw_thread_register(gn.firewall);
+    fw_new(name.c_str(), 1, 1, PG_NO_CONN_WORKER, &tmp_fw);
     wait_empty_queue();
+    if (tmp_fw == NULL) {
+        LOG_ERROR_("Firewall creation failed");
+        return "";
+    }
+    gn.firewall = Brick(tmp_fw, Pg::destroy);
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.addr_bytes);
@@ -695,10 +705,18 @@ void Graph::fw_reload(Brick b) {
     g_async_queue_push(queue, a);
 }
 
-void Graph::fw_thread_register(Brick b) {
+void Graph::fw_new(const char *name,
+                   uint32_t west_max,
+                   uint32_t east_max,
+                   uint64_t flags,
+                   struct pg_brick **result) {
     struct rpc_queue *a = g_new(struct rpc_queue, 1);
-    a->action = FW_THREAD_REGISTER;
-    a->fw_thread_register.firewall = b.get();
+    a->action = FW_NEW;
+    a->fw_new.name = name;
+    a->fw_new.west_max = west_max;
+    a->fw_new.east_max = east_max;
+    a->fw_new.flags = flags;
+    a->fw_new.result = result;
     g_async_queue_push(queue, a);
 }
 
