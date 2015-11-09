@@ -13,7 +13,6 @@ client_add_nic 0 1 42
 client_add_nic 1 2 42
 qemu_start 1
 qemu_start 2
-sleep 3
 ssh_ping 1 2
 qemu_stop 1
 qemu_stop 2
