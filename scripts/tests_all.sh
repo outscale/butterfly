@@ -18,38 +18,48 @@ fi
 
 # Launch the tests suites of all the subprojects
 
-GREEN="\033[32m"
-RED="\033[31m"
-NORMAL="\033[0m"
-
 # API tests
 $BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_ROOT
 if [ $? != 0 ]; then
-    echo "${RED}API test failed${NORMAL}"
+    tput setaf 1
+    echo "API test failed"
+    tput setaf 7
     exit 1
 else
-    echo "${GREEN}API test OK${NORMAL}"
+    tput setaf 2
+    echo "API test OK"
+    tput setaf 7
 fi
 
 # API style test
 $BUTTERFLY_ROOT/scripts/tests_api_style.sh $BUTTERFLY_ROOT
 if [ $? != 0 ]; then
-    echo "${RED}API style test failed${NORMAL}"
+    tput setaf 1
+    echo "API style test failed"
+    tput setaf 7
     exit 1
 else
-    echo "${GREEN}API style test OK${NORMAL}"
+    tput setaf 2
+    echo "API style test OK"
+    tput setaf 7
 fi
 
 # Scenario test
 $BUTTERFLY_ROOT/scripts/tests_scenario.sh $BUTTERFLY_ROOT
 if [ $? != 0 ]; then
-    echo "${RED}API scenario test failed${NORMAL}"
+    tput setaf 1
+    echo "API scenario test failed"
+    tput setaf 7
     exit 1
 else
-    echo "${GREEN}API scenario test OK${NORMAL}"
+    tput setaf 2
+    echo "API scenario test OK"
+    tput setaf 7
 fi
 
 
-echo "${GREEN}All test succeded${NORMAL}"
+tput setaf 2
+echo "All test succeded"
+tput setaf 7
 exit 0
 
