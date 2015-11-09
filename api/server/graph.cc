@@ -113,7 +113,7 @@ bool Graph::start(int argc, char **argv) {
     }
 
     // Create sniffer brick
-    std::string sniffer_name="main-sniffer-" + std::to_string(getpid());
+    std::string sniffer_name = "main-sniffer-" + std::to_string(getpid());
     sniffer = Brick(Pg::print_new(sniffer_name.c_str(), 1, 1, NULL,
                                   PG_PRINT_FLAG_MAX & ~PG_PRINT_FLAG_RAW,
                                   NULL),
