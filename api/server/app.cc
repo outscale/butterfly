@@ -26,7 +26,7 @@
 #include "api/server/graph.h"
 #include "api/server/server.h"
 #include "api/server/simpleini/SimpleIni.hpp"
-#include "api/protocol/revision.h"
+#include "./version.h"
 
 namespace app {
 Stats::Stats() {
@@ -335,7 +335,7 @@ main(int argc, char *argv[]) {
 
         // Ask for revision number ?
         if (app::config.show_revision) {
-            std::cout << PROTOS_REVISION << std::endl;
+            std::cout << VERSION_INFO << std::endl;
             return 0;
         }
 

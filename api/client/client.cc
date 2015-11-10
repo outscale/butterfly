@@ -24,8 +24,8 @@
 #include <sstream>
 #include <iostream>
 #include "api/client/client.h"
-#include "api/protocol/revision.h"
 #include "api/protocol/message.pb.h"
+#include "./version.h"
 
 Options::Options() {
     endpoint = NULL;
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 
     // Does user asked for revision ?
     if (options.revision) {
-        std::cout << "Revision number: " << std::to_string(PROTOS_REVISION) <<
+        std::cout << VERSION_INFO <<
         std::endl;
         return 0;
     }

@@ -19,9 +19,14 @@ find_package(LibURCU REQUIRED)
 find_package(NPF REQUIRED)
 find_package(NPFKERN REQUIRED)
 
-set(PROTOBUF_LIBRARIES ${PROTOBUF_INSTALL_DIR}/src/.libs/libprotobuf-lite.a
-                       ${PROTOBUF_INSTALL_DIR}/src/.libs/libprotobuf.a)
-set(PROTOBUF_INCLUDE_DIR ${3RDPARTY_DIR}/protobuf/src)
+set(PROTOBUF_LIBRARIES
+	${PROTOBUF_INSTALL_DIR}/src/.libs/libprotobuf-lite.a
+	${PROTOBUF_INSTALL_DIR}/src/.libs/libprotobuf.a)
+
+set(PROTOBUF_INCLUDE_DIR
+	${3RDPARTY_DIR}/protobuf/src
+	${PROJECT_BINARY_DIR})
+
 set(PROTOBUF_PROTOC_EXECUTABLE ${PROTOBUF_INSTALL_DIR}/src/protoc)
 set(LIBZMQ_LIBRARIES ${LIBZMQ_INSTALL_DIR}/lib/libzmq-static.a)
 set(LIBZMQ_INCLUDE_DIR ${3RDPARTY_DIR}/libzmq/include)
@@ -63,6 +68,11 @@ set(DPDK_LIBRARIES ${DPDK_INSTALL_DIR}/lib/libethdev.a
 set(DPDK_INCLUDE_DIR ${DPDK_INSTALL_DIR}/include)
 
 set(CMAKE_C_FLAGS "-g -O3 -march=core-avx-i -mtune=core-avx-i -fmessage-length=0  -Werror -Wall -Wextra -Wwrite-strings -Winit-self -Wcast-align -Wpointer-arith -Wstrict-aliasing -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wno-unused-parameter -Wuninitialized -Wold-style-definition -Wstrict-prototypes -Wmissing-prototypes")
+
+add_custom_target(butterfly-genere-version
+  COMMAND ${PROJECT_SOURCE_DIR}/scripts/genHdrVersion.sh > version.h
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  )
 
 add_subdirectory(3rdparty)
 add_subdirectory(api)

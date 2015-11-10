@@ -13,7 +13,7 @@ endforeach()
 
 add_executable(api_server ${SOURCES_P})
 
-add_dependencies(api_server api_protocol libzmq zmqpp)
+add_dependencies(api_server api_protocol libzmq zmqpp butterfly-genere-version)
 
 set_target_properties(api_server PROPERTIES OUTPUT_NAME butterfly-server)
 
