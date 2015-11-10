@@ -17,3 +17,5 @@ qemu_stop 1
 qemu_stop 2
 server_stop 0
 network_disconnect 0 1
+return_result
+

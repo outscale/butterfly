@@ -11,6 +11,12 @@ declare -A qemu_pids
 declare -A server_pids
 declare -A socat_pids
 
+RETURN_CODE=0
+
+function return_result {
+    exit $RETURN_CODE
+}
+
 function ssh_run {
     id=$1
     cmd="${@:2}"
@@ -36,8 +42,13 @@ function ssh_bash {
 function ssh_ping {
     id1=$1
     id2=$2
-    echo "VM $id1 is pinging VM $id2"
-    ssh_run $id1 ping 42.0.0.$id2 -c 5
+    ssh_run $id1 ping 42.0.0.$id2 -c 1 &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ping $id1 --> $id2 FAIL"
+        RETURN_CODE=1
+    else
+        echo "ping $id1 --> $id2 OK"
+    fi
 }
 
 function qemu_start {

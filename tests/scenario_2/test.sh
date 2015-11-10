@@ -30,3 +30,5 @@ qemu_stop 4
 server_stop 0
 server_stop 1
 network_disconnect 0 1
+return_result
+
