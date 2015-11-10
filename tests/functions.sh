@@ -51,6 +51,18 @@ function ssh_ping {
     fi
 }
 
+function ssh_no_ping {
+    id1=$1
+    id2=$2
+    ssh_run $id1 ping 42.0.0.$id2 -c 1 &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "no ping $id1 --> $id2 OK"
+    else
+        echo "no ping $id1 --> $id2 FAIL"
+        RETURN_CODE=1
+    fi
+}
+
 function qemu_start {
     id=$1
     echo "starting VM $id"
