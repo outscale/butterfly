@@ -5,7 +5,6 @@ BUTTERFLY_BUILD_ROOT=$2
 
 source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 
-# Add a two nics on the same butterfly on the same VNI and start VMs
 network_connect 0 1
 server_start 0
 server_start 1
