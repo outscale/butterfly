@@ -17,7 +17,7 @@ if [ ! -d $BUTTERFLY_ROOT/api ]; then
 fi
 
 #remove out.txt
-rm out.txt
+sudo rm out.txt
 
 run=$BUTTERFLY_ROOT/api/tests/run_scenario.sh
 client=$BUTTERFLY_BUILD_ROOT/api/client/butterfly-client
@@ -28,7 +28,7 @@ for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
     echo -n "$(basename $request) scenario: "
     tput setaf 7
     expected=$(echo $request | sed -e 's/_in$/_out/')
-    $run $client $server $request $expected
+    sudo $run $client $server $request $expected
     if [ $? -ne 0 ]; then
 	tput setaf 1
         echo FAILED !
@@ -41,6 +41,8 @@ for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
 	tput setaf 7
     fi
 done
+
+sudo chown $USER out.txt
 
 if [ $err = true ]; then
     exit 1
