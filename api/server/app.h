@@ -42,7 +42,6 @@ struct Config {
     std::string api_endpoint;
     std::string log_level;
     std::string socket_folder;
-    bool show_revision;
     int graph_core_id;
     bool packet_trace;
 };

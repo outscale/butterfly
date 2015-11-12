@@ -37,26 +37,16 @@ Stats::Stats() {
 Config::Config() {
     api_endpoint = "tcp://0.0.0.0:9999";
     log_level = "error";
-    show_revision = false;
     graph_core_id = 0;
     packet_trace = false;
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
-    // First, remove dpdk parameters from args if we have "--"
+    bool ret = true;
     int i;
-    for (i = 0; i < argc; i++)
-        if (g_strcmp0(argv[i], "--") == 0)
-            break;
-    if (i != argc) {
-        argc = argc - i;
-        argv = &argv[i];
-    } else {
-        std::cerr << "no DPDK arguments set" << std::endl;
-        return false;
-    }
+    bool show_revision;
+    bool dpdk_help;
 
-    // Next, look at the rest
     auto gfree = [](gchar *p) { g_free(p); };
     std::unique_ptr<gchar, decltype(gfree)> config_path_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> external_ip_cmd(nullptr, gfree);
@@ -88,6 +78,8 @@ bool Config::parse_cmd(int argc, char **argv) {
          "ID"},
         {"packet-trace", 't', 0, G_OPTION_ARG_NONE, &config.packet_trace,
          "Trace packets going through Butterfly", nullptr},
+        {"dpdk-help", 0, 0, G_OPTION_ARG_NONE, &dpdk_help,
+         "print DPDK help", nullptr},
         { nullptr }
     };
     GOptionContext *context = g_option_context_new("");
@@ -95,13 +87,41 @@ bool Config::parse_cmd(int argc, char **argv) {
             "butterfly-server [EAL options] -- [butterfly options]");
     g_option_context_set_description(context, "example:\n"
             "butterfly-server -c0xF -n1  --socket-mem 64"
-            "-- -i 43.0.0.1 -e tcp://127.0.0.1:8765 -s /tmp");
+            " -- -i 43.0.0.1 -e tcp://127.0.0.1:8765 -s /tmp");
     g_option_context_add_main_entries(context, entries, nullptr);
 
     GError *error = nullptr;
+
+    for (i = 0; i < argc; i++) {
+        if (g_strcmp0(argv[i], "--") == 0) {
+            break;
+        }
+    }
+    if (i != argc) {
+        argc -= i;
+        argv += i;
+    } else {
+        ret = false;
+    }
+
     if (!g_option_context_parse(context, &argc, &argv, &error)) {
         if (error != nullptr)
             std::cout << error->message << std::endl;
+        return false;
+    }
+
+    if (dpdk_help) {
+        argc = 1;
+        argv[1] = const_cast<char *>("-h");
+
+        app::graph.start(argc, argv);
+        app::graph.stop();
+        return false;
+    }
+
+    // Ask for revision number ?
+    if (show_revision) {
+        std::cout << VERSION_INFO << std::endl;
         return false;
     }
 
@@ -127,7 +147,10 @@ bool Config::parse_cmd(int argc, char **argv) {
         return false;
     }
 
-    return true;
+    if (!ret) {
+        std::cerr << "wrong usage, butterfly-server use -h" << std::endl;
+    }
+    return ret;
 }
 
 bool Config::missing_mandatory() {
@@ -332,12 +355,6 @@ main(int argc, char *argv[]) {
 
         // Set log level from options
         app::log.set_log_level(app::config.log_level);
-
-        // Ask for revision number ?
-        if (app::config.show_revision) {
-            std::cout << VERSION_INFO << std::endl;
-            return 0;
-        }
 
         // Ready to start ?
         if (app::config.missing_mandatory()) {
