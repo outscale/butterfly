@@ -168,20 +168,22 @@ void *Graph::poller(void *graph) {
             }
         }
 
-        if (list != NULL) {
-            /* Poll NIC. */
-            Pg::poll(nic, &pkts_count);
+        if (list == NULL)
+            continue;
 
-            /* Poll all pollable vhosts. */
+        /* Poll NIC. */
+        Pg::poll(nic, &pkts_count);
+
+        /* Poll all pollable vhosts. */
+        for (uint32_t v = 0; v < list->size; v++)
+            Pg::poll(list->pollables[v], &pkts_count);
+
+        /* Call firewall garbage callector. */
+        if (cnt == 50000) {
             for (uint32_t v = 0; v < list->size; v++)
-                Pg::poll(list->pollables[v], &pkts_count);
-
-            /* Call firewall garbage callector. */
-            if (cnt == 50000) {
-                for (uint32_t v = 0; v < list->size; v++)
-                    Pg::firewall_gc(list->firewalls[v]);
-            }
+                Pg::firewall_gc(list->firewalls[v]);
         }
+        usleep(1);
     }
     g_async_queue_unref(g->queue);
     g_free(q);
