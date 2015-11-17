@@ -6,7 +6,7 @@ endforeach()
 
 add_executable(api_client ${SOURCES_P})
 
-add_dependencies(api_client api_protocol libzmq zmqpp)
+add_dependencies(api_client api_protocol libzmq zmqpp butterfly-genere-version)
 
 set_target_properties(api_client PROPERTIES OUTPUT_NAME butterfly-client)
 
