@@ -70,7 +70,7 @@ set(DPDK_INCLUDE_DIR ${DPDK_INSTALL_DIR}/include)
 set(CMAKE_C_FLAGS "-g -O3 -march=core-avx-i -mtune=core-avx-i -fmessage-length=0  -Werror -Wall -Wextra -Wwrite-strings -Winit-self -Wcast-align -Wpointer-arith -Wstrict-aliasing -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wno-unused-parameter -Wuninitialized -Wold-style-definition -Wstrict-prototypes -Wmissing-prototypes")
 
 add_custom_target(butterfly-genere-version
-  COMMAND ${PROJECT_SOURCE_DIR}/scripts/genHdrVersion.sh > version.h
+  COMMAND ${PROJECT_SOURCE_DIR}/scripts/genHdrVersion.sh ${PROJECT_BINARY_DIR}/version.h
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   )
 

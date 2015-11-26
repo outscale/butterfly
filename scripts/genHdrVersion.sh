@@ -24,18 +24,23 @@
 # This revision has no link with the "0" in "MessageV0" for example.
 #
 
-DATA=`git log -1 | grep Date | awk -F "   " '{ print $2 }' | awk -F '+' '{ print $1 }'`
+OUTPUT=$1
+DATE=`git log -1 | grep Date | awk -F "   " '{ print $2 }' | awk -F '+' '{ print $1 }'`
 NAME=`git log --oneline -1 | awk -F ' ' '{print $1}'`
 
 REVISION=0
 
-echo '#ifndef __HDR_VERSION__'
-echo '#define __HDR_VERSION__'
+tmp=version_tmp.h
+echo "" > $tmp
+echo '#ifndef __HDR_VERSION__' >> $tmp
+echo '#define __HDR_VERSION__' >> $tmp
+echo -n '#define PROTOS_REVISION ' >> $tmp
+echo $REVISION >> $tmp
+echo -n '#define VERSION_INFO "' >> $tmp
+echo -n revision: \\\"$REVISION\\\" commit: \\\"$NAME\\\" date: \\\"$DATE\\\" >> $tmp
+echo '"' >> $tmp
+echo '#endif' >> $tmp
 
-echo -n '#define PROTOS_REVISION '
-echo $REVISION
-
-echo -n '#define VERSION_INFO "'
-echo -n revision: \\\"$REVISION\\\" commit: \\\"$NAME\\\" date: \\\"$DATA\\\" 
-echo '"'
-echo '#endif'
+if ! diff $tmp $OUTPUT &> /dev/null ; then
+    mv $tmp $OUTPUT
+fi
