@@ -151,6 +151,7 @@ void *Graph::poller(void *graph) {
     struct rpc_queue *q = NULL;
     uint16_t pkts_count;
     struct pg_brick *nic = g->nic.get();
+    uint32_t size = 0;
 
     g_async_queue_ref(g->queue);
 
@@ -165,29 +166,35 @@ void *Graph::poller(void *graph) {
         if (cnt == 100000) {
             cnt = 0;
             if (g->poller_update(&q)) {
-                list = q ? &q->update_poll : NULL;
+                if (q) {
+                list = &q->update_poll;
+                size = list->size;
+                }
             } else {
                 LOG_DEBUG_("poll thread will now exit");
                 break;
             }
         }
 
-        if (list == NULL)
-            continue;
-
-        /* Poll NIC. */
         Pg::poll(nic, &pkts_count);
-
+        sched_yield();
         /* Poll all pollable vhosts. */
-        for (uint32_t v = 0; v < list->size; v++)
-            Pg::poll(list->pollables[v], &pkts_count);
+        for (uint32_t v = 0; v < size; v++) {
+            for (uint32_t i = 0; i < 4; ++i) {
+                Pg::poll(list->pollables[v], &pkts_count);
+                sched_yield();
+                Pg::poll(nic, &pkts_count);
+                sched_yield();
+            }
+        }
 
         /* Call firewall garbage callector. */
         if (cnt == 50000) {
-            for (uint32_t v = 0; v < list->size; v++)
+            for (uint32_t v = 0; v < size; v++) {
                 Pg::firewall_gc(list->firewalls[v]);
+             }
+            usleep(5);
         }
-        usleep(1);
     }
     g_async_queue_unref(g->queue);
     g_free(q);
