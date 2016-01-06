@@ -102,9 +102,10 @@ namespace {
 
     struct pg_brick *switch_new(const char *name,
                                 uint32_t west_max,
-                                uint32_t east_max) {
+                                uint32_t east_max,
+                                enum pg_side output) {
         struct pg_brick *ret = pg_switch_new(name, west_max,
-                             east_max, &errp);
+                                             east_max, output, &errp);
         if (!ret)
             print_and_free_errp();
         return ret;

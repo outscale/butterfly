@@ -71,8 +71,9 @@ namespace Pg {
     }
 
     struct pg_brick *switch_new(const char *name,
-               uint32_t west_max,
-               uint32_t east_max);
+                                uint32_t west_max,
+                                uint32_t east_max,
+                                enum pg_side output);
 
     struct pg_brick *vhost_new(const char *name,
                 uint32_t west_max,

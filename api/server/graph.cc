@@ -337,7 +337,9 @@ std::string Graph::nic_add(const app::Nic &nic) {
         // - re-link the first firewall to it's antispoof
         // - link the second firewall to the switch
         name = "switch-" + std::to_string(nic.vni);
-        vni.sw = Brick(Pg::switch_new(name.c_str(), 1, 30), Pg::destroy);
+        vni.sw = Brick(Pg::switch_new(name.c_str(),
+                                      1, 30, EAST_SIDE), Pg::destroy);
+
         Brick fw1 = vni.nics.begin()->second.firewall;
         Brick as1 = vni.nics.begin()->second.antispoof;
         unlink(fw1);
