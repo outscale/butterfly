@@ -16,8 +16,7 @@ if [ ! -d $BUTTERFLY_ROOT/api ]; then
     exit 1
 fi
 
-$BUTTERFLY_ROOT/tests/scenario_0/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT
-$BUTTERFLY_ROOT/tests/scenario_1/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT
-$BUTTERFLY_ROOT/tests/scenario_2/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT
-$BUTTERFLY_ROOT/tests/scenario_3/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT
-
+for s in $BUTTERFLY_ROOT/tests/scenario_*; do
+    echo "=== running $(basename $s) ==="
+    $s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT
+done
