@@ -149,7 +149,6 @@ void *Graph::poller(void *graph) {
     Graph *g = reinterpret_cast<Graph *>(graph);
     struct rpc_update_poll *list = NULL;
     struct rpc_queue *q = NULL;
-    uint64_t cnt = 0;
     uint16_t pkts_count;
     struct pg_brick *nic = g->nic.get();
 
@@ -160,9 +159,10 @@ void *Graph::poller(void *graph) {
     Graph::set_sched();
 
     /* The main packet poll loop. */
-    for (;;) {
+    for (uint32_t cnt = 0;; ++cnt) {
         /* Let's see if there is any update every 100 000 pools. */
-        if (cnt++ == 100000) {
+
+        if (cnt == 100000) {
             cnt = 0;
             if (g->poller_update(&q)) {
                 list = q ? &q->update_poll : NULL;
