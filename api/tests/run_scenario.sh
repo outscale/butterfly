@@ -72,12 +72,20 @@ fi
 # Run client
 $client_cmd  &> client_out.txt &
 client_pid=$!
-sleep 1
 kill -s 0 $client_pid &> /dev/null
-if [ $? -eq 0 ]; then 
-    echo "request process too long"
-    exit 1
-fi
+killret=$?
+killcount=0
+while [ $killret -eq 0 ]; do
+    #echo "waiting for client to finish ..."
+    sleep 1
+    kill -s 0 $client_pid &> /dev/null
+    killret=$?
+    ((killcount+=1))
+    if [ $killcount -eq 40 ]; then
+        echo "request process too long"
+        exit 1
+    fi
+done
 
 # Is server still alive ?
 kill -s 0 $server_pid
