@@ -22,6 +22,7 @@
 #include <thread>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include "api/server/app.h"
 #include "api/server/graph.h"
 #include "api/server/server.h"
@@ -317,6 +318,7 @@ bool LoadConfigFile(std::string config_path) {
             config.graph_core_id;
         log.debug(m);
     }
+    config.tid = 0;
 
     return true;
 }
@@ -342,6 +344,36 @@ Model model;
 Log log;
 Graph graph;
 }  // namespace app
+
+int initCGroup() {
+  system("mkdir /sys/fs/cgroup/cpu/butterfly");
+  system("echo 4096 > /sys/fs/cgroup/cpu/butterfly/cpu.shares");
+  return 0;
+}
+
+void app::setCGroup() {
+  if (!app::config.tid)
+    return;
+  std::string setStr;
+  std::string unsetOtherStr;
+  std::ostringstream oss;
+
+  oss << app::config.tid;
+  setStr = "echo " + oss.str() + " /sys/fs/cgroup/cpu/butterfly/tasks";
+  unsetOtherStr = "grep -v " + oss.str() +
+          " /sys/fs/cgroup/cpu/butterfly/tasks |" +
+          " while read ligne; do echo $ligne >" +
+          " /sys/fs/cgroup/cpu/tasks ; done";
+
+  system(setStr.c_str());
+  system(unsetOtherStr.c_str());
+}
+
+void app::destroyCGroup() {
+  system("cat /sys/fs/cgroup/cpu/butterfly/tasks |"
+         " while read ligne; do echo $ligne > /sys/fs/cgroup/cpu/tasks ; done");
+  system("rmdir /sys/fs/cgroup/cpu/butterfly");
+}
 
 int
 main(int argc, char *argv[]) {
@@ -374,7 +406,7 @@ main(int argc, char *argv[]) {
             app::log.error("cannot start packetgraph, exiting");
             app::request_exit = true;
         }
-
+        initCGroup();
         // Prepare & run API server
         APIServer server(app::config.api_endpoint, &app::request_exit);
         server.run_threaded();

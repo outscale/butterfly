@@ -19,6 +19,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/sysinfo.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #include <utility>
 #include <thread>
@@ -86,6 +87,7 @@ void Graph::stop() {
     // Byby packetgraph
     vnis.clear();
     Pg::stop();
+    app::destroyCGroup();
     started = false;
 }
 
@@ -155,6 +157,7 @@ void *Graph::poller(void *graph) {
 
     // Set CPU affinity for packetgraph processing
     Graph::set_cpu(app::config.graph_core_id);
+    Graph::set_sched();
 
     /* The main packet poll loop. */
     for (;;) {
@@ -203,6 +206,16 @@ int Graph::set_cpu(int core_id) {
     CPU_SET(core_id, &cpu_set);
     return pthread_setaffinity_np(t, sizeof(cpu_set_t), &cpu_set);
 }
+
+
+#define gettid() syscall(SYS_gettid)
+
+int Graph::set_sched() {
+  app::config.tid = gettid();
+  printf("add pid to group: %lu\n", gettid());
+  return 0;
+}
+#undef gettid
 
 bool Graph::poller_update(struct rpc_queue **list) {
     struct rpc_queue *a;
@@ -363,6 +376,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
 
     // Reload the firewall configuration
     fw_update(nic);
+    app::setCGroup();
 
     return std::string(Pg::vhost_socket_path(gn.vhost.get()));
 }

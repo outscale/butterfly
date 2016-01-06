@@ -44,6 +44,7 @@ struct Config {
     std::string socket_folder;
     int graph_core_id;
     bool packet_trace;
+    int tid;
 };
 
 struct Stats {
@@ -78,6 +79,9 @@ void SignalHandler(int signum);
 
 // Manage configuration file
 bool LoadConfigFile(std::string config_path);
+
+void destroyCGroup();
+void setCGroup();
 
 // Manage PID
 void WritePid(std::string pid_path);

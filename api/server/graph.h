@@ -181,6 +181,9 @@ class Graph {
      * specific CPU.
      */
     static inline int set_cpu(int core_id);
+    static inline int set_sched();
+
+
     /**
      * Called by the poller, run all pending actions in the queue
      * @param    list list of bricks the poller needs (struct rpc_update_poll)
