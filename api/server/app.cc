@@ -359,7 +359,7 @@ void app::setCGroup() {
   std::ostringstream oss;
 
   oss << app::config.tid;
-  setStr = "echo " + oss.str() + " /sys/fs/cgroup/cpu/butterfly/tasks";
+  setStr = "echo " + oss.str() + " > /sys/fs/cgroup/cpu/butterfly/tasks";
   unsetOtherStr = "grep -v " + oss.str() +
           " /sys/fs/cgroup/cpu/butterfly/tasks |" +
           " while read ligne; do echo $ligne >" +
