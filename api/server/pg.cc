@@ -154,26 +154,15 @@ const char *vhost_socket_path(struct pg_brick *vhost) {
         pg_nic_start();
     }
 
-    struct pg_brick *nic_new(const char *name,
-                             uint32_t west_max,
-                             uint32_t east_max,
-                             enum pg_side output,
-                             const char *ifname) {
-        struct pg_brick *ret = pg_nic_new(name, west_max, east_max,
-                          output, ifname, &errp);
+    struct pg_brick *nic_new(const char *name, const char *ifname) {
+        struct pg_brick *ret = pg_nic_new(name, ifname, &errp);
         if (!ret)
             print_and_free_errp();
         return ret;
     }
 
-    struct pg_brick *nic_new_by_id(const char *name,
-                                   uint32_t west_max,
-                                   uint32_t east_max,
-                                   enum pg_side output,
-                                   uint8_t portid) {
-        struct pg_brick *ret = pg_nic_new_by_id(name, west_max,
-                            east_max, output,
-                            portid, &errp);
+    struct pg_brick *nic_new_by_id(const char *name, uint8_t portid) {
+        struct pg_brick *ret = pg_nic_new_by_id(name, portid, &errp);
         if (!ret)
             print_and_free_errp();
         return ret;

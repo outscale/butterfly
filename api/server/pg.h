@@ -93,17 +93,9 @@ namespace Pg {
 
     void nic_start(void);
 
-    struct pg_brick *nic_new(const char *name,
-                  uint32_t west_max,
-                  uint32_t east_max,
-                  enum pg_side output,
-                  const char *ifname);
+    struct pg_brick *nic_new(const char *name, const char *ifname);
 
-    struct pg_brick *nic_new_by_id(const char *name,
-                    uint32_t west_max,
-                    uint32_t east_max,
-                    enum pg_side output,
-                    uint8_t portid);
+    struct pg_brick *nic_new_by_id(const char *name, uint8_t portid);
 
     void nic_get_mac(struct pg_brick *brick,
              struct ether_addr *addr);
