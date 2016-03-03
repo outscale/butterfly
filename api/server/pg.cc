@@ -55,7 +55,6 @@ namespace {
     }
 
     void stop(void) {
-            pg_vhost_stop();
         pg_stop();
     }
 
@@ -110,34 +109,6 @@ namespace {
             print_and_free_errp();
         return ret;
     }
-
-    struct pg_brick *vhost_new(const char *name,
-                               uint32_t west_max,
-                               uint32_t east_max,
-                               enum pg_side output) {
-        struct pg_brick *ret = pg_vhost_new(name, west_max,
-                            east_max, output, &errp);
-        if (!ret)
-            print_and_free_errp();
-        return ret;
-    }
-
-    bool vhost_start(std::string dir) {
-        if (!pg_vhost_start(dir.c_str(), &errp)) {
-            print_and_free_errp();
-            return false;
-        }
-        return true;
-    }
-
-    void vhost_stop(void) {
-        pg_vhost_stop();
-    }
-
-const char *vhost_socket_path(struct pg_brick *vhost) {
-    // this methode can not fail...
-    return pg_vhost_socket_path(vhost, &errp);
-}
 
     struct pg_brick *diode_new(const char *name,
                                uint32_t west_max,
