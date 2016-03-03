@@ -6,7 +6,7 @@ project(BUTTERFLY)
 set(3RDPARTY_DIR ${PROJECT_SOURCE_DIR}/3rdparty)
 
 set(3RDPARTY_INSTALL_DIR ${PROJECT_BINARY_DIR}/3rdparty-build)
-set(DPDK_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/x86_64-native-linuxapp-gcc)
+set(DPDK_INSTALL_DIR ${3RDPARTY_INSTALL_DIR})
 set(LIBZMQ_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/libzmq)
 set(ZMQPP_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/zmqpp)
 set(PROTOBUF_INSTALL_DIR ${3RDPARTY_INSTALL_DIR}/protobuf)
@@ -36,7 +36,6 @@ set(PG_LIBRARIES ${PG_INSTALL_DIR}/firewall/libpacketgraph-firewall.a
                  ${PG_INSTALL_DIR}/nic/libpacketgraph-nic.a
                  ${PG_INSTALL_DIR}/vhost/libpacketgraph-vhost.a
                  ${PG_INSTALL_DIR}/core/libpacketgraph-core.a
-                 ${PG_INSTALL_DIR}/hub/libpacketgraph-hub.a
                  ${PG_INSTALL_DIR}/print/libpacketgraph-print.a
                  ${PG_INSTALL_DIR}/vtep/libpacketgraph-vtep.a
                  ${PG_INSTALL_DIR}/diode/libpacketgraph-diode.a
