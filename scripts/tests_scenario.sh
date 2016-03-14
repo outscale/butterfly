@@ -18,5 +18,5 @@ fi
 
 for s in $BUTTERFLY_ROOT/tests/scenario_*; do
     echo "=== running $(basename $s) ==="
-    $s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT
+    $s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT || exit 1
 done
