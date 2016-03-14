@@ -14,6 +14,7 @@ declare -A socat_pids
 RETURN_CODE=0
 
 function return_result {
+    clean_all
     exit $RETURN_CODE
 }
 
@@ -74,9 +75,10 @@ function qemu_start {
     exec $CMD &> /dev/null &
     pid=$!
     sleep 10
-    kill -s 0 $pid &> /dev/null
+    sudo kill -s 0 $pid &> /dev/null
     if [ $? -ne 0 ]; then
         echo "failed to start qemu"
+        clean_all
         exit 1
     fi
 
@@ -112,6 +114,7 @@ function server_start {
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
         echo "failed to start butterfly"
+        clean_all
         exit 1
     fi
 
@@ -134,6 +137,7 @@ function network_connect {
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
         echo "failed connect but$id1 and but$id2"
+        clean_all
         exit 1
     fi
     socat_pids["$id1$id2"]=$pid
@@ -210,12 +214,12 @@ messages {
    
     $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
     ret=$?
-    #rm $f
+    rm $f
     if [ ! "$ret" == "0" ]; then
         echo "client failed to send message to butterfly $but_id"
+        clean_all
         exit 1
     fi
-
 }
 
 function check_bin {
@@ -225,6 +229,12 @@ function check_bin {
         echo "cannot execute $run: not found"
         exit 1
     fi
+}
+
+function clean_all {
+    sudo killall butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null
+    sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/* &> /dev/null
+    sleep 1
 }
 
 if [ ! -f $BUTTERFLY_SRC_ROOT/LICENSE ]; then
@@ -248,6 +258,7 @@ check_bin sudo -h
 check_bin ssh -V
 check_bin sudo qemu-system-x86_64 -h
 check_bin sudo socat -h
+clean_all
 
 # run sudo one time
 sudo echo "ready to roll !"
