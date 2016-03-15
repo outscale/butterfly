@@ -31,6 +31,8 @@ else
     tput setaf 7
 fi
 
+sleep 5
+
 # API style test
 $BUTTERFLY_ROOT/scripts/tests_api_style.sh $BUTTERFLY_ROOT
 if [ $? != 0 ]; then
@@ -43,6 +45,8 @@ else
     echo "API style test OK"
     tput setaf 7
 fi
+
+sleep 5
 
 # Scenario test
 $BUTTERFLY_ROOT/scripts/tests_scenario.sh $BUTTERFLY_ROOT
