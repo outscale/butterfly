@@ -32,8 +32,7 @@ message MessageV0 {
   // Only one field must be filled in Request
   message Request {
     // Create a NIC
-    // If a NIC already exists, NIC parameters will be replaced
-    // but vhost socket will stay the same.
+    // If a NIC already exists, old NIC will be removed
     // Response MUST have nic_add filled
     optional Nic nic_add = 1;
 
