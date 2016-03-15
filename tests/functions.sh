@@ -104,11 +104,7 @@ function server_start {
     id=$1
     echo "starting butterfly $id"
 
-    # Remove lock file to run other butterfly on the same host
-    # Don't do this at home
-    sudo rm -rf /var/run/.rte_config &> /dev/null
-
-    CMD="sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:876$id -t"
+    CMD="sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server --no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge -- -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t"
     exec $CMD &> /dev/null &
     pid=$!
     sudo kill -s 0 $pid
