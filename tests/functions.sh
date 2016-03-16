@@ -14,6 +14,7 @@ declare -A socat_pids
 RETURN_CODE=0
 
 function return_result {
+    clean_all
     exit $RETURN_CODE
 }
 
@@ -71,14 +72,18 @@ function qemu_start {
     MAC=52:54:00:12:34:0$id
 
     CMD="sudo qemu-system-x86_64 -redir tcp:500${id}::22 -netdev user,id=network0 -device e1000,netdev=network0 -m 512M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=512M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
-    exec $CMD &> /dev/null &
+    exec $CMD &> /tmp/qemu_log_$id &
     pid=$!
-    kill -s 0 $pid &> /dev/null
+    sleep 10
+    sudo kill -s 0 $pid &> /dev/null
     if [ $? -ne 0 ]; then
+        cat /tmp/qemu_log_$id
+        rm /tmp/qemu_log_$id
         echo "failed to start qemu"
+        clean_all
         exit 1
     fi
-
+    rm /tmp/qemu_log_$id
     qemu_pids["$id"]=$pid
 
     # Wait for ssh to be ready
@@ -101,16 +106,13 @@ function server_start {
     id=$1
     echo "starting butterfly $id"
 
-    # Remove lock file to run other butterfly on the same host
-    # Don't do this at home
-    sudo rm -rf /var/run/.rte_config &> /dev/null
-
-    CMD="sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge -- -l debug -i noze -s /tmp/ --endpoint=tcp://0.0.0.0:876$id -t"
+    CMD="sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server --no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge -- -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t"
     exec $CMD &> /dev/null &
     pid=$!
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
         echo "failed to start butterfly"
+        clean_all
         exit 1
     fi
 
@@ -121,6 +123,9 @@ function server_stop {
     id=$1
     echo "stopping butterfly $id"
     sudo kill -9 $(ps --ppid ${server_pids[$id]} -o pid=)
+    while sudo kill -s 0 ${server_pids[$id]} &> /dev/null ; do
+        sleep 1
+    done
 }
 
 function network_connect {
@@ -133,6 +138,7 @@ function network_connect {
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
         echo "failed connect but$id1 and but$id2"
+        clean_all
         exit 1
     fi
     socat_pids["$id1$id2"]=$pid
@@ -209,12 +215,17 @@ messages {
    
     $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
     ret=$?
-    #rm $f
+    rm $f
     if [ ! "$ret" == "0" ]; then
         echo "client failed to send message to butterfly $but_id"
+        clean_all
         exit 1
     fi
-
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+        clean_all
+        exit 1
+    fi
 }
 
 function check_bin {
@@ -224,6 +235,12 @@ function check_bin {
         echo "cannot execute $run: not found"
         exit 1
     fi
+}
+
+function clean_all {
+    sudo killall butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null
+    sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/* &> /dev/null
+    sleep 1
 }
 
 if [ ! -f $BUTTERFLY_SRC_ROOT/LICENSE ]; then
@@ -247,6 +264,7 @@ check_bin sudo -h
 check_bin ssh -V
 check_bin sudo qemu-system-x86_64 -h
 check_bin sudo socat -h
+clean_all
 
 # run sudo one time
 sudo echo "ready to roll !"

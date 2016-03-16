@@ -41,11 +41,14 @@ cppcheck &> /dev/null
 if [ $? != 0 ]; then
     echo "cppcheck is not installed, some tests will be skipped"
 else
-	cppcheck --check-config --error-exitcode=1 --enable=all -I $BUTTERFLY_ROOT $sources
-	if [ $? != 0 ]; then
-	    echo "${RED}API style test failed${NORMAL}"
-	    exit 1
-	fi
+    cppcheck --check-config --error-exitcode=1 --enable=all -I $BUTTERFLY_ROOT $sources &> /tmp/cppcheck.log
+    if [ $? != 0 ]; then
+        cat /tmp/cppcheck.log
+        echo "${RED}API style test failed${NORMAL}"
+        rm /tmp/cppcheck.log
+        exit 1
+    fi
 fi
+rm /tmp/cppcheck.log
 
 exit 0

@@ -16,6 +16,7 @@
  */
 
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/sysinfo.h>
@@ -69,9 +70,6 @@ void Graph::stop() {
         nic_del(n_it->second);
     }
 
-    // Stop vhost
-    vhost_stop();
-
     // Stop poller thread
     exit();
     pthread_join(poller_thread, NULL);
@@ -101,9 +99,6 @@ bool Graph::start(int argc, char **argv) {
 
     // DPDK open log for us sur we WANT our logs back !
     app::Log::open();
-
-    // Start Vhost
-    vhost_start();
 
     // Create nic brick
     Pg::nic_start();
@@ -233,14 +228,6 @@ bool Graph::poller_update(struct rpc_queue **list) {
         switch (a->action) {
             case EXIT:
                 return false;
-            case VHOST_START:
-                if (!Pg::vhost_start(app::config.socket_folder)) {
-                    LOG_ERROR_("brick-vhost failed");
-                }
-                break;
-            case VHOST_STOP:
-                Pg::vhost_stop();
-                break;
             case LINK:
                 Pg::link(a->link.w, a->link.e);
                 break;
@@ -285,6 +272,7 @@ bool Graph::poller_update(struct rpc_queue **list) {
 
 std::string Graph::nic_add(const app::Nic &nic) {
     std::string name;
+    static uint32_t port_id = 0;
 
     if (!started) {
         LOG_ERROR_("Graph has not been stared");
@@ -332,9 +320,20 @@ std::string Graph::nic_add(const app::Nic &nic) {
         Pg::antispoof_arp_enable(gn.antispoof.get(), ip);
     }
 
-    name = "vhost-" + gn.id;
-    gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, EAST_SIDE),
-                     Pg::destroy);
+    name = "qemu-vhost-" + gn.id;
+    std::string path = app::config.socket_folder + "/" + name;
+    std::string iface = "eth_vhost" + std::to_string(port_id) +
+                        ",queues=1,iface=" + path;
+    port_id++;
+
+    if (g_file_test(path.c_str(), G_FILE_TEST_EXISTS))
+        g_unlink(path.c_str());
+    gn.vhost = Brick(Pg::nic_new(name.c_str(), iface.c_str()), Pg::destroy);
+    if (!g_file_test(path.c_str(), G_FILE_TEST_EXISTS)) {
+        LOG_ERROR_("Vhost socket creation failed");
+        return "";
+    }
+
     name = "sniffer-" + gn.id;
     gn.sniffer = Brick(Pg::print_new(name.c_str(), 1, 1, NULL,
                                      PG_PRINT_FLAG_MAX ^ PG_PRINT_FLAG_RAW,
@@ -384,7 +383,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     fw_update(nic);
     app::setCGroup();
 
-    return std::string(Pg::vhost_socket_path(gn.vhost.get()));
+    return std::string(path);
 }
 
 void Graph::nic_del(const app::Nic &nic) {
@@ -438,6 +437,11 @@ void Graph::nic_del(const app::Nic &nic) {
 
     // Delete firewall in the processing thread
     brick_destroy(n.firewall);
+
+    // Make sure that socket file is removed
+    std::string s_path = app::config.socket_folder + "/qemu-vhost-" + n.id;
+    if (g_file_test(s_path.c_str(), G_FILE_TEST_EXISTS))
+        g_unlink(s_path.c_str());
 
     // Wait that queue is done before removing bricks
     wait_empty_queue();
@@ -709,18 +713,6 @@ std::string Graph::dot() {
 void Graph::exit() {
     struct rpc_queue *a = g_new(struct rpc_queue, 1);
     a->action = EXIT;
-    g_async_queue_push(queue, a);
-}
-
-void Graph::vhost_start() {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
-    a->action = VHOST_START;
-    g_async_queue_push(queue, a);
-}
-
-void Graph::vhost_stop() {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
-    a->action = VHOST_STOP;
     g_async_queue_push(queue, a);
 }
 
