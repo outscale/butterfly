@@ -71,7 +71,7 @@ function qemu_start {
     IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
     MAC=52:54:00:12:34:0$id
 
-    CMD="sudo qemu-system-x86_64 -redir tcp:500${id}::22 -netdev user,id=network0 -device e1000,netdev=network0 -m 512M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=512M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
+    CMD="sudo qemu-system-x86_64 -redir tcp:500${id}::22 -netdev user,id=network0 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
     exec $CMD &> /tmp/qemu_log_$id &
     pid=$!
     sleep 10
