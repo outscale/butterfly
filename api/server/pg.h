@@ -19,26 +19,10 @@
 #define API_SERVER_PG_H_
 
 extern "C" {
+#include <net/ethernet.h>
 #include <packetgraph/packetgraph.h>
-#include <packetgraph/common.h>
-#include <packetgraph/utils/errors.h>
-#include <packetgraph/switch.h>
-#include <packetgraph/diode.h>
-#include <packetgraph/vhost.h>
-#include <packetgraph/nic.h>
-#include <packetgraph/firewall.h>
-#include <packetgraph/hub.h>
-#include <packetgraph/print.h>
-#include <packetgraph/vtep.h>
-#include <packetgraph/antispoof.h>
 }
 #include <string>
-
-/* Copy of DPDK's ether_addr structure
- * We can't use C++11 and dpdk. */
-struct ether_addr {
-    uint8_t    addr_bytes[6];
-};
 
 /* This is a simple wrapper of packetgraph library.
  * For documentation, you would prefer looking directly at packetgraph's one.
@@ -47,8 +31,6 @@ namespace Pg {
     bool start(int argc, char **argv);
 
     void stop(void);
-
-    int64_t refcount(struct pg_brick *brick);
 
     bool link(struct pg_brick *target, struct pg_brick *brick);
 
@@ -111,10 +93,10 @@ namespace Pg {
 
     void firewall_rule_flush(struct pg_brick *brick);
 
-    int firewall_rule_add(struct pg_brick *brick, std::string filter,
-                          enum pg_side dir, int stateful);
+    bool firewall_rule_add(struct pg_brick *brick, std::string filter,
+                           enum pg_side dir, int stateful);
 
-    int firewall_reload(struct pg_brick *brick);
+    bool firewall_reload(struct pg_brick *brick);
 
     struct pg_brick *hub_new(const char *name,
                   uint32_t west_max,

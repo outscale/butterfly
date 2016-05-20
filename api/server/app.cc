@@ -14,9 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
  */
+extern "C" {
 #include <unistd.h>
 #include <syslog.h>
 #include <glib.h>
+}
 #include <iostream>
 #include <ctime>
 #include <thread>
