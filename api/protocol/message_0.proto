@@ -40,73 +40,76 @@ message MessageV0 {
     // Will replaced provided values in corresponding NIC
     optional NicUpdateReq nic_update = 2;
 
+    // Remove a NIC by providing it's id
+    optional string nic_del = 3;
+
     // List all NICs (just NICs id)
     // Can be true or false, it just have to be set
     // Reponse MUST have nic_list filled
-    optional bool nic_list = 3;
+    optional bool nic_list = 4;
 
     // List details of a specific NIC or all NIcs
     // Ask details of a specific NIC by passing it's id
     // Ask details of all NICs by passing an empty string
     // Reponse MUST have nic_details filled
-    optional string nic_details = 4;
+    optional string nic_details = 5;
 
     // Export firewall data, used for VM migration by giving it's id
     // Reponse MUST have nic_export filled
-    optional string nic_export = 5;
+    optional string nic_export = 6;
 
     // Provide statistics about a particular NIC by giving it's id
     // Reponse MUST have nic_stats filled
-    optional string nic_stats = 6;
+    optional string nic_stats = 7;
 
     // Create or Replace a Security Group
     // If Security Group does not exist, will create it
     // If Security Group already exist, will replace it (rules and members)
-    optional Sg sg_add = 7;
+    optional Sg sg_add = 8;
 
     // Delete a Security Group by giving it's id
-    optional string sg_del = 8;
+    optional string sg_del = 9;
 
     // List all Security Groups (just SGs id)
     // Can be true or false, it just have to be set
     // Response MUST have sg_list filled
-    optional bool sg_list = 9;
+    optional bool sg_list = 10;
 
     // Add rule to a Security Group
     // Will create the corresponding Security Group if does not exists
-    optional SgRuleAddReq sg_rule_add = 10;
+    optional SgRuleAddReq sg_rule_add = 11;
 
     // Delete a rule from a Security Group
     // Will create the corresponding Security Group if does not exists
-    optional SgRuleDelReq sg_rule_del = 11;
+    optional SgRuleDelReq sg_rule_del = 12;
 
     // List all rules of a Security Group by giving it's id
     // Reponse MUST have sg_rule_list filled
-    optional string sg_rule_list = 12;
+    optional string sg_rule_list = 13;
 
     // Add a member (IP) to a Security Group
     // Will create the corresponding Security Group if does not exists
-    optional SgMemberAddReq sg_member_add = 13;
+    optional SgMemberAddReq sg_member_add = 14;
 
     // Delete a member (IP) from a Security Group
     // Will create the corresponding Security Group if does not exists
-    optional SgMemberDelReq sg_member_del = 14;
+    optional SgMemberDelReq sg_member_del = 15;
 
     // List of all members of a specific Security Group by giving it's id
     // Reponse MUST have sg_member_list filled
-    optional string sg_member_list = 15;
+    optional string sg_member_list = 16;
 
     // Ask application status informations
     // Can be true or false, it just have to be set
     // Response MUST have app_status filled
-    optional bool app_status = 16;
+    optional bool app_status = 17;
 
     // Clean and quit Butterfly server
     // Can be true or false, it just have to be set
-    optional bool app_quit = 17;
+    optional bool app_quit = 18;
 
     // Ask to configure some parameters in application
-    optional AppConfigReq app_config = 18;
+    optional AppConfigReq app_config = 19;
   }
 
   message Response {
