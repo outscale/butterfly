@@ -1,0 +1,16 @@
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_del: "nic-0"
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_del: "nic-1"
+    }
+  }
+}
