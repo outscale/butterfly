@@ -42,6 +42,8 @@ void API_0::process(const MessageV0 &req, MessageV0 *res) {
         nic_add(rq, rs);
     else if (rq.has_nic_update())
         nic_update(rq, rs);
+    else if (rq.has_nic_del())
+        nic_del(rq, rs);
     else if (rq.has_nic_list())
         nic_list(rq, rs);
     else if (rq.has_nic_details())
@@ -129,6 +131,19 @@ void API_0::nic_update(const MessageV0_Request &req,
         return;
     }
 
+    build_ok_res(res);
+}
+
+void API_0::nic_del(const MessageV0_Request &req, MessageV0_Response *res) {
+    if (res == nullptr)
+        return;
+
+    app::log.info("NIC deletion");
+    app::Error error;
+    if (!action_nic_del(req.nic_del(), &error)) {
+        build_nok_res(res, error);
+        return;
+    }
     build_ok_res(res);
 }
 

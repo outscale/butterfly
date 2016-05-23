@@ -193,6 +193,7 @@ class API_0: public API {
     static void nic_add(const MessageV0_Request &req, MessageV0_Response *res);
     static void nic_update(const MessageV0_Request &req,
                            MessageV0_Response *res);
+    static void nic_del(const MessageV0_Request &req, MessageV0_Response *res);
     static void nic_list(const MessageV0_Request &req,
                          MessageV0_Response *res);
     static void nic_details(const MessageV0_Request &req,
