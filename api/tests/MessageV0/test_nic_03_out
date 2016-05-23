@@ -1,0 +1,297 @@
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_add {
+        path: "/tmp/qemu-vhost-nic-1"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_add {
+        path: "/tmp/qemu-vhost-nic-2"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_add {
+        path: "/tmp/qemu-vhost-nic-3"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_add {
+        path: "/tmp/qemu-vhost-nic-4"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_list: "nic-1"
+      nic_list: "nic-2"
+      nic_list: "nic-3"
+      nic_list: "nic-4"
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_list: "nic-1"
+      nic_list: "nic-3"
+      nic_list: "nic-4"
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_list: "nic-3"
+      nic_list: "nic-4"
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_add {
+        path: "/tmp/qemu-vhost-nic-1"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_add {
+        path: "/tmp/qemu-vhost-nic-2"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_add {
+        path: "/tmp/qemu-vhost-nic-3"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_add {
+        path: "/tmp/qemu-vhost-nic-4"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_list: "nic-1"
+      nic_list: "nic-2"
+      nic_list: "nic-3"
+      nic_list: "nic-4"
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}

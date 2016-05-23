@@ -1,0 +1,137 @@
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: "nic-1"
+        mac: "42:42:42:42:42:41"
+        vni: 321
+        ip: "1.2.3.4"
+        ip: "1.2.3.5"
+        ip: "2001:0db8:0000:85a3:0000:0000:ac1f:8001"
+        security_group: "sg-1"
+        security_group: "sg-2"
+        ip_anti_spoof: true
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: "nic-2"
+        mac: "42:42:42:42:42:42"
+        vni: 322
+        ip: "2.2.3.4"
+        ip: "2.2.3.5"
+        ip: "2001:0db8:0000:85a3:0000:0000:ac1f:8002"
+        security_group: "sg-1"
+        security_group: "sg-4"
+        ip_anti_spoof: false
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: "nic-3"
+        mac: "42:42:42:42:42:43"
+        vni: 323
+        ip: "3.2.3.4"
+        ip: "3.2.3.5"
+        ip: "2001:0db8:0000:85a3:0000:0000:ac1f:8003"
+        security_group: "sg-4"
+        security_group: "sg-2"
+        ip_anti_spoof: false
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: "nic-4"
+        mac: "42:42:42:42:42:44"
+        vni: 324
+        ip: "4.2.3.4"
+        ip: "4.2.3.5"
+        ip: "2001:0db8:0000:85a3:0000:0000:ac1f:8004"
+        security_group: "sg-5"
+        security_group: "sg-6"
+        ip_anti_spoof: false
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_list: true
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_del: "nic-2"
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_list: true
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_del: "nic-1"
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_list: true
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_del: "nic-3"
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_del: "nic-4"
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_list: true
+    }
+  }
+}
+
