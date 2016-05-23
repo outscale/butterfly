@@ -15,11 +15,13 @@
  * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+extern "C" {
 #include <stdio.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <cstring>
 #include <cstddef>
+}
 #include "api/server/app.h"
 #include "api/server/pg.h"
 
@@ -59,18 +61,15 @@ namespace {
         pg_stop();
     }
 
-    int64_t refcount(struct pg_brick *brick) {
-        return pg_brick_refcount(brick);
-    }
-
     bool link(struct pg_brick *target, struct pg_brick *brick) {
         LOG_DEBUG_("link [%s] to [%s]\n",
                 Pg::brick_name(target),
                 Pg::brick_name(brick));
-        bool ret = pg_brick_link(target, brick, &errp);
-        if (!ret)
+        if (pg_brick_link(target, brick, &errp) < 0) {
             print_and_free_errp();
-        return ret;
+            return false;
+        }
+        return true;
     }
 
     void unlink(struct pg_brick *brick) {
@@ -81,10 +80,11 @@ namespace {
     }
 
     bool poll(struct pg_brick *brick, uint16_t *count) {
-        bool ret = pg_brick_poll(brick, count, &errp);
-        if (!ret)
+        if (pg_brick_poll(brick, count, &errp) < 0) {
             print_and_free_errp();
-        return ret;
+            return false;
+        }
+        return true;
     }
 
     int64_t pkts_count_get(struct pg_brick *brick, enum pg_side side) {
@@ -123,7 +123,7 @@ namespace {
     }
 
     bool vhost_start(std::string dir) {
-        if (!pg_vhost_start(dir.c_str(), &errp)) {
+        if (pg_vhost_start(dir.c_str(), &errp) < 0) {
             print_and_free_errp();
             return false;
         }
@@ -134,17 +134,16 @@ namespace {
         pg_vhost_stop();
     }
 
-const char *vhost_socket_path(struct pg_brick *vhost) {
-    // this methode can not fail...
-    return pg_vhost_socket_path(vhost, &errp);
-}
+    const char *vhost_socket_path(struct pg_brick *vhost) {
+        // this methode can not fail...
+        return pg_vhost_socket_path(vhost, &errp);
+    }
 
     struct pg_brick *diode_new(const char *name,
                                uint32_t west_max,
                                uint32_t east_max,
                                enum pg_side output) {
-        struct pg_brick *ret = pg_diode_new(name, west_max,
-                            east_max, output, &errp);
+        struct pg_brick *ret = pg_diode_new(name, output, &errp);
         if (!ret)
             print_and_free_errp();
         return ret;
@@ -199,20 +198,24 @@ const char *vhost_socket_path(struct pg_brick *vhost) {
         ::pg_firewall_rule_flush(brick);
     }
 
-    int firewall_rule_add(struct pg_brick *brick, std::string filter,
+    bool firewall_rule_add(struct pg_brick *brick, std::string filter,
                           enum pg_side dir, int stateful) {
         g_assert(strcmp(pg_brick_type(brick), "firewall") == 0);
-        int ret;
-        ret = pg_firewall_rule_add(brick, filter.c_str(), dir,
-                                   stateful, &errp);
-        if (ret)
+        if (pg_firewall_rule_add(brick, filter.c_str(), dir,
+                                 stateful, &errp) < 0) {
             print_and_free_errp();
-        return ret;
+            return false;
+        }
+        return true;
     }
 
-    int firewall_reload(struct pg_brick *brick) {
+    bool firewall_reload(struct pg_brick *brick) {
         g_assert(strcmp(pg_brick_type(brick), "firewall") == 0);
-        return pg_firewall_reload(brick, &errp);
+        if (pg_firewall_reload(brick, &errp) < 0) {
+            print_and_free_errp();
+            return false;
+        }
+        return true;
     }
 
     struct pg_brick *hub_new(const char *name,
@@ -288,7 +291,7 @@ const char *vhost_socket_path(struct pg_brick *vhost) {
     std::string graph_dot(struct pg_brick *brick) {
             char buf[10000];
             FILE *fd = fmemopen(buf, 10000, "w+");
-        if (!pg_graph_dot(brick, fd, &errp)) {
+        if (pg_brick_dot(brick, fd, &errp) < 0) {
             print_and_free_errp();
             return std::string("");
         }
@@ -304,7 +307,7 @@ const char *vhost_socket_path(struct pg_brick *vhost) {
                                    enum pg_side outside,
                                    struct ether_addr mac) {
         struct pg_brick *ret = pg_antispoof_new(name, west_max, east_max,
-                                                outside, mac, &errp);
+                                                outside, &mac, &errp);
         if (!ret)
             print_and_free_errp();
         return ret;

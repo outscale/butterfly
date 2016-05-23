@@ -15,7 +15,9 @@
  * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+extern "C" {
 #include <arpa/inet.h>
+}
 #include <algorithm>
 #include "api/server/api.h"
 #include "api/server/app.h"

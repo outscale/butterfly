@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+extern "C" {
 #include <unistd.h>
+}
 #include <thread>
 #include "api/server/server.h"
 #include "api/server/app.h"

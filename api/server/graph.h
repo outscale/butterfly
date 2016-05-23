@@ -18,7 +18,9 @@
 #ifndef API_SERVER_GRAPH_H_
 #define API_SERVER_GRAPH_H_
 
+extern "C" {
 #include <glib.h>
+}
 #include <mutex>
 #include <memory>
 #include <map>

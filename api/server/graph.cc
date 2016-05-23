@@ -15,12 +15,14 @@
  * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+extern "C" {
 #include <glib.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/sysinfo.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+}
 #include <utility>
 #include <thread>
 #include <chrono>
@@ -320,7 +322,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     gn.firewall = Brick(tmp_fw, Pg::fake_destroy);
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
-    nic.mac.bytes(mac.addr_bytes);
+    nic.mac.bytes(mac.ether_addr_octet);
     gn.antispoof = Brick(Pg::antispoof_new(name.c_str(), 1, 1, WEST_SIDE, mac),
                          Pg::destroy);
 
@@ -651,13 +653,13 @@ void Graph::fw_update(const app::Nic &nic) {
     m = "rules (out) for nic " + nic.id + ": " + out_rules;
     app::log.debug(m);
     if (in_rules.length() > 0 &&
-        Pg::firewall_rule_add(fw.get(), in_rules, WEST_SIDE, 0)) {
+        !Pg::firewall_rule_add(fw.get(), in_rules, WEST_SIDE, 0)) {
         std::string m = "cannot build rules (in) for nic " + nic.id;
         app::log.error(m);
         return;
     }
     if (out_rules.length() > 0 &&
-        Pg::firewall_rule_add(fw.get(), out_rules, EAST_SIDE, 1)) {
+        !Pg::firewall_rule_add(fw.get(), out_rules, EAST_SIDE, 1)) {
         std::string m = "cannot build rules (out) for nic " + nic.id;
         app::log.error(m);
         return;
@@ -692,7 +694,7 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
     Brick &fw = itnic->second.firewall;
 
     // Add rule & reload firewall
-    if (Pg::firewall_rule_add(fw.get(), r, WEST_SIDE, 0)) {
+    if (!Pg::firewall_rule_add(fw.get(), r, WEST_SIDE, 0)) {
         std::string m = "cannot load rule (add) for nic " + nic.id;
         app::log.error(m);
         app::log.debug(r);
