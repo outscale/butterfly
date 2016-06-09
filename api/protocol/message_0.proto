@@ -80,7 +80,6 @@ message MessageV0 {
     optional SgRuleAddReq sg_rule_add = 11;
 
     // Delete a rule from a Security Group
-    // Will create the corresponding Security Group if does not exists
     optional SgRuleDelReq sg_rule_del = 12;
 
     // List all rules of a Security Group by giving it's id
@@ -92,7 +91,6 @@ message MessageV0 {
     optional SgMemberAddReq sg_member_add = 14;
 
     // Delete a member (IP) from a Security Group
-    // Will create the corresponding Security Group if does not exists
     optional SgMemberDelReq sg_member_del = 15;
 
     // List of all members of a specific Security Group by giving it's id
