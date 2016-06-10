@@ -28,19 +28,25 @@ OUTPUT=$1
 DATE=`git log -1 | grep Date | awk -F "   " '{ print $2 }' | awk -F '+' '{ print $1 }'`
 NAME=`git log --oneline -1 | awk -F ' ' '{print $1}'`
 
-REVISION=0
+PROTO_REVISION=0
+BUTTERFLY_VERSION=1.0.0
 
 tmp=version_tmp.h
 echo "" > $tmp
 echo '#ifndef __HDR_VERSION__' >> $tmp
 echo '#define __HDR_VERSION__' >> $tmp
+echo -n '#define BUTTERFLY_VERSION ' >> $tmp
+echo $BUTTERFLY_VERSION >> $tmp
 echo -n '#define PROTOS_REVISION ' >> $tmp
-echo $REVISION >> $tmp
+echo $PROTO_REVISION >> $tmp
 echo -n '#define VERSION_INFO "' >> $tmp
-echo -n revision: \\\"$REVISION\\\" commit: \\\"$NAME\\\" date: \\\"$DATE\\\" >> $tmp
+echo -n butterfly version: \\\"$BUTTERFLY_VERSION\\\" proto revision: \\\"$PROTO_REVISION\\\" commit: \\\"$NAME\\\" date: \\\"$DATE\\\" >> $tmp
 echo '"' >> $tmp
 echo '#endif' >> $tmp
 
 if ! diff $tmp $OUTPUT &> /dev/null ; then
     mv $tmp $OUTPUT
 fi
+
+# Also write version for packaging purposes
+echo $BUTTERFLY_VERSION > butterfly_version
