@@ -69,3 +69,11 @@ add_custom_target(tests-api
 add_custom_target(tests-scenario
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(package-rpm
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} rpm
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(package-deb
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} deb
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
