@@ -8,6 +8,8 @@ add_executable(api_client ${SOURCES_P})
 
 add_dependencies(api_client api_protocol libzmq zmqpp butterfly-genere-version)
 
+install(TARGETS api_client DESTINATION bin)
+
 set_target_properties(api_client PROPERTIES OUTPUT_NAME butterfly-client)
 
 include_directories(${GLIB2_INCLUDE_DIR} ${GLIB2_INTERNAL_INCLUDE_DIR}
