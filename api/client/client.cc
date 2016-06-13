@@ -32,7 +32,7 @@ Options::Options() {
     input = NULL;
     output = NULL;
     std_out = false;
-    revision = false;
+    version = false;
     verbose = false;
 }
 
@@ -48,8 +48,8 @@ bool Options::parse(int argc, char **argv) {
          "JSON description of response message on stdout", NULL},
         {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
          "show details of on each operations", NULL},
-        {"revision", 'r', 0, G_OPTION_ARG_NONE, &revision,
-         "Show maximal revision number of protocol supported by the client",
+        {"version", 'V', 0, G_OPTION_ARG_NONE, &version,
+         "Show butterfly-client version and exit",
          NULL},
         { NULL }
     };
@@ -73,8 +73,8 @@ int main(int argc, char **argv) {
     if (!options.parse(argc, argv))
         return 0;
 
-    // Does user asked for revision ?
-    if (options.revision) {
+    // Does user asked for version ?
+    if (options.version) {
         std::cout << VERSION_INFO <<
         std::endl;
         return 0;
