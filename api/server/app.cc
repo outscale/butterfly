@@ -47,7 +47,7 @@ Config::Config() {
 bool Config::parse_cmd(int argc, char **argv) {
     bool ret = true;
     int i;
-    bool show_revision;
+    bool show_version;
     bool dpdk_help;
 
     auto gfree = [](gchar *p) { g_free(p); };
@@ -70,8 +70,8 @@ bool Config::parse_cmd(int argc, char **argv) {
         {"log-level", 'l', 0, G_OPTION_ARG_STRING, &log_level_cmd,
          "Log level to use. LOG_LEVEL can be 'none', 'error' (default), " \
          "'warning', 'info' or 'debug'", "LOG_LEVEL"},
-        {"revision", 'r', 0, G_OPTION_ARG_NONE, &show_revision,
-         "Show the protocol revision number and exit", nullptr},
+        {"version", 'V', 0, G_OPTION_ARG_NONE, &show_version,
+         "Show butterfly-server version and exit", nullptr},
         {"pid", 'p', 0, G_OPTION_ARG_FILENAME, &pid_path_cmd,
          "Write PID of process in specified file", "FILE"},
         {"socket-dir", 's', 0, G_OPTION_ARG_FILENAME, &socket_folder_cmd,
@@ -122,8 +122,8 @@ bool Config::parse_cmd(int argc, char **argv) {
         return false;
     }
 
-    // Ask for revision number ?
-    if (show_revision) {
+    // Ask for version number ?
+    if (show_version) {
         std::cout << VERSION_INFO << std::endl;
         return false;
     }
