@@ -30,7 +30,7 @@ struct Options
     gchar *output;
     gboolean std_out;
     gchar *proto;
-    gboolean revision;
+    gboolean version;
     gboolean verbose;
 };
 
