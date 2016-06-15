@@ -15,7 +15,7 @@ ExternalProject_Add(dpdk
 	BINARY_DIR ${DPDK_SOURCE_DIR}
 	BUILD_COMMAND make EXTRA_CFLAGS='-fPIC'
 	INSTALL_DIR ${DPDK_INSTALL_DIR}
-	INSTALL_COMMAND mv ${DPDK_SOURCE_DIR}/build ${DPDK_INSTALL_DIR} && ln -s ${DPDK_SOURCE_DIR}/lib ${DPDK_INSTALL_DIR}/lib
+	INSTALL_COMMAND echo ${DPDK_INSTALL_DIR} && rm -rvf ${DPDK_INSTALL_DIR}/build && mv -vf ${DPDK_SOURCE_DIR}/build ${DPDK_INSTALL_DIR} && ln -s ${DPDK_SOURCE_DIR}/lib ${DPDK_INSTALL_DIR}/lib
 	LOG_BUILD 1 Building dpdk)
 
 ExternalProject_Add(protobuf
