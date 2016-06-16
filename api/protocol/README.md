@@ -57,7 +57,7 @@ Note that revision number is just an identifier of the current used protocol.
 It does not mean anything except tracing the different evolutions of the
 protocol (like a document has several revisions).
 
-To increment revision number, just edit 'revision.h' file.
+To increment revision number, just edit scripts/genHdrVersion.sh file.
 
 # Changelog
 
