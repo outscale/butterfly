@@ -243,15 +243,15 @@ class Graph {
     };
 
     /* Global branch. */
-    Brick nic;
-    Brick vtep;
-    Brick sniffer;
-    FILE *pcap_file;
+    Brick nic_;
+    Brick vtep_;
+    Brick sniffer_;
+    FILE *pcap_file_;
     /* vni -> vni branch */
-    std::map<uint32_t, struct GraphVni> vnis;
+    std::map<uint32_t, struct GraphVni> vnis_;
 
     /** Instruction queue to packetgraph thread. */
-    GAsyncQueue *queue;
+    GAsyncQueue *queue_;
 };
 
 #endif  // API_SERVER_GRAPH_H_

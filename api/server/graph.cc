@@ -32,7 +32,7 @@ extern "C" {
 
 Graph::Graph(void) {
     // Init rpc queue
-    queue = g_async_queue_new();
+    queue_ = g_async_queue_new();
     started = false;
 }
 
@@ -79,15 +79,15 @@ void Graph::stop() {
     pthread_join(poller_thread, NULL);
 
     // Empty and unref queue
-    a = (struct RpcQueue *)g_async_queue_try_pop(queue);
+    a = (struct RpcQueue *)g_async_queue_try_pop(queue_);
     while (a != NULL) {
         g_free(a);
-        a = (struct RpcQueue *)g_async_queue_try_pop(queue);
+        a = (struct RpcQueue *)g_async_queue_try_pop(queue_);
     }
-    g_async_queue_unref(queue);
+    g_async_queue_unref(queue_);
 
     // Byby packetgraph
-    vnis.clear();
+    vnis_.clear();
     Pg::stop();
     app::destroyCGroup();
     started = false;
@@ -108,41 +108,41 @@ bool Graph::start(int argc, char **argv) {
     vhost_start();
 
     // Create nic brick
-    nic = Brick(Pg::nic_new_by_id("port-0", 0), Pg::destroy);
-    if (nic.get() == NULL) {
+    nic_ = Brick(Pg::nic_new_by_id("port-0", 0), Pg::destroy);
+    if (nic_.get() == NULL) {
         LOG_ERROR_("brick-nic failed");
         return false;
     }
 
     // Try to increase mtu
-    if (!Pg::nic_set_mtu(nic.get(), 2000)) {
+    if (!Pg::nic_set_mtu(nic_.get(), 2000)) {
         LOG_WARNING_("cannot increase port MTU");
     }
 
     // Create sniffer brick
-    pcap_file = fopen("/tmp/butterfly-main.pcap", "w");
+    pcap_file_ = fopen("/tmp/butterfly-main.pcap", "w");
     std::string sniffer_name = "main-sniffer-" + std::to_string(getpid());
-    sniffer = Brick(Pg::print_new(sniffer_name.c_str(), 1, 1, pcap_file,
+    sniffer_ = Brick(Pg::print_new(sniffer_name.c_str(), 1, 1, pcap_file_,
                                   PG_PRINT_FLAG_PCAP | PG_PRINT_FLAG_CLOSE_FILE,
                                   NULL),
                     Pg::destroy);
-    if (sniffer.get() == NULL) {
+    if (sniffer_.get() == NULL) {
         LOG_ERROR_("brick-sniffer failed");
         return false;
     }
 
     // Create vtep brick
-    Pg::nic_get_mac(nic.get(), &mac);
-    vtep = Brick(Pg::vtep_new("vxlan", 1, 50, WEST_SIDE,
+    Pg::nic_get_mac(nic_.get(), &mac);
+    vtep_ = Brick(Pg::vtep_new("vxlan", 1, 50, WEST_SIDE,
                               app::config.external_ip, mac,
                               ALL_OPTI),
                  Pg::destroy);
-    if (nic.get() == NULL) {
+    if (nic_.get() == NULL) {
         LOG_ERROR_("brick-vtep failed");
         return false;
     }
 
-    linkAndStalk(nic, vtep, sniffer);
+    linkAndStalk(nic_, vtep_, sniffer_);
 
     // Run poller
     pthread_create(&poller_thread, NULL, Graph::poller, this);
@@ -156,10 +156,10 @@ void *Graph::poller(void *graph) {
     struct RpcUpdatePoll *list = NULL;
     struct RpcQueue *q = NULL;
     uint16_t pkts_count;
-    struct pg_brick *nic = g->nic.get();
+    struct pg_brick *nic = g->nic_.get();
     uint32_t size = 0;
 
-    g_async_queue_ref(g->queue);
+    g_async_queue_ref(g->queue_);
 
     // Set CPU affinity for packetgraph processing
     Graph::set_cpu(app::config.graph_core_id);
@@ -202,7 +202,7 @@ void *Graph::poller(void *graph) {
             usleep(5);
         }
     }
-    g_async_queue_unref(g->queue);
+    g_async_queue_unref(g->queue_);
     g_free(q);
     pthread_exit(NULL);
 }
@@ -235,7 +235,7 @@ bool Graph::poller_update(struct RpcQueue **list) {
     struct RpcQueue *tmp;
 
     // Unqueue calls
-    a = (struct RpcQueue *) g_async_queue_try_pop(queue);
+    a = (struct RpcQueue *) g_async_queue_try_pop(queue_);
     while (a != NULL) {
         switch (a->action) {
             case EXIT:
@@ -284,7 +284,7 @@ bool Graph::poller_update(struct RpcQueue **list) {
                 break;
         }
         g_free(a);
-        a = (struct RpcQueue *) g_async_queue_try_pop(queue);
+        a = (struct RpcQueue *) g_async_queue_try_pop(queue_);
     }
 
     return true;
@@ -299,14 +299,14 @@ std::string Graph::nic_add(const app::Nic &nic) {
     }
 
     // Create VNI if it does not exists
-    auto it = vnis.find(nic.vni);
-    if (it == vnis.end()) {
+    auto it = vnis_.find(nic.vni);
+    if (it == vnis_.end()) {
         struct GraphVni v;
         v.vni = nic.vni;
         std::pair<uint32_t, struct GraphVni> p(nic.vni, v);
-        vnis.insert(p);
-        it = vnis.find(nic.vni);
-        if (it == vnis.end())
+        vnis_.insert(p);
+        it = vnis_.find(nic.vni);
+        if (it == vnis_.end())
             return "";
     }
     struct GraphVni &vni = it->second;
@@ -355,8 +355,8 @@ std::string Graph::nic_add(const app::Nic &nic) {
     // Link branch to the vtep
     if (vni.nics.size() == 0) {
         // Link directly the firewall to the vtep
-        link(vtep, gn.firewall);
-        add_vni(vtep, gn.firewall, nic.vni);
+        link(vtep_, gn.firewall);
+        add_vni(vtep_, gn.firewall, nic.vni);
     } else if (vni.nics.size() == 1) {
         // We have to insert a switch
         // - unlink the first firewall from the graph
@@ -372,8 +372,8 @@ std::string Graph::nic_add(const app::Nic &nic) {
         Brick fw1 = vni.nics.begin()->second.firewall;
         Brick as1 = vni.nics.begin()->second.antispoof;
         unlink(fw1);
-        link(vtep, vni.sw);
-        add_vni(vtep, vni.sw, vni.vni);
+        link(vtep_, vni.sw);
+        add_vni(vtep_, vni.sw, vni.vni);
         link(vni.sw, fw1);
         link(fw1, as1);
         link(vni.sw, gn.firewall);
@@ -402,8 +402,8 @@ void Graph::nic_del(const app::Nic &nic) {
         return;
     }
 
-    auto vni_it = app::graph.vnis.find(nic.vni);
-    if (vni_it == app::graph.vnis.end()) {
+    auto vni_it = app::graph.vnis_.find(nic.vni);
+    if (vni_it == app::graph.vnis_.end()) {
         LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
             std::to_string(nic.vni) + " don't seems to exist.");
         return;
@@ -437,7 +437,7 @@ void Graph::nic_del(const app::Nic &nic) {
             it++;
         struct GraphNic &other = it->second;
         unlink(vni.sw);
-        link(app::graph.vtep, other.firewall);
+        link(app::graph.vtep_, other.firewall);
         wait_empty_queue();
         vni.sw.reset();
     } else {
@@ -454,7 +454,7 @@ void Graph::nic_del(const app::Nic &nic) {
 
     // Remove empty vni
     if (vni.nics.empty())
-        vnis.erase(vni.vni);
+        vnis_.erase(vni.vni);
 }
 
 std::string Graph::nic_export(const app::Nic &nic) {
@@ -475,8 +475,8 @@ void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
     }
     *in = *out = 0;
 
-    auto vni_it = app::graph.vnis.find(nic.vni);
-    if (vni_it == app::graph.vnis.end()) {
+    auto vni_it = app::graph.vnis_.find(nic.vni);
+    if (vni_it == app::graph.vnis_.end()) {
         LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
             std::to_string(nic.vni) + " don't seems to exist.");
         return;
@@ -505,8 +505,8 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
         return;
     }
 
-    auto vni_it = app::graph.vnis.find(nic.vni);
-    if (vni_it == app::graph.vnis.end()) {
+    auto vni_it = app::graph.vnis_.find(nic.vni);
+    if (vni_it == app::graph.vnis_.end()) {
         LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
             std::to_string(nic.vni) + " don't seems to exist.");
         return;
@@ -629,8 +629,8 @@ void Graph::fw_update(const app::Nic &nic) {
     }
 
     // Get firewall brick
-    auto itvni = vnis.find(nic.vni);
-    if (itvni == vnis.end())
+    auto itvni = vnis_.find(nic.vni);
+    if (itvni == vnis_.end())
         return;
     auto itnic = itvni->second.nics.find(nic.id);
     if (itnic == itvni->second.nics.end())
@@ -696,8 +696,8 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
     }
 
     // Get firewall brick
-    auto itvni = vnis.find(nic.vni);
-    if (itvni == vnis.end())
+    auto itvni = vnis_.find(nic.vni);
+    if (itvni == vnis_.end())
         return;
     auto itnic = itvni->second.nics.find(nic.id);
     if (itnic == itvni->second.nics.end()) {
@@ -719,25 +719,25 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
 
 std::string Graph::dot() {
     // Build the graph from the physical NIC
-    return Pg::graph_dot(nic.get());
+    return Pg::graph_dot(nic_.get());
 }
 
 void Graph::exit() {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = EXIT;
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::vhost_start() {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = VHOST_START;
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::vhost_stop() {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = VHOST_STOP;
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::link(Brick w, Brick e) {
@@ -745,21 +745,21 @@ void Graph::link(Brick w, Brick e) {
     a->action = LINK;
     a->link.w = w.get();
     a->link.e = e.get();
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::unlink(Brick b) {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = UNLINK;
     a->unlink.b = b.get();
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::fw_reload(Brick b) {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = FW_RELOAD;
     a->fw_reload.firewall = b.get();
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::fw_new(const char *name,
@@ -774,14 +774,14 @@ void Graph::fw_new(const char *name,
     a->fw_new.east_max = east_max;
     a->fw_new.flags = flags;
     a->fw_new.result = result;
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::brick_destroy(Brick b) {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = BRICK_DESTROY;
     a->brick_destroy.b = b.get();
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::add_vni(Brick vtep, Brick neighbor, uint32_t vni) {
@@ -792,7 +792,7 @@ void Graph::add_vni(Brick vtep, Brick neighbor, uint32_t vni) {
     a->add_vni.neighbor = neighbor.get();
     a->add_vni.vni = vni;
     a->add_vni.multicast_ip = multicast_ip;
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::update_poll() {
@@ -806,8 +806,8 @@ void Graph::update_poll() {
     // Add physical NIC brick
     p.size = 0;
     // Add all vhost bricks
-    for (vni_it = vnis.begin();
-            vni_it != vnis.end();
+    for (vni_it = vnis_.begin();
+            vni_it != vnis_.end();
             vni_it++) {
         for (nic_it = vni_it->second.nics.begin();
                 nic_it != vni_it->second.nics.end();
@@ -825,11 +825,11 @@ void Graph::update_poll() {
     }
 
     // Pass this new listing to packetgraph thread
-    g_async_queue_push(queue, a);
+    g_async_queue_push(queue_, a);
 }
 
 void Graph::wait_empty_queue() {
-    while (g_async_queue_length_unlocked(queue) > 0)
+    while (g_async_queue_length_unlocked(queue_) > 0)
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
