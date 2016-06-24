@@ -84,6 +84,8 @@ namespace Pg {
 
     void nic_get_stats(struct pg_brick *brick, struct pg_nic_stats *stats);
 
+    bool nic_set_mtu(struct pg_brick *brick, uint16_t mtu);
+
     struct pg_brick *firewall_new(const char *name,
                    uint32_t west_max,
                    uint32_t east_max,

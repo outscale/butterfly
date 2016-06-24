@@ -177,6 +177,14 @@ namespace {
         pg_nic_get_stats(brick, stats);
     }
 
+    bool nic_set_mtu(struct pg_brick *brick, uint16_t mtu) {
+        if (pg_nic_set_mtu(brick, mtu, &errp) < 0) {
+            print_and_free_errp();
+            return false;
+        }
+        return true;
+    }
+
     struct pg_brick *firewall_new(const char *name,
                                   uint32_t west_max,
                                   uint32_t east_max,
