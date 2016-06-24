@@ -114,6 +114,11 @@ bool Graph::start(int argc, char **argv) {
         return false;
     }
 
+    // Try to increase mtu
+    if (!Pg::nic_set_mtu(nic.get(), 2000)) {
+        LOG_WARNING_("cannot increase port MTU");
+    }
+
     // Create sniffer brick
     pcap_file = fopen("/tmp/butterfly-main.pcap", "w");
     std::string sniffer_name = "main-sniffer-" + std::to_string(getpid());
