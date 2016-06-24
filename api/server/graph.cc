@@ -108,7 +108,6 @@ bool Graph::start(int argc, char **argv) {
     vhost_start();
 
     // Create nic brick
-    Pg::nic_start();
     nic = Brick(Pg::nic_new_by_id("port-0", 0), Pg::destroy);
     if (nic.get() == NULL) {
         LOG_ERROR_("brick-nic failed");
