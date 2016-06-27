@@ -56,6 +56,7 @@ message MessageV0 {
 
     // Export firewall data, used for VM migration by giving it's id
     // Reponse MUST have nic_export filled
+    // Warning: not implemented
     optional string nic_export = 6;
 
     // Provide statistics about a particular NIC by giving it's id
