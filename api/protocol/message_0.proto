@@ -204,6 +204,7 @@ message MessageV0 {
       // For packets comming in the NIC
       INBOUND = 0;
       // For packets comming out from the NIC
+      // Warning: not implemented
       OUTBOUND = 1;
     }
 
