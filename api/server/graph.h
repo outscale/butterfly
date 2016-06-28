@@ -222,7 +222,7 @@ class Graph {
             Graph::Brick sniffer);
 
     /* VM branch. */
-    struct graph_nic {
+    struct GraphNic {
        std::string id;
        Brick firewall;
        Brick antispoof;
@@ -238,7 +238,7 @@ class Graph {
        /* Switch brick */
        Brick sw;
        /* nic id -> nic branch */
-       std::map<std::string, struct graph_nic> nics;
+       std::map<std::string, struct GraphNic> nics;
     };
 
     /* Global branch. */
