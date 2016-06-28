@@ -296,15 +296,15 @@ std::string Graph::nic_add(const app::Nic &nic) {
     // Create VNI if it does not exists
     auto it = vnis.find(nic.vni);
     if (it == vnis.end()) {
-        struct graph_vni v;
+        struct GraphVni v;
         v.vni = nic.vni;
-        std::pair<uint32_t, struct graph_vni> p(nic.vni, v);
+        std::pair<uint32_t, struct GraphVni> p(nic.vni, v);
         vnis.insert(p);
         it = vnis.find(nic.vni);
         if (it == vnis.end())
             return "";
     }
-    struct graph_vni &vni = it->second;
+    struct GraphVni &vni = it->second;
 
     // Create vhost branch
     struct GraphNic gn;
@@ -401,7 +401,7 @@ void Graph::nic_del(const app::Nic &nic) {
             std::to_string(nic.vni) + " don't seems to exist.");
         return;
     }
-    struct graph_vni &vni = vni_it->second;
+    struct GraphVni &vni = vni_it->second;
 
     auto nic_it = vni.nics.find(nic.id);
     if (nic_it == vni.nics.end()) {
@@ -474,7 +474,7 @@ void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
             std::to_string(nic.vni) + " don't seems to exist.");
         return;
     }
-    struct graph_vni &vni = vni_it->second;
+    struct GraphVni &vni = vni_it->second;
 
     auto nic_it = vni.nics.find(nic.id);
     if (nic_it == vni.nics.end()) {
@@ -504,7 +504,7 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
             std::to_string(nic.vni) + " don't seems to exist.");
         return;
     }
-    struct graph_vni &vni = vni_it->second;
+    struct GraphVni &vni = vni_it->second;
 
     auto nic_it = vni.nics.find(nic.id);
     if (nic_it == vni.nics.end()) {
@@ -783,7 +783,7 @@ void Graph::add_vni(Brick vtep, Brick neighbor, uint32_t vni) {
 
 void Graph::update_poll() {
     // Create a table with all pollable bricks
-    std::map<uint32_t, struct graph_vni>::iterator vni_it;
+    std::map<uint32_t, struct GraphVni>::iterator vni_it;
     std::map<std::string, struct GraphNic>::iterator nic_it;
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     struct RpcUpdatePoll &p = a->update_poll;
