@@ -141,7 +141,7 @@ class Graph {
     };
 
     // This rpc message is kept by the poller
-    struct rpc_update_poll {
+    struct RpcUpdatePoll {
         struct pg_brick *pollables[GRAPH_VHOST_MAX_SIZE];
         struct pg_brick *firewalls[GRAPH_VHOST_MAX_SIZE];
         uint32_t size;
@@ -152,7 +152,7 @@ class Graph {
         struct RpcLink link;
         struct RpcUnlink unlink;
         struct RpcAddVni add_vni;
-        struct rpc_update_poll update_poll;
+        struct RpcUpdatePoll update_poll;
         struct RpcFwReload fw_reload;
         struct RpcFwNew fw_new;
         struct RpcBrickDestroy brick_destroy;
@@ -188,7 +188,7 @@ class Graph {
 
     /**
      * Called by the poller, run all pending actions in the queue
-     * @param    list list of bricks the poller needs (struct rpc_update_poll)
+     * @param    list list of bricks the poller needs (struct RpcUpdatePoll)
      * @return  true if poller must continue polling, otherwhise exit.
      */
     inline bool poller_update(struct rpc_queue **list);
