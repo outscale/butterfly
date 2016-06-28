@@ -46,8 +46,8 @@ set(CMAKE_C_FLAGS "-g -O3 -march=core-avx-i -mtune=core-avx-i -fmessage-length=0
 
 # uninstall target
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake"
   IMMEDIATE @ONLY)
 
 add_custom_target(uninstall
