@@ -124,7 +124,7 @@ class Graph {
         uint32_t multicast_ip;
     };
 
-    struct rpc_fw_reload {
+    struct RpcFwReload {
         struct pg_brick *firewall;
     };
 
@@ -153,7 +153,7 @@ class Graph {
         struct RpcUnlink unlink;
         struct RpcAddVni add_vni;
         struct rpc_update_poll update_poll;
-        struct rpc_fw_reload fw_reload;
+        struct RpcFwReload fw_reload;
         struct rpc_fw_new fw_new;
         struct rpc_brick_destroy brick_destroy;
     };
