@@ -114,8 +114,8 @@ bool Config::parse_cmd(int argc, char **argv) {
     }
 
     if (dpdk_help) {
-        argc = 1;
-        argv[1] = const_cast<char *>("-h");
+        argc = 2;
+        argv[1] = const_cast<char *>("--help");
 
         app::graph.start(argc, argv);
         app::graph.stop();
