@@ -58,7 +58,7 @@ bool Graph::linkAndStalk(Graph::Brick eastBrick, Graph::Brick westBrick,
 }
 
 void Graph::stop() {
-    struct rpc_queue *a;
+    struct RpcQueue *a;
     std::map<std::string, app::Nic>::iterator n_it;
 
     if (!started)
@@ -79,10 +79,10 @@ void Graph::stop() {
     pthread_join(poller_thread, NULL);
 
     // Empty and unref queue
-    a = (struct rpc_queue *)g_async_queue_try_pop(queue);
+    a = (struct RpcQueue *)g_async_queue_try_pop(queue);
     while (a != NULL) {
         g_free(a);
-        a = (struct rpc_queue *)g_async_queue_try_pop(queue);
+        a = (struct RpcQueue *)g_async_queue_try_pop(queue);
     }
     g_async_queue_unref(queue);
 
@@ -149,7 +149,7 @@ bool Graph::start(int argc, char **argv) {
 void *Graph::poller(void *graph) {
     Graph *g = reinterpret_cast<Graph *>(graph);
     struct RpcUpdatePoll *list = NULL;
-    struct rpc_queue *q = NULL;
+    struct RpcQueue *q = NULL;
     uint16_t pkts_count;
     struct pg_brick *nic = g->nic.get();
     uint32_t size = 0;
@@ -225,12 +225,12 @@ int Graph::set_sched() {
 }
 #undef gettid
 
-bool Graph::poller_update(struct rpc_queue **list) {
-    struct rpc_queue *a;
-    struct rpc_queue *tmp;
+bool Graph::poller_update(struct RpcQueue **list) {
+    struct RpcQueue *a;
+    struct RpcQueue *tmp;
 
     // Unqueue calls
-    a = (struct rpc_queue *) g_async_queue_try_pop(queue);
+    a = (struct RpcQueue *) g_async_queue_try_pop(queue);
     while (a != NULL) {
         switch (a->action) {
             case EXIT:
@@ -279,7 +279,7 @@ bool Graph::poller_update(struct rpc_queue **list) {
                 break;
         }
         g_free(a);
-        a = (struct rpc_queue *) g_async_queue_try_pop(queue);
+        a = (struct RpcQueue *) g_async_queue_try_pop(queue);
     }
 
     return true;
@@ -709,25 +709,25 @@ std::string Graph::dot() {
 }
 
 void Graph::exit() {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = EXIT;
     g_async_queue_push(queue, a);
 }
 
 void Graph::vhost_start() {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = VHOST_START;
     g_async_queue_push(queue, a);
 }
 
 void Graph::vhost_stop() {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = VHOST_STOP;
     g_async_queue_push(queue, a);
 }
 
 void Graph::link(Brick w, Brick e) {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = LINK;
     a->link.w = w.get();
     a->link.e = e.get();
@@ -735,14 +735,14 @@ void Graph::link(Brick w, Brick e) {
 }
 
 void Graph::unlink(Brick b) {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = UNLINK;
     a->unlink.b = b.get();
     g_async_queue_push(queue, a);
 }
 
 void Graph::fw_reload(Brick b) {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = FW_RELOAD;
     a->fw_reload.firewall = b.get();
     g_async_queue_push(queue, a);
@@ -753,7 +753,7 @@ void Graph::fw_new(const char *name,
                    uint32_t east_max,
                    uint64_t flags,
                    struct pg_brick **result) {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = FW_NEW;
     a->fw_new.name = name;
     a->fw_new.west_max = west_max;
@@ -764,7 +764,7 @@ void Graph::fw_new(const char *name,
 }
 
 void Graph::brick_destroy(Brick b) {
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = BRICK_DESTROY;
     a->brick_destroy.b = b.get();
     g_async_queue_push(queue, a);
@@ -772,7 +772,7 @@ void Graph::brick_destroy(Brick b) {
 
 void Graph::add_vni(Brick vtep, Brick neighbor, uint32_t vni) {
     uint32_t multicast_ip = build_multicast_ip(vni);
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = ADD_VNI;
     a->add_vni.vtep = vtep.get();
     a->add_vni.neighbor = neighbor.get();
@@ -785,7 +785,7 @@ void Graph::update_poll() {
     // Create a table with all pollable bricks
     std::map<uint32_t, struct graph_vni>::iterator vni_it;
     std::map<std::string, struct graph_nic>::iterator nic_it;
-    struct rpc_queue *a = g_new(struct rpc_queue, 1);
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
     struct RpcUpdatePoll &p = a->update_poll;
 
     a->action = UPDATE_POLL;

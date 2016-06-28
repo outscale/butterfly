@@ -147,7 +147,7 @@ class Graph {
         uint32_t size;
     };
 
-    struct rpc_queue {
+    struct RpcQueue {
         enum RpcAction action;
         struct RpcLink link;
         struct RpcUnlink unlink;
@@ -191,7 +191,7 @@ class Graph {
      * @param    list list of bricks the poller needs (struct RpcUpdatePoll)
      * @return  true if poller must continue polling, otherwhise exit.
      */
-    inline bool poller_update(struct rpc_queue **list);
+    inline bool poller_update(struct RpcQueue **list);
 
     /**
      * Build a rule string based on a rule model
