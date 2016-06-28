@@ -108,7 +108,7 @@ class Graph {
         BRICK_DESTROY,
     };
 
-    struct rpc_link {
+    struct RpcLink {
         struct pg_brick *w;
         struct pg_brick *e;
     };
@@ -149,7 +149,7 @@ class Graph {
 
     struct rpc_queue {
         enum RpcAction action;
-        struct rpc_link link;
+        struct RpcLink link;
         struct rpc_unlink unlink;
         struct rpc_add_vni add_vni;
         struct rpc_update_poll update_poll;
