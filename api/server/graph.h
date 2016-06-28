@@ -136,7 +136,7 @@ class Graph {
         struct pg_brick **result;
     };
 
-    struct rpc_brick_destroy {
+    struct RpcBrickDestroy {
         struct pg_brick *b;
     };
 
@@ -155,7 +155,7 @@ class Graph {
         struct rpc_update_poll update_poll;
         struct RpcFwReload fw_reload;
         struct RpcFwNew fw_new;
-        struct rpc_brick_destroy brick_destroy;
+        struct RpcBrickDestroy brick_destroy;
     };
 
     /* Wrappers to ease RPC actions. */
