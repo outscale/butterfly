@@ -113,7 +113,7 @@ class Graph {
         struct pg_brick *e;
     };
 
-    struct rpc_unlink {
+    struct RpcUnlink {
         struct pg_brick *b;
     };
 
@@ -150,7 +150,7 @@ class Graph {
     struct rpc_queue {
         enum RpcAction action;
         struct RpcLink link;
-        struct rpc_unlink unlink;
+        struct RpcUnlink unlink;
         struct rpc_add_vni add_vni;
         struct rpc_update_poll update_poll;
         struct rpc_fw_reload fw_reload;
