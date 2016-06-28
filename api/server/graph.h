@@ -117,7 +117,7 @@ class Graph {
         struct pg_brick *b;
     };
 
-    struct rpc_add_vni {
+    struct RpcAddVni {
         struct pg_brick *vtep;
         struct pg_brick *neighbor;
         uint32_t vni;
@@ -151,7 +151,7 @@ class Graph {
         enum RpcAction action;
         struct RpcLink link;
         struct RpcUnlink unlink;
-        struct rpc_add_vni add_vni;
+        struct RpcAddVni add_vni;
         struct rpc_update_poll update_poll;
         struct rpc_fw_reload fw_reload;
         struct rpc_fw_new fw_new;
