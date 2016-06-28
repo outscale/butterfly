@@ -95,7 +95,7 @@ class Graph {
     /* All possible structure to pass through the queue.
      * This should ONLY concern actions who needs the graph to be stopped.
      */
-    enum rpc_action {
+    enum RpcAction {
         EXIT,
         VHOST_START,
         VHOST_STOP,
@@ -148,7 +148,7 @@ class Graph {
     };
 
     struct rpc_queue {
-        enum rpc_action action;
+        enum RpcAction action;
         struct rpc_link link;
         struct rpc_unlink unlink;
         struct rpc_add_vni add_vni;
