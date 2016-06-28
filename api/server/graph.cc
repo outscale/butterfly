@@ -307,7 +307,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     struct graph_vni &vni = it->second;
 
     // Create vhost branch
-    struct graph_nic gn;
+    struct GraphNic gn;
     struct pg_brick *tmp_fw = NULL;
 
     gn.enable = true;
@@ -376,7 +376,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     }
 
     // Add branch to the list of NICs
-    std::pair<std::string, struct graph_nic> p(nic.id, gn);
+    std::pair<std::string, struct GraphNic> p(nic.id, gn);
     vni.nics.insert(p);
 
     // Update the list of pollable bricks
@@ -411,7 +411,7 @@ void Graph::nic_del(const app::Nic &nic) {
     }
 
     // Disable branch and update poller
-    struct graph_nic &n = nic_it->second;
+    struct GraphNic &n = nic_it->second;
     n.enable = false;
     update_poll();
 
@@ -428,7 +428,7 @@ void Graph::nic_del(const app::Nic &nic) {
         auto it = vni.nics.begin();
         if (it->second.id == nic.id)
             it++;
-        struct graph_nic &other = it->second;
+        struct GraphNic &other = it->second;
         unlink(vni.sw);
         link(app::graph.vtep, other.firewall);
         wait_empty_queue();
@@ -784,7 +784,7 @@ void Graph::add_vni(Brick vtep, Brick neighbor, uint32_t vni) {
 void Graph::update_poll() {
     // Create a table with all pollable bricks
     std::map<uint32_t, struct graph_vni>::iterator vni_it;
-    std::map<std::string, struct graph_nic>::iterator nic_it;
+    std::map<std::string, struct GraphNic>::iterator nic_it;
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     struct RpcUpdatePoll &p = a->update_poll;
 
