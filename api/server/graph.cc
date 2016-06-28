@@ -148,7 +148,7 @@ bool Graph::start(int argc, char **argv) {
 
 void *Graph::poller(void *graph) {
     Graph *g = reinterpret_cast<Graph *>(graph);
-    struct rpc_update_poll *list = NULL;
+    struct RpcUpdatePoll *list = NULL;
     struct rpc_queue *q = NULL;
     uint16_t pkts_count;
     struct pg_brick *nic = g->nic.get();
@@ -786,7 +786,7 @@ void Graph::update_poll() {
     std::map<uint32_t, struct graph_vni>::iterator vni_it;
     std::map<std::string, struct graph_nic>::iterator nic_it;
     struct rpc_queue *a = g_new(struct rpc_queue, 1);
-    struct rpc_update_poll &p = a->update_poll;
+    struct RpcUpdatePoll &p = a->update_poll;
 
     a->action = UPDATE_POLL;
     // Add physical NIC brick
