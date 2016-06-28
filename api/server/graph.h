@@ -233,7 +233,7 @@ class Graph {
     };
 
     /* VNI branch. */
-    struct graph_vni {
+    struct GraphVni {
        uint32_t vni;
        /* Switch brick */
        Brick sw;
@@ -246,7 +246,7 @@ class Graph {
     Brick vtep;
     Brick sniffer;
     /* vni -> vni branch */
-    std::map<uint32_t, struct graph_vni> vnis;
+    std::map<uint32_t, struct GraphVni> vnis;
 
     /** Instruction queue to packetgraph thread. */
     GAsyncQueue *queue;
