@@ -128,7 +128,7 @@ class Graph {
         struct pg_brick *firewall;
     };
 
-    struct rpc_fw_new {
+    struct RpcFwNew {
         const char *name;
         uint32_t west_max;
         uint32_t east_max;
@@ -154,7 +154,7 @@ class Graph {
         struct RpcAddVni add_vni;
         struct rpc_update_poll update_poll;
         struct RpcFwReload fw_reload;
-        struct rpc_fw_new fw_new;
+        struct RpcFwNew fw_new;
         struct rpc_brick_destroy brick_destroy;
     };
 
