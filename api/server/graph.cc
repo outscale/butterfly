@@ -562,13 +562,13 @@ std::string Graph::fw_build_rule(const app::Rule &rule) {
     // Build protocol part
     switch (rule.protocol) {
     case IPPROTO_ICMP:
-        r += " and ip proto icmp";
+        r += " and icmp";
         break;
     case IPPROTO_TCP:
-        r += " and ip proto tcp";
+        r += " and tcp";
         break;
     case IPPROTO_UDP:
-        r += " and ip proto udp";
+        r += " and udp";
         break;
     case -1:
         // Allow all
