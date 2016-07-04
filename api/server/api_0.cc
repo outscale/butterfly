@@ -594,6 +594,10 @@ bool API_0::validate_sg_rule(const MessageV0_Rule &rule) {
             LOG_DEBUG_("bad port range");
             return false;
         }
+        if (port_start > port_end) {
+            LOG_DEBUG_("bad port range (start > end)");
+            return false;
+        }
     }
 
     // CIDR or security group
