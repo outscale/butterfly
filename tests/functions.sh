@@ -89,6 +89,24 @@ function ssh_udp {
     ssh_run $id1 "rm /tmp/test"
 }
 
+function ssh_tcp {
+    id1=$1
+    id2=$2
+    port=$3
+    ssh_run_background $id1 "nc -l -p $port > /tmp/test"
+    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -w 1 42.0.0.$id1 $port"
+    ssh_run $id2 "sleep 1"
+    ssh_run $id1 "cat /tmp/test"
+    ssh_run $id1 [ -s "/tmp/test" ]
+    if [ "$?" == "0" ]; then
+	echo "tcp test $id2 --> $id1 OK"
+    else
+	echo "tcp test $id2 --> $id1 FAIL"
+	RETURN_CODE=1
+    fi
+    ssh_run $id1 "rm /tmp/test"
+}
+
 function ssh_no_udp {
     id1=$1
     id2=$2
@@ -102,6 +120,23 @@ function ssh_no_udp {
 	RETURN_CODE=1
     else
 	echo "no udp test $id2 --> $id1 OK"
+    fi
+    ssh_run $id1 "rm /tmp/test"
+}
+
+function ssh_no_tcp {
+    id1=$1
+    id2=$2
+    port=$3
+    ssh_run_background $id1 "nc -l -p $port > /tmp/test"
+    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -w 1 42.0.0.$id1 $port"
+    ssh_run $id2 "sleep 1"
+    ssh_run $id1 [ -s "/tmp/test" ]
+    if [ "$?" == "0" ]; then
+	echo "no tcp test $id2 --> $id1 FAIL"
+	RETURN_CODE=1
+    else
+	echo "no tcp test $id2 --> $id1 OK"
     fi
     ssh_run $id1 "rm /tmp/test"
 }
