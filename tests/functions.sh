@@ -171,7 +171,7 @@ function download {
     fi
 }
 
-function client_add_nic {
+function add_nic_full_open {
     but_id=$1
     nic_id=$2
     vni=$3
@@ -228,7 +228,7 @@ messages {
     fi
 }
 
-function client_del_nic {
+function delete_nic {
     but_id=$1
     nic_id=$2
     f=/tmp/butterfly-client.req
