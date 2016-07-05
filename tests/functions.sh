@@ -171,12 +171,12 @@ function download {
     fi
 }
 
-function client_add_nic {
+function add_nic_full_open {
     but_id=$1
     nic_id=$2
     vni=$3
     f=/tmp/butterfly-client.req
-    echo "add nic $nic_id in butterfly $but_id in vni $vni"
+    echo "add nic $nic_id full open in butterfly $but_id in vni $vni"
 
     echo -e "messages {
   revision: 0
@@ -212,27 +212,33 @@ messages {
   }
 }
 " > $f
-   
+    request $but_id $nic_id $f
+}
+
+function request {
+    but_id=$1
+    nic_id=$2
+    f=$3
     $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
     ret=$?
     rm $f
     if [ ! "$ret" == "0" ]; then
-        echo "client failed to send message to butterfly $but_id"
-        clean_all
-        exit 1
+	echo "client failed to send message to butterfly $but_id"
+	clean_all
+	exit 1
     fi
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
-        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
-        clean_all
-        exit 1
+	echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+	clean_all
+	exit 1
     fi
 }
 
-function client_del_nic {
+function delete_nic {
     but_id=$1
     nic_id=$2
     f=/tmp/butterfly-client.req
-    echo "del nic $nic_id in butterfly $but_id"
+    echo "delete nic $nic_id in butterfly $but_id"
 
     echo -e "messages {
   revision: 0
