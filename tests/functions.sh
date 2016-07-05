@@ -296,6 +296,114 @@ messages {
     request $but_id $nic_id $f
 }
 
+function add_nic_void {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: \"nic-$nic_id\"
+        mac: \"52:54:00:12:34:0$nic_id\"
+        vni: $vni
+        ip: \"42.0.0.$nic_id\"
+        ip_anti_spoof: true
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function update_sg_rules_full_open {
+    but_id=$1
+    nic_id=$2
+    sg=$3
+    echo "update nic $nic_id rules full open in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_update {
+        id: \"nic-$nic_id\"
+        ip: \"42.0.0.$nic_id\"
+        ip_anti_spoof: true
+        security_group: \"$sg\"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_add {
+        id: \"sg-1\"
+        rule {
+          direction: INBOUND
+          protocol: -1
+          cidr {
+            address: \"0.0.0.0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function add_nic_no_rules {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    echo "add nic $nic_id no security group rules in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+    add_nic_void $but_id $nic_id $vni $f
+    update_nic_sg $but_id $nic_id "sg-1"
+}
+
+function add_nic_no_sg {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    echo "add nic $nic_id no security group in butterfly $but_id in vni $vni"
+    f=/tmp/butterfly-client.req
+    add_nic_void $but_id $nic_id $vni $f
+}
+
+function update_nic_sg {
+    but_id=$1
+    nic_id=$2
+    sg=$3
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_update {
+        id: \"nic-$nic_id\"
+        ip: \"42.0.0.$nic_id\"
+        ip_anti_spoof: true
+        security_group: \"$sg\"
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
 function request {
     but_id=$1
     nic_id=$2
@@ -313,6 +421,25 @@ function request {
 	clean_all
 	exit 1
     fi
+}
+
+function delete_nic_sg {
+    but_id=$1
+    nic_id=$2
+    sg=$3
+    echo "delete SG nic $nic_id in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+    
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_del: \"$sg\"
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
 }
 
 function delete_nic {
