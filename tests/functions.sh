@@ -64,6 +64,40 @@ function ssh_no_ping {
     fi
 }
 
+function ssh_tcp {
+    id1=$1
+    id2=$2
+    port=$3
+    ssh_run_background $id1 "nc -w 1 -lp $port > /tmp/test"
+    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -w 1 42.0.0.$id1 $port"
+    ssh_run $id2 "sleep 1"
+    ssh_run $id1 [ -s "/tmp/test" ]
+    if [ "$?" == "0" ]; then
+	echo "tcp test $id2 --> $id1 OK"
+    else
+	echo "tcp test $id2 --> $id1 FAIL"
+	RETURN_CODE=1
+    fi
+    ssh_run $id1 "rm /tmp/test"
+}
+
+function ssh_no_tcp {
+    id1=$1
+    id2=$2
+    port=$3
+    ssh_run_background $id1 "nc -w 1 -lp $port > /tmp/test"
+    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -w 1 42.0.0.$id1 $port"
+    ssh_run $id2 "sleep 1"
+    ssh_run $id1 [ -s "/tmp/test" ]
+    if [ "$?" == "0" ]; then
+	echo "no tcp test $id2 --> $id1 FAIL"
+	RETURN_CODE=1
+    else
+	echo "no tcp test $id2 --> $id1 OK"
+    fi
+    ssh_run $id1 "rm /tmp/test"
+}
+
 function qemu_start {
     id=$1
     echo "starting VM $id"
