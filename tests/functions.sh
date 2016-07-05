@@ -362,6 +362,54 @@ messages {
     request $but_id $nic_id $f
 }
 
+function add_nic_port_open {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    protocol=$4
+    port=$5
+    echo "add nic $nic_id with only port $port opened in butterfly $but_id in vni $vni"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: \"nic-$nic_id\"
+        mac: \"52:54:00:12:34:0$nic_id\"
+        vni: $vni
+        ip: \"42.0.0.$nic_id\"
+        ip_anti_spoof: true
+        security_group: \"sg-1\"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_add {
+        id: \"sg-1\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          cidr {
+            address: \"0.0.0.0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+ " > $f
+    request $but_id $nic_id $f
+}
+
 function add_nic_no_rules {
     but_id=$1
     nic_id=$2
