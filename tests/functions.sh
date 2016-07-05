@@ -25,6 +25,13 @@ function ssh_run {
     ssh -q -p 500$id -l root -i $key -oStrictHostKeyChecking=no 127.0.0.1 $cmd 
 }
 
+function ssh_run_background {
+    id=$1
+    cmd="${@:2}"
+    key=$BUTTERFLY_BUILD_ROOT/vm.rsa
+    ssh -q -f -p 500$id -l root -i $key -oStrictHostKeyChecking=no 127.0.0.1 $cmd
+}
+
 function ssh_run_timeout {
     id=$1
     timeout=$2
@@ -64,6 +71,40 @@ function ssh_no_ping {
     fi
 }
 
+function ssh_udp {
+    id1=$1
+    id2=$2
+    port=$3
+    ssh_run_background $id1 "nc -w 1 -lup $port > /tmp/test"
+    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -u -w 1 42.0.0.$id1 $port"
+    ssh_run $id2 "sleep 1"
+    ssh_run $id1 [ -s "/tmp/test" ]
+    if [ "$?" == "0" ]; then
+	echo "udp test $id2 --> $id1 OK"
+    else
+	echo "udp test $id2 --> $id1 FAIL"
+	RETURN_CODE=1
+    fi
+    ssh_run $id1 "rm /tmp/test"
+}
+
+function ssh_no_udp {
+    id1=$1
+    id2=$2
+    port=$3
+    ssh_run_background $id1 "nc -w 1 -lup $port > /tmp/test"
+    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -u -w 1 42.0.0.$id1 $port"
+    ssh_run $id2 "sleep 1"
+    ssh_run $id1 [ -s "/tmp/test" ]
+    if [ "$?" == "0" ]; then
+	echo "no udp test $id2 --> $id1 FAIL"
+	RETURN_CODE=1
+    else
+	echo "no udp test $id2 --> $id1 OK"
+    fi
+    ssh_run $id1 "rm /tmp/test"
+}
+
 function qemu_start {
     id=$1
     echo "starting VM $id"
@@ -71,7 +112,7 @@ function qemu_start {
     IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
     MAC=52:54:00:12:34:0$id
 
-    CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
+    CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
     exec $CMD &> /tmp/qemu_log_$id &
     pid=$!
     sleep 10
@@ -94,6 +135,10 @@ function qemu_start {
     # Configure IP on vhost interface
     ssh_run $id ip link set ens4 up
     ssh_run $id ip addr add 42.0.0.$id/16 dev ens4
+
+    #installing netcat
+    ssh_run $id "pacman -Sy --noconfirm pacman"
+    ssh_run $id "pacman -Sy --noconfirm netcat"
 }
 
 function qemu_stop {
