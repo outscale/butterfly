@@ -212,19 +212,26 @@ messages {
   }
 }
 " > $f
-   
+    request $but_id $nic_id $f
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+	echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+	clean_all
+	exit 1
+    fi
+}
+
+function request {
+    but_id=$1
+    nic_id=$2
+    f=$3
     $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
     ret=$?
     rm $f
     if [ ! "$ret" == "0" ]; then
-        echo "client failed to send message to butterfly $but_id"
-        clean_all
-        exit 1
-    fi
-    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
-        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
-        clean_all
-        exit 1
+	echo "client failed to send message to butterfly $but_id"
+	clean_all
+	exit 1
     fi
 }
 
@@ -243,15 +250,7 @@ function delete_nic {
   }
 }
 " > $f
-
-    $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
-    ret=$?
-    rm $f
-    if [ ! "$ret" == "0" ]; then
-        echo "client failed to send message to butterfly $but_id"
-        clean_all
-        exit 1
-    fi
+    request $but_id $nic_id $f
 }
 
 function check_bin {
