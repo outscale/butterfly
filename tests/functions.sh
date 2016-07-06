@@ -232,7 +232,7 @@ function delete_nic {
     but_id=$1
     nic_id=$2
     f=/tmp/butterfly-client.req
-    echo "del nic $nic_id in butterfly $but_id"
+    echo "delete nic $nic_id in butterfly $but_id"
 
     echo -e "messages {
   revision: 0
