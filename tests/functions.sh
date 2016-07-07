@@ -322,6 +322,12 @@ function add_nic_void {
 }
 " > $f
     request $but_id $nic_id $f
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+	echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+	clean_all
+	exit 1
+    fi    
 }
 
 function update_sg_rules_full_open {
@@ -364,6 +370,12 @@ messages {
 }
 " > $f
     request $but_id $nic_id $f
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+	echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+	clean_all
+	exit 1
+    fi
 }
 
 function add_nic_port_open {
@@ -412,6 +424,12 @@ messages {
 }
  " > $f
     request $but_id $nic_id $f
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+	echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+	clean_all
+	exit 1
+    fi
 }
 
 function add_nic_no_rules {
@@ -454,6 +472,12 @@ function update_nic_sg {
 }
 " > $f
     request $but_id $nic_id $f
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+	echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+	clean_all
+	exit 1
+    fi
 }
 
 function request {
