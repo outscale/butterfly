@@ -25,6 +25,13 @@ function ssh_run {
     ssh -q -p 500$id -l root -i $key -oStrictHostKeyChecking=no 127.0.0.1 $cmd 
 }
 
+function ssh_run_background {
+    id=$1
+    cmd="${@:2}"
+    key=$BUTTERFLY_BUILD_ROOT/vm.rsa
+    ssh -q -f -p 500$id -l root -i $key -oStrictHostKeyChecking=no 127.0.0.1 $cmd &> /dev/null
+}
+
 function ssh_run_timeout {
     id=$1
     timeout=$2
@@ -64,6 +71,74 @@ function ssh_no_ping {
     fi
 }
 
+function ssh_connection_test {
+    protocol=$1
+    id1=$2
+    id2=$3
+    port=$4
+
+    if [ "$protocol" == "udp" ]; then
+	ssh_run_background $id1 "nc -w 3 -lup $port > /tmp/test"
+	sleep 1
+	ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -u -w 3 42.0.0.$id1 $port"
+	sleep 1
+    elif [ "$protocol" == "tcp" ]; then
+	ssh_run_background $id1 "nc -w 3 -lp $port > /tmp/test"
+	sleep 1
+	ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -w 3 42.0.0.$id1 $port"
+	sleep 1
+    else
+	echo -e "protocol not set, check protocol please"
+	protocol="false"
+	RETURN_CODE=1
+    fi
+
+    if [ "$protocol" != "false" ]; then
+	ssh_run $id1 [ -s "/tmp/test" ]
+	if [ "$?" == "0" ]; then
+	    echo -e "$protocol test $id2 --> $id1 OK"
+	else
+	    echo -e "$protocol test $id2 --> $id1 FAIL"
+	    RETURN_CODE=1
+	fi
+	ssh_run $id1 "rm /tmp/test"
+    fi
+}
+
+function ssh_no_connection_test {
+    protocol=$1
+    id1=$2
+    id2=$3
+    port=$4
+
+    if [ "$protocol" == "udp" ]; then
+	ssh_run_background $id1 "nc -w 3 -lup $port > /tmp/test"
+	sleep 1
+	ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -u -w 1 42.0.0.$id1 $port"
+	sleep 1
+    elif [ "$protocol" == "tcp" ]; then
+	ssh_run_background $id1 "nc -w 3 -lp $port > /tmp/test"
+	sleep 1
+	ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -w 3 42.0.0.$id1 $port"
+	sleep 1
+    else
+	echo -e "protocol not set, check protocol please"
+	protocol="false"
+	RETURN_CODE=1
+    fi
+
+    if [ "$protocol" != "false" ]; then
+	ssh_run $id1 [ -s "/tmp/test" ]
+	if [ "$?" == "0" ]; then
+	    echo -e "no $protocol test $id2 --> $id1 FAIL"
+	    RETURN_CODE=1
+	else
+	    echo -e "no $protocol test $id2 --> $id1 OK"
+	fi
+	ssh_run $id1 "rm /tmp/test"
+    fi
+}
+
 function qemu_start {
     id=$1
     echo "starting VM $id"
@@ -71,7 +146,7 @@ function qemu_start {
     IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
     MAC=52:54:00:12:34:0$id
 
-    CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
+    CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
     exec $CMD &> /tmp/qemu_log_$id &
     pid=$!
     sleep 10
@@ -94,6 +169,9 @@ function qemu_start {
     # Configure IP on vhost interface
     ssh_run $id ip link set ens4 up
     ssh_run $id ip addr add 42.0.0.$id/16 dev ens4
+
+    ssh_run $id "pacman -Sy --noconfirm pacman" &> /dev/null
+    ssh_run $id "pacman -Sy --noconfirm netcat" &> /dev/null
 }
 
 function qemu_stop {
@@ -171,12 +249,28 @@ function download {
     fi
 }
 
-function add_nic {
+function request {
     but_id=$1
     nic_id=$2
-    vni=$3
+    f=$3
+
+    $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
+    ret=$?
+    rm $f
+    if [ ! "$ret" == "0" ]; then
+        echo "client failed to send message to butterfly $but_id"
+        clean_all
+        exit 1
+    fi
+}
+
+function add_nic {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    vni=$4
     f=/tmp/butterfly-client.req
-    echo "add nic $nic_id in butterfly $but_id in vni $vni"
+    echo "add nic $nic_id full open in butterfly $but_id in vni $vni"
 
     echo -e "messages {
   revision: 0
@@ -188,7 +282,7 @@ function add_nic {
         vni: $vni
         ip: \"42.0.0.$nic_id\"
         ip_anti_spoof: true
-        security_group: \"sg-1\"
+        security_group: \"$sg\"
       }
     }
   }
@@ -198,7 +292,7 @@ messages {
   message_0 {
     request {
       sg_add {
-        id: \"sg-1\"
+        id: \"$sg\"
         rule {
           direction: INBOUND
           protocol: -1
@@ -212,15 +306,39 @@ messages {
   }
 }
 " > $f
-   
-    $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
-    ret=$?
-    rm $f
-    if [ ! "$ret" == "0" ]; then
-        echo "client failed to send message to butterfly $but_id"
+    request $but_id $nic_id $f
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
         clean_all
         exit 1
     fi
+}
+
+function add_nic_void {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    f=/tmp/butterfly-client.req
+
+    echo "add a void nic $2 in butterfly $1"
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: \"nic-$nic_id\"
+        mac: \"52:54:00:12:34:0$nic_id\"
+        vni: $vni
+        ip: \"42.0.0.$nic_id\"
+        ip_anti_spoof: true
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+    
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
         echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
         clean_all
@@ -232,7 +350,7 @@ function delete_nic {
     but_id=$1
     nic_id=$2
     f=/tmp/butterfly-client.req
-    echo "del nic $nic_id in butterfly $but_id"
+    echo "delete nic $nic_id in butterfly $but_id"
 
     echo -e "messages {
   revision: 0
@@ -243,15 +361,239 @@ function delete_nic {
   }
 }
 " > $f
+    request $but_id $nic_id $f
+}
 
-    $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
-    ret=$?
-    rm $f
-    if [ ! "$ret" == "0" ]; then
-        echo "client failed to send message to butterfly $but_id"
+function add_nic_port_open {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    vni=$4
+    protocol=$5
+    port=$6
+    f=/tmp/butterfly-client.req
+    echo "add nic $nic_id with only port $port opened in butterfly $but_id in vni $vni"
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: \"nic-$nic_id\"
+        mac: \"52:54:00:12:34:0$nic_id\"
+        vni: $vni
+        ip: \"42.0.0.$nic_id\"
+        ip_anti_spoof: true
+        security_group: \"$sg\"
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_add {
+        id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          cidr {
+            address: \"0.0.0.0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
         clean_all
         exit 1
     fi
+}
+
+function add_nic_no_rules {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    vni=$4
+    f=/tmp/butterfly-client.req
+    add_nic_void $but_id $nic_id $vni
+    update_nic_sg $sg $but_id $nic_id
+}
+
+function update_sg_rule_full_open {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    echo "update sg rules full open in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: -1
+          cidr {
+            address: \"0.0.0.0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function update_sg_rule_port_open {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    protocol=$4
+    port=$5
+    echo "update sg rules with only port $port opened in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          cidr {
+            address: \"0.0.0.0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function update_nic_sg {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    echo "Update SG of nic $nic_id in butterfly $1"  
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_update {
+        id: \"nic-$nic_id\"
+        ip: \"42.0.0.$nic_id\"
+        ip_anti_spoof: true
+        security_group: \"$sg\"
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function delete_nic_sg {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    echo "delete SG of nic $nic_id in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_del: \"$sg\"
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function delete_rule_full_open {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    echo "delete sg rules full open in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_del {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: -1
+          cidr {
+            address: \"0.0.0.0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function delete_rule_port_open {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    protocol=$4
+    port=$5
+    echo "delete sg rules with only port $port opened in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_del {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          cidr {
+            address: \"0.0.0.0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
 }
 
 function check_bin {
