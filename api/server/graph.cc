@@ -608,9 +608,19 @@ std::string Graph::fw_build_rule(const app::Rule &rule) {
 std::string Graph::fw_build_sg(const app::Sg &sg) {
     std::string r;
     for (auto it = sg.rules.begin(); it != sg.rules.end();) {
-        r += "(" + fw_build_rule(it->second) + ")";
+        auto fw_rule = fw_build_rule(it->second);
+        if (fw_rule.length() == 0) {
+            it++;
+            continue;
+        }
+        r += "(" + fw_rule + ")";
         if (++it != sg.rules.end())
-            r += " || ";
+            r += "||";
+    }
+    // Special case when last rule is empty
+    if (r.back() == '|') {
+        r.pop_back();
+        r.pop_back();
     }
     return r;
 }
@@ -639,9 +649,19 @@ void Graph::fw_update(const app::Nic &nic) {
             it++;
             continue;
         }
-        in_rules += "( " + fw_build_sg(sit->second) + " )";
+        auto sg_rules = fw_build_sg(sit->second);
+        if (sg_rules.length() == 0) {
+            it++;
+            continue;
+        }
+        in_rules += "(" + fw_build_sg(sit->second) + ")";
         if (++it != nic.security_groups.end())
-            in_rules += " || ";
+            in_rules += "||";
+    }
+    // Special case when last rule is empty
+    if (in_rules.back() == '|') {
+        in_rules.pop_back();
+        in_rules.pop_back();
     }
 
     // Set rules for the outgoing traffic: allow NIC's IPs
