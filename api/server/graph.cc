@@ -550,12 +550,19 @@ std::string Graph::fw_build_rule(const app::Rule &rule) {
             app::log.error(m);
             return "";
         }
-        r += " (";
-        for (auto ip = sg->second.members.begin();
-             ip != sg->second.members.end();) {
-            r += " src host " + ip->str();
-            if (++ip != sg->second.members.end())
-                r += " or";
+        if (sg->second.members.size() > 0) {
+            r += " (";
+            for (auto ip = sg->second.members.begin();
+                 ip != sg->second.members.end();) {
+                r += " src host " + ip->str();
+                if (++ip != sg->second.members.end())
+                    r += " or";
+            }
+            r += ")";
+        } else {
+            std::string m = "no member in security group " + sg->second.id;
+            app::log.warning(m);
+            return "";
         }
     }
 
