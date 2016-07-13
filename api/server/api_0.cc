@@ -537,6 +537,8 @@ bool API_0::validate_nic(const MessageV0_Nic &nic) {
         return false;
 
     // Check IP list
+    if (nic.ip_size() != 1)
+        return false;
     for (int a = 0; a < nic.ip_size(); a++) {
         auto ip = nic.ip(a);
         if (!validate_ip(ip))
