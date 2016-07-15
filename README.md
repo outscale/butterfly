@@ -140,7 +140,24 @@ Butterfly is based on:
 
 ## How fast ?
 
-TODO, We are working on benchmarks automatisation :)
+Benchmarks setup:
+- Two physical machines directly connected.
+- A third machine remotely setup and launch benchmarks using `./benchmarks/run_benchmarks.sh`.
+
+Machines:
+- OS: Centos 7 (3.10.0-327.18.2.el7.x86_64)
+- NICs: Intel 82599ES 10-Gigabit SFI/SFP+ (DPDK compatible used with vfio-pci driver).
+- CPU: AMD Opteron(tm) Processor 3350 HE
+- All details for [host 1](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_1.txt) and [host 2](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_2.txt) (same)
+
+Results (aug 8 2016):
+```
+                     |  VMs on same host  | VMs on remote host |
+ --------------------+--------------------+--------------------|
+| Ping (min/average) |  0.052ms / 0.118ms |  0.62ms / 0.172ms  |
+| TCP                |     5.3 Gbits/s    |     4.2 Gbits/s    |
+| UDP                |     1.4 Gbits/s    |     1.7 Gbits/s    |
+```
 
 ## How to connect a Virtual Machine to Butterfly ?
 
