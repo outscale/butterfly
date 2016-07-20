@@ -727,7 +727,7 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
         app::log.debug(r);
         return;
     }
-    Pg::firewall_reload(fw.get());
+    fw_reload(fw);
 }
 
 std::string Graph::dot() {
