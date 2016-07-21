@@ -236,12 +236,12 @@ function download {
 
     if [ ! -f $path ]; then
         echo "$path, let's download it..."
-        wget $url -O $path
+        wget -q $url -O $path || exit 1
     fi
 
     if [ ! "$(md5sum $path | cut -f 1 -d ' ')" == "$md5" ]; then
         echo "Bad md5 for $path, let's download it ..."
-        wget $url -O $path
+        wget -q $url -O $path || exit 1
         if [ ! "$(md5sum $path | cut -f 1 -d ' ')" == "$md5" ]; then
             echo "Still bad md5 for $path ... abort."
             exit 1
