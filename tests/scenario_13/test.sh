@@ -16,12 +16,18 @@ qemu_start 1
 qemu_start 2
 qemu_start 3
 qemu_start 4
-ssh_ping 1 2
-ssh_ping 1 3
-ssh_ping 1 4
-ssh_ping 4 1
-ssh_ping 4 2
-ssh_ping 4 3
+ssh_connection_test tcp 2 1 1234
+ssh_connection_test tcp 3 1 5554
+ssh_connection_test tcp 4 1 4123
+ssh_connection_test tcp 2 2 3234
+ssh_connection_test tcp 3 2 5554
+ssh_connection_test tcp 4 2 4123
+ssh_connection_test tcp 2 3 1234
+ssh_connection_test tcp 3 3 5554
+ssh_connection_test tcp 4 3 4123
+ssh_connection_test tcp 1 4 5004
+ssh_connection_test tcp 2 4 5964
+ssh_connection_test tcp 3 4 5554
 qemu_stop 1
 qemu_stop 2
 qemu_stop 3
