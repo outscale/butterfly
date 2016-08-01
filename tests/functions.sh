@@ -177,7 +177,7 @@ function qemu_start {
 function qemu_stop {
     id=$1
     echo "stopping VM $id"
-    sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=)
+    sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
 }
 
 function server_start {
