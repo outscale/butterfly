@@ -71,6 +71,77 @@ function ssh_no_ping {
     fi
 }
 
+function ssh_iperf_tcp {
+    id1=$1
+    id2=$2
+    (ssh_run $id1 iperf -s &> /dev/null &)
+    local server_pid=$!
+    sleep 1
+    ssh_run $id2 iperf -c 42.0.0.$id1 -t 3 &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "iperf tcp $id1 --> $id2 FAIL"
+        RETURN_CODE=1
+    else
+        echo "iperf tcp $id1 --> $id2 OK"
+    fi
+    kill $server_pid &> /dev/null
+}
+
+function ssh_iperf_udp {
+    id1=$1
+    id2=$2
+    (ssh_run $id1 iperf -s -u &> /tmp/iperf_tmp_results &)
+    local server_pid=$!
+    sleep 1
+    ssh_run $id2 iperf -l 1400 -c 42.0.0.$id1 -t 3 -u &> /dev/null
+    ret=$?
+    res=$(cat /tmp/iperf_tmp_results |grep "%" | cut -d '(' -f 2 | cut -d '%' -f 1)
+    if [ $ret -ne 0 ] || [ ".$res" != ".0" ]; then
+        echo "iperf udp $id1 --> $id2 FAIL"
+        RETURN_CODE=1
+    else
+        echo "iperf udp $id1 --> $id2 OK"
+    fi
+    kill server_pid &> /dev/null
+    rm /tmp/iperf_tmp_results
+}
+
+function ssh_iperf3_tcp {
+    id1=$1
+    id2=$2
+    (ssh_run $id1 iperf3 -s &> /dev/null &)
+    local server_pid=$!
+    sleep 1
+    ssh_run $id2 iperf3 -c 42.0.0.$id1 -t 3 &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "iperf3 tcp $id1 --> $id2 FAIL"
+        RETURN_CODE=1
+    else
+        echo "iperf3 tcp $id1 --> $id2 OK"
+    fi
+    kill $server_pid &> /dev/null
+
+}
+
+function ssh_iperf3_udp {
+    id1=$1
+    id2=$2
+    (ssh_run $id1 iperf3 -s &> /dev/null &)
+    local server_pid=$!
+    sleep 1
+    ssh_run $id2 iperf3 -l 1400 -c 42.0.0.$id1 -t 3 -u --reverse --json > /tmp/iperf3_tmp_results
+    local ret=$?
+    local res=$(cat /tmp/iperf3_tmp_results | grep packets | tail -n 1 | cut -d ':' -f 2 | cut -d ',' -f 1 | tr -d ' ' | tr -d '\t')
+    if [ $res -eq 0 ] || [ $ret -ne 0 ]; then
+        echo "iperf3 udp $id1 --> $id2 FAIL"
+        RETURN_CODE=1
+    else
+        echo "iperf3 udp $id1 --> $id2 OK"
+    fi
+    kill -9 $server_pid &> /dev/null
+    rm /tmp/iperf3_tmp_results
+}
+
 function ssh_connection_test {
     protocol=$1
     id1=$2
@@ -217,6 +288,8 @@ function network_connect {
         exit 1
     fi
     socat_pids["$id1$id2"]=$pid
+    sudo ip link set dev but$id1 mtu 2000
+    sudo ip link set dev but$id2 mtu 2000
 }
 
 function network_disconnect {
