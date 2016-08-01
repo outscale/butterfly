@@ -1,0 +1,87 @@
+[
+{
+    "name": "butterfly",
+    "user": null,
+    "license": "GPLv3"
+},
+{
+    "name": "packetgraph",
+    "user": "butterfly",
+    "license": "GPLv3"
+},
+{
+    "name": "libzmq",
+    "user": "butterfly",
+    "license": "LGPLv3"
+},
+{
+    "name": "zmqpp",
+    "user": "butterfly",
+    "license": "MPLv2"
+},
+{
+    "name": "simpleini",
+    "user": "butterfly",
+    "license": "MIT"
+},
+{
+    "name": "convertutf",
+    "user": "simpleini",
+    "license": "MIT-like"
+},
+{
+    "name": "dpdk",
+    "user": "packetgraph",
+    "license": "BSD/GPL/LGPL"
+},
+{
+    "name": "gnulib",
+    "user": "butterfly",
+    "license": "LGPL/GPL"
+},
+{
+    "name": "glibc",
+    "user": "butterfly",
+    "license": "LGPLv2.1"
+},
+{
+    "name": "cyclonetcp",
+    "user": "packetgraph",
+    "license": "GPLv3"
+},
+{
+    "name": "libqsbr",
+    "user": "packetgraph",
+    "license": "NetBSD-like"
+},
+{
+    "name": "libcdb",
+    "user": "packetgraph",
+    "license": "NetBSD-like"
+},
+{
+    "name": "proplib",
+    "user": "packetgraph",
+    "license": "NetBSD-like"
+},
+{
+    "name": "jemalloc",
+    "user": "dpdk",
+    "license": "BSD-like"
+},
+{
+    "name": "bpfjit",
+    "user": "npf",
+    "license": "BSD-like"
+},
+{
+    "name": "sljit",
+    "user": "npf",
+    "license": "BSD-like"
+},
+{
+    "name": "npf",
+    "user": "packetgraph",
+    "license": "NetBSD"
+}
+]
