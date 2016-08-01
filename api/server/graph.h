@@ -228,7 +228,8 @@ class Graph {
        Brick antispoof;
        Brick vhost;
        Brick sniffer;
-      // If we should add this branch or not to our poll updates
+       FILE *pcap_file;
+       // If we should add this branch or not to our poll updates
        bool enable;
     };
 
@@ -245,6 +246,7 @@ class Graph {
     Brick nic;
     Brick vtep;
     Brick sniffer;
+    FILE *pcap_file;
     /* vni -> vni branch */
     std::map<uint32_t, struct GraphVni> vnis;
 

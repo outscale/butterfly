@@ -115,9 +115,10 @@ bool Graph::start(int argc, char **argv) {
     }
 
     // Create sniffer brick
+    pcap_file = fopen("/tmp/butterfly-main.pcap", "w");
     std::string sniffer_name = "main-sniffer-" + std::to_string(getpid());
-    sniffer = Brick(Pg::print_new(sniffer_name.c_str(), 1, 1, NULL,
-                                  PG_PRINT_FLAG_MAX ^ PG_PRINT_FLAG_RAW,
+    sniffer = Brick(Pg::print_new(sniffer_name.c_str(), 1, 1, pcap_file,
+                                  PG_PRINT_FLAG_PCAP | PG_PRINT_FLAG_CLOSE_FILE,
                                   NULL),
                     Pg::destroy);
     if (sniffer.get() == NULL) {
@@ -337,10 +338,12 @@ std::string Graph::nic_add(const app::Nic &nic) {
     gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, EAST_SIDE),
                      Pg::destroy);
     name = "sniffer-" + gn.id;
-    gn.sniffer = Brick(Pg::print_new(name.c_str(), 1, 1, NULL,
-                                     PG_PRINT_FLAG_MAX ^ PG_PRINT_FLAG_RAW,
+    gn.pcap_file = fopen(("/tmp/butterfly-" + gn.id + ".pcap").c_str(), "w");
+    gn.sniffer = Brick(Pg::print_new(name.c_str(), 1, 1, gn.pcap_file,
+                                     PG_PRINT_FLAG_PCAP |
+                                     PG_PRINT_FLAG_CLOSE_FILE,
                                      NULL),
-            Pg::destroy);
+                       Pg::destroy);
     // Link branch (inside)
     Pg::link(gn.firewall.get(), gn.antispoof.get());
     linkAndStalk(gn.antispoof, gn.vhost, gn.sniffer);
