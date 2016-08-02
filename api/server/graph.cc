@@ -120,7 +120,8 @@ bool Graph::start(int argc, char **argv) {
     }
 
     // Create sniffer brick
-    pcap_file_ = fopen("/tmp/butterfly-main.pcap", "w");
+    pcap_file_ = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
+                        "-main.pcap").c_str(), "w");
     std::string sniffer_name = "main-sniffer-" + std::to_string(getpid());
     sniffer_ = Brick(Pg::print_new(sniffer_name.c_str(), 1, 1, pcap_file_,
                                   PG_PRINT_FLAG_PCAP | PG_PRINT_FLAG_CLOSE_FILE,
@@ -343,7 +344,8 @@ std::string Graph::nic_add(const app::Nic &nic) {
     gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, EAST_SIDE),
                      Pg::destroy);
     name = "sniffer-" + gn.id;
-    gn.pcap_file = fopen(("/tmp/butterfly-" + gn.id + ".pcap").c_str(), "w");
+    gn.pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) + "-" +
+                          gn.id + ".pcap").c_str(), "w");
     gn.sniffer = Brick(Pg::print_new(name.c_str(), 1, 1, gn.pcap_file,
                                      PG_PRINT_FLAG_PCAP |
                                      PG_PRINT_FLAG_CLOSE_FILE,
