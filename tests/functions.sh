@@ -200,7 +200,7 @@ function server_start {
 function server_stop {
     id=$1
     echo "stopping butterfly $id"
-    sudo kill -9 $(ps --ppid ${server_pids[$id]} -o pid=)
+    sudo kill -2 $(ps --ppid ${server_pids[$id]} -o pid=)
     while sudo kill -s 0 ${server_pids[$id]} &> /dev/null ; do
         sleep 1
     done
