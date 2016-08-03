@@ -606,7 +606,7 @@ function check_bin {
 }
 
 function clean_all {
-    sudo killall butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null
+    sudo killall -9 butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/* &> /dev/null
     sleep 1
 }
