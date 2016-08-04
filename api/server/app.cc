@@ -347,9 +347,12 @@ Log log;
 Graph graph;
 }  // namespace app
 
-int initCGroup() {
+int initCGroup(int multiplier) {
   system("mkdir /sys/fs/cgroup/cpu/butterfly");
-  system("echo 4096 > /sys/fs/cgroup/cpu/butterfly/cpu.shares");
+  system(std::string("echo $(( `cat /sys/fs/cgroup/cpu/cpu.shares` * "
+                     + std::to_string(multiplier)
+                     + " )) > /sys/fs/cgroup/cpu/butterfly/cpu.shares")
+        .c_str());
   return 0;
 }
 
@@ -408,7 +411,7 @@ main(int argc, char *argv[]) {
             app::log.error("cannot start packetgraph, exiting");
             app::request_exit = true;
         }
-        initCGroup();
+        initCGroup(POLL_THREAD_MULTIPLIER);
         // Prepare & run API server
         APIServer server(app::config.api_endpoint, &app::request_exit);
         server.run_threaded();

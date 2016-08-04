@@ -31,6 +31,8 @@
 #define LOG_WARNING_(str, args...) LOG_PRINT_(str, app::log.warning, ## args)
 #define LOG_ERROR_(str, args...) LOG_PRINT_(str, app::log.error, ## args)
 
+#define POLL_THREAD_MULTIPLIER 19
+
 namespace app {
 struct Config {
     Config();
