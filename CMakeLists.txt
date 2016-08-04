@@ -86,3 +86,17 @@ add_custom_target(package-rpm
 add_custom_target(package-deb
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} deb
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(package-fat-rpm
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} rpm
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(package-fat-deb
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} deb
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(package-fat
+		  COMMAND rm -rvf ${PROJECT_BINARY_DIR}/fat-butterfly*
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/dep-gets.sh ${PROJECT_BINARY_DIR}/api/server/butterfly-server ${PROJECT_BINARY_DIR}/fat-butterfly-server
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/dep-gets.sh ${PROJECT_BINARY_DIR}/api/client/butterfly-client ${PROJECT_BINARY_DIR}/fat-butterfly-client
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})

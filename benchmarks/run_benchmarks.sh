@@ -23,6 +23,7 @@ function usage {
     echo "    --ip-b         : IP address of second machine (mandatory)"
     echo "    --port-b       : SSH port of second machine (optional, default: 22)"
     echo "    --package      : 'rpm' or 'deb' (optional, default: rpm)"
+    echo "    --fat	     : use fat package instead of clasique one"
     echo "    -t | --time    : duration (seconds) of each benchmark"
     echo "                     (optional, default: 100)"
     echo "    --keep-running : launch endless TCP iperf before leaving"
@@ -42,8 +43,9 @@ package='rpm'
 output="$(pwd)/output.csv"
 bench_duration=100
 keep_running=0
+fat=""
 
-args=`getopt -o s:b:o:t:h:: --long sources:,build:,output:,ip-a:,ip-b:,port-a:,port-b:,package:,time:,keep-running,help:: -- "$@"`
+args=`getopt -o s:b:o:t:h:: --long sources:,build:,output:,ip-a:,ip-b:,port-a:,port-b:,package:,time:,keep-running,fat,help:: -- "$@"`
 eval set -- "$args"
 while true ; do
     case "$1" in
@@ -67,6 +69,8 @@ while true ; do
             bench_duration=$2 ; shift 2 ;;
         --keep-running)
             keep_running=1 ; shift 1 ;;
+	--fat)
+            fat="fat-" ; shift 1 ;;
         -h|--help)
             usage; exit 0 ;;
         --)
@@ -137,7 +141,7 @@ ssh_run $ip_b $port_b true
 cd $build_dir
 rm *.$package || true
 make
-make package-$package
+make package-$fat$package
 
 # clean targets
 tmp=/root/tmp_butterfly
