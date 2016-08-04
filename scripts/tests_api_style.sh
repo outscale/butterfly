@@ -2,13 +2,6 @@
 
 # Butterfly root
 BUTTERFLY_ROOT=$1
-BUTTERFLY_BUILD_ROOT=.
-
-# Test Butterfly build root
-if [ ! -f $BUTTERFLY_BUILD_ROOT/CMakeCache.txt ]; then
-    echo "Please run script from the build directory"
-    exit 1
-fi
 
 # Test Butterfly root
 if [ ! -d $BUTTERFLY_ROOT/api ]; then
