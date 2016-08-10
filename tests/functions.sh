@@ -1,6 +1,6 @@
-IMG_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-051115.qcow
-IMG_MD5=4b7b1a71ac47eb73d85cdbdc85533b07
-KEY_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-051115.rsa
+IMG_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-100816.qcow
+IMG_MD5=1ca000ddbc5ac271c77d1875fab71083
+KEY_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-100816.rsa
 KEY_MD5=eb3d700f2ee166e0dbe00f4e0aa2cef9
 
 function usage {
@@ -169,9 +169,6 @@ function qemu_start {
     # Configure IP on vhost interface
     ssh_run $id ip link set ens4 up
     ssh_run $id ip addr add 42.0.0.$id/16 dev ens4
-
-    ssh_run $id "pacman -Sy --noconfirm pacman" &> /dev/null
-    ssh_run $id "pacman -Sy --noconfirm netcat" &> /dev/null
 }
 
 function qemu_stop {
