@@ -144,7 +144,7 @@ bool Config::parse_cmd(int argc, char **argv) {
     if (graph_core_id_cmd != nullptr)
         graph_core_id = std::atoi(&*graph_core_id_cmd);
     // Load from configuration file if provided
-    if (config_path.length() > 0 && !LoadConfigFile(config_path)) {
+    if (config_path.length() > 0 && !load_config_file(config_path)) {
         std::cerr << "Failed to open configuration file" << std::endl;
         app::log.error("Failed to open configuration file");
         return false;
@@ -252,7 +252,7 @@ void Log::error(const std::string &message, ...) {
 
 #undef DEBUG_INTERNAL
 
-void WritePid(std::string pid_path) {
+void write_pid(std::string pid_path) {
     std::ofstream f;
     f.open(pid_path, std::ios::out);
     if (!f.good()) {
@@ -265,7 +265,7 @@ void WritePid(std::string pid_path) {
     f.close();
 }
 
-bool LoadConfigFile(std::string config_path) {
+bool load_config_file(std::string config_path) {
     CSimpleIniA ini;
     ini.SetUnicode();
     if (ini.LoadFile(config_path.c_str()) != SI_OK)
@@ -325,14 +325,13 @@ bool LoadConfigFile(std::string config_path) {
     return true;
 }
 
-void SignalRegister() {
-    signal(SIGINT, SignalHandler);
-    signal(SIGQUIT, SignalHandler);
-    signal(SIGSTOP, SignalHandler);
+void signal_register() {
+    signal(SIGINT, signal_handler);
+    signal(SIGQUIT, signal_handler);
+    signal(SIGSTOP, signal_handler);
 }
 
-void
-SignalHandler(int signum) {
+void signal_handler(int signum) {
     std::string m = "got signal " + std::to_string(signum);
     app::log.info(m);
     app::request_exit = true;
@@ -347,7 +346,7 @@ Log log;
 Graph graph;
 }  // namespace app
 
-int initCGroup(int multiplier) {
+int init_cgroup(int multiplier) {
   system("mkdir /sys/fs/cgroup/cpu/butterfly");
   system(std::string("echo $(( `cat /sys/fs/cgroup/cpu/cpu.shares` * "
                      + std::to_string(multiplier)
@@ -356,7 +355,7 @@ int initCGroup(int multiplier) {
   return 0;
 }
 
-void app::setCGroup() {
+void app::set_cgroup() {
   if (!app::config.tid)
     return;
   std::string setStr;
@@ -374,7 +373,7 @@ void app::setCGroup() {
   system(unsetOtherStr.c_str());
 }
 
-void app::destroyCGroup() {
+void app::destroy_cgroup() {
   system("cat /sys/fs/cgroup/cpu/butterfly/tasks |"
          " while read ligne; do echo $ligne > /sys/fs/cgroup/cpu/tasks ; done");
   system("rmdir /sys/fs/cgroup/cpu/butterfly");
@@ -384,7 +383,7 @@ int
 main(int argc, char *argv[]) {
     try {
         // Register signals
-        app::SignalRegister();
+        app::signal_register();
 
         // Check parameters
         if (!app::config.parse_cmd(argc, argv))
@@ -402,7 +401,7 @@ main(int argc, char *argv[]) {
 
         // Write PID
         if (app::config.pid_path.length() > 0)
-            app::WritePid(app::config.pid_path);
+            app::write_pid(app::config.pid_path);
 
         app::log.info("butterfly starts");
 
@@ -411,7 +410,7 @@ main(int argc, char *argv[]) {
             app::log.error("cannot start packetgraph, exiting");
             app::request_exit = true;
         }
-        initCGroup(POLL_THREAD_MULTIPLIER);
+        init_cgroup(POLL_THREAD_MULTIPLIER);
         // Prepare & run API server
         APIServer server(app::config.api_endpoint, &app::request_exit);
         server.run_threaded();

@@ -76,17 +76,17 @@ class Log {
 };
 
 // Manage signals
-void SignalRegister();
-void SignalHandler(int signum);
+void signal_register();
+void signal_handler(int signum);
 
 // Manage configuration file
-bool LoadConfigFile(std::string config_path);
+bool load_config_file(std::string config_path);
 
-void destroyCGroup();
-void setCGroup();
+void destroy_cgroup();
+void set_cgroup();
 
 // Manage PID
-void WritePid(std::string pid_path);
+void write_pid(std::string pid_path);
 
 // Some global app:: variables
 extern bool request_exit;
