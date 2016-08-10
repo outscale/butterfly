@@ -54,7 +54,7 @@ add_custom_target(uninstall
       COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
 add_custom_target(butterfly-genere-version
-  COMMAND ${PROJECT_SOURCE_DIR}/scripts/genHdrVersion.sh ${PROJECT_BINARY_DIR}/version.h
+  COMMAND ${PROJECT_SOURCE_DIR}/scripts/genHdrVersion.sh ${PROJECT_BINARY_DIR}/api/version.h
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   )
 
