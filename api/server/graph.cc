@@ -89,7 +89,7 @@ void Graph::stop() {
     // Byby packetgraph
     vnis_.clear();
     Pg::stop();
-    app::destroyCGroup();
+    app::destroy_cgroup();
     started = false;
 }
 
@@ -391,7 +391,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
 
     // Reload the firewall configuration
     fw_update(nic);
-    app::setCGroup();
+    app::set_cgroup();
 
     return std::string(Pg::vhost_socket_path(gn.vhost.get()));
 }
