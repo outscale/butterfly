@@ -29,7 +29,7 @@ extern "C" {
 #include "api/server/graph.h"
 #include "api/server/server.h"
 #include "api/server/simpleini/SimpleIni.hpp"
-#include "./version.h"
+#include "api/version.h"
 
 namespace app {
 Stats::Stats() {
