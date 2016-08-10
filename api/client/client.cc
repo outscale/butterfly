@@ -25,7 +25,7 @@
 #include <iostream>
 #include "api/client/client.h"
 #include "api/protocol/message.pb.h"
-#include "./version.h"
+#include "api/version.h"
 
 Options::Options() {
     endpoint = NULL;

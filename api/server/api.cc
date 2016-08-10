@@ -26,7 +26,7 @@
 #include "api/server/app.h"
 #include "api/server/model.h"
 #include "api/protocol/message.pb.h"
-#include "./version.h"
+#include "api/version.h"
 
 void API::process_request(const std::string &request, std::string *response) {
     if (response == nullptr)
