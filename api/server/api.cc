@@ -299,12 +299,10 @@ bool API::action_sg_del(std::string id, app::Error *error) {
         app::log.warning(m);
         return true;
     }
-
-    // Remove security group from model
+    // Save security group before removing it
+    app::Sg sg = m->second;
     app::model.security_groups.erase(id);
-
     // Update graph
-    app::Sg &sg = m->second;
     sg_update(sg);
     return true;
 }
