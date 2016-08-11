@@ -83,6 +83,19 @@ void API::process_request(const std::string &request, std::string *response) {
     app::log.debug(human_message);
 }
 
+void API::build_internal_error(std::string *response) {
+    proto::Message rep;
+    google::protobuf::TextFormat::Printer printer;
+    std::string human_message;
+
+    rep.set_revision(PROTOS_REVISION);
+    rep.set_allocated_error(new proto::Error);
+    rep.mutable_error()->set_code(proto::Error_Code_INTERNAL_ERROR);
+    rep.SerializeToString(response);
+    printer.PrintToString(rep, &human_message);
+    app::log.debug(human_message);
+}
+
 void API::dispatch(const proto::Message &req, proto::Message *rep) {
     if (rep == nullptr)
         return;

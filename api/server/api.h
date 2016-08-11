@@ -36,6 +36,10 @@ class API {
      */
     static void process_request(const std::string &request,
         std::string *response);
+    /* Build a standard internal error.
+     * @param  response response containing internal error
+     */
+    static void build_internal_error(std::string *response);
     // This structure centralize description of NicUpdate informations
     struct NicUpdate {
         std::string id;
