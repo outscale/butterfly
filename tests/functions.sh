@@ -174,6 +174,8 @@ function ssh_connection_test {
 	fi
 	ssh_run $id1 "rm /tmp/test"
     fi
+    ssh_run $id1 "killall nc"
+    ssh_run $id2 "killall nc"
 }
 
 function ssh_no_connection_test {
@@ -208,6 +210,8 @@ function ssh_no_connection_test {
 	fi
 	ssh_run $id1 "rm /tmp/test"
     fi
+    ssh_run $id1 "killall nc"
+    ssh_run $id2 "killall nc"
 }
 
 function qemu_start {
