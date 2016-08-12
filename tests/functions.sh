@@ -142,40 +142,57 @@ function ssh_iperf3_udp {
     rm /tmp/iperf3_tmp_results
 }
 
+function ssd_connection_tests_internal {
+    protocol=$1
+    id1=$2
+    id2=$3
+    port=$4
+    proto_cmd=""
+
+    if [ "$protocol" == "udp" ]; then
+	proto_cmd="-u"
+    elif [ "$protocol" == "tcp" ]; then
+	proto_cmd=""
+    else
+	echo -e "protocol not set, check protocol please"
+	RETURN_CODE=1
+	return $RETURN_CODE
+    fi
+
+    ssh_run_background $id1 "nc -w 1 $proto_cmd -lp  $port > /tmp/test"
+    sleep 0.2
+    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc $proto_cmd -w 1 42.0.0.$id1 $port"
+    sleep 0.2
+    return 0
+}
+
+function ssh_clean_connection {
+    id1=$1
+    id2=$2
+    
+    ssh_run $id1 "rm /tmp/test" &> /dev/null
+    ssh_run $id1 "killall nc" &> /dev/null
+    ssh_run $id2 "killall nc" &> /dev/null
+}
+
 function ssh_connection_test {
     protocol=$1
     id1=$2
     id2=$3
     port=$4
 
-    if [ "$protocol" == "udp" ]; then
-	ssh_run_background $id1 "nc -w 3 -lup $port > /tmp/test"
-	sleep 1
-	ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -u -w 3 42.0.0.$id1 $port"
-	sleep 1
-    elif [ "$protocol" == "tcp" ]; then
-	ssh_run_background $id1 "nc -w 3 -lp $port > /tmp/test"
-	sleep 1
-	ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -w 3 42.0.0.$id1 $port"
-	sleep 1
-    else
-	echo -e "protocol not set, check protocol please"
-	protocol="false"
-	RETURN_CODE=1
+    if [ $( ssd_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
+	return
     fi
 
-    if [ "$protocol" != "false" ]; then
-	ssh_run $id1 [ -s "/tmp/test" ]
-	if [ "$?" == "0" ]; then
-	    echo -e "$protocol test $id2 --> $id1 OK"
-	else
-	    echo -e "$protocol test $id2 --> $id1 FAIL"
-	    RETURN_CODE=1
-	fi
-	ssh_run $id1 "rm /tmp/test"
+    ssh_run $id1 [ -s "/tmp/test" ]
+    if [ "$?" == "0" ]; then
+	echo -e "$protocol test $id2 --> $id1 OK"
+    else
+	echo -e "$protocol test $id2 --> $id1 FAIL"
+	RETURN_CODE=1
     fi
-    ssh_run $id1 "killall nc"
-    ssh_run $id2 "killall nc"
+    ssh_clean_connection $id1 $id2
 }
 
 function ssh_no_connection_test {
@@ -184,34 +201,17 @@ function ssh_no_connection_test {
     id2=$3
     port=$4
 
-    if [ "$protocol" == "udp" ]; then
-	ssh_run_background $id1 "nc -w 3 -lup $port > /tmp/test"
-	sleep 1
-	ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -u -w 1 42.0.0.$id1 $port"
-	sleep 1
-    elif [ "$protocol" == "tcp" ]; then
-	ssh_run_background $id1 "nc -w 3 -lp $port > /tmp/test"
-	sleep 1
-	ssh_run_background $id2 "echo 'this message is from vm $id2' | nc -w 3 42.0.0.$id1 $port"
-	sleep 1
-    else
-	echo -e "protocol not set, check protocol please"
-	protocol="false"
+    if [  $( ssd_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
+	return
+    fi
+    ssh_run $id1 [ -s "/tmp/test" ]
+    if [ "$?" == "0" ]; then
+	echo -e "no $protocol test $id2 --> $id1 FAIL"
 	RETURN_CODE=1
+    else
+	echo -e "no $protocol test $id2 --> $id1 OK"
     fi
-
-    if [ "$protocol" != "false" ]; then
-	ssh_run $id1 [ -s "/tmp/test" ]
-	if [ "$?" == "0" ]; then
-	    echo -e "no $protocol test $id2 --> $id1 FAIL"
-	    RETURN_CODE=1
-	else
-	    echo -e "no $protocol test $id2 --> $id1 OK"
-	fi
-	ssh_run $id1 "rm /tmp/test"
-    fi
-    ssh_run $id1 "killall nc"
-    ssh_run $id2 "killall nc"
+    ssh_clean_connection $id1 $id2
 }
 
 function qemu_start {
@@ -224,7 +224,14 @@ function qemu_start {
     CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
     exec $CMD &> /tmp/qemu_log_$id &
     pid=$!
-    sleep 10
+    echo "joe" | netcat -w 1  127.0.0.1 500$id &> /dev/null
+    TEST=$?
+    while  [ $TEST -ne 0 ]
+    do
+	echo "joe" | netcat -w 1  127.0.0.1 500$id &> /dev/null
+	TEST=$?
+	sleep 0.2
+    done
     sudo kill -s 0 $pid &> /dev/null
     if [ $? -ne 0 ]; then
         cat /tmp/qemu_log_$id
@@ -237,9 +244,7 @@ function qemu_start {
     qemu_pids["$id"]=$pid
 
     # Wait for ssh to be ready
-    while ! ssh_run_timeout $id 60 true ; do
-        sleep 1
-    done
+    ssh_run_timeout $id 60 true
 
     # Configure IP on vhost interface
     ssh_run $id ip link set ens4 up
@@ -274,7 +279,7 @@ function server_stop {
     echo "stopping butterfly $id"
     sudo kill -2 $(ps --ppid ${server_pids[$id]} -o pid=)
     while sudo kill -s 0 ${server_pids[$id]} &> /dev/null ; do
-        sleep 1
+        sleep 0.1
     done
 }
 
@@ -284,7 +289,7 @@ function network_connect {
     echo "network connect but$id1 <--> but$id2"
     sudo socat TUN:192.168.42.$id1/24,tun-type=tap,iff-running,iff-up,iff-promisc,tun-name=but$id1 TUN:192.168.42.$id2/24,tun-type=tap,iff-running,iff-promisc,iff-up,tun-name=but$id2 &
     pid=$!
-    sleep 1
+    sleep 0.2
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
         echo "failed connect but$id1 and but$id2"
@@ -381,6 +386,7 @@ messages {
 }
 " > $f
     request $but_id $nic_id $f
+    sleep 0.3
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
         echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
@@ -682,7 +688,7 @@ function check_bin {
 function clean_all {
     sudo killall -9 butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/* /tmp/butterfly-*.pcap &> /dev/null
-    sleep 1
+    sleep 0.5
 }
 
 if [ ! -f $BUTTERFLY_SRC_ROOT/LICENSE ]; then
