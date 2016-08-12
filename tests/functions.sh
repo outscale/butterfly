@@ -170,9 +170,9 @@ function ssh_clean_connection {
     id1=$1
     id2=$2
     
-    ssh_run $id1 "rm /tmp/test"
-    ssh_run $id1 "killall nc"
-    ssh_run $id2 "killall nc"
+    ssh_run $id1 "rm /tmp/test" &> /dev/null
+    ssh_run $id1 "killall nc" &> /dev/null
+    ssh_run $id2 "killall nc" &> /dev/null
 }
 
 function ssh_connection_test {
