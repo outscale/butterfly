@@ -152,6 +152,8 @@ bool Graph::start(int argc, char **argv) {
     return true;
 }
 
+#define POLLER_CHECK(c) ((c) & 1023)
+#define FIREWALL_GC(c) ((c) == 100000)
 void *Graph::poller(void *graph) {
     Graph *g = reinterpret_cast<Graph *>(graph);
     struct RpcUpdatePoll *list = NULL;
@@ -170,8 +172,7 @@ void *Graph::poller(void *graph) {
     for (uint32_t cnt = 0;; ++cnt) {
         /* Let's see if there is any update every 100 000 pools. */
 
-        if (cnt == 100000) {
-            cnt = 0;
+        if (POLLER_CHECK(cnt)) {
             if (g->poller_update(&q)) {
                 if (q) {
                 list = &q->update_poll;
@@ -196,7 +197,8 @@ void *Graph::poller(void *graph) {
         }
 
         /* Call firewall garbage callector. */
-        if (cnt == 50000) {
+        if (FIREWALL_GC(cnt)) {
+            cnt = 0;
             for (uint32_t v = 0; v < size; v++) {
                 Pg::firewall_gc(list->firewalls[v]);
              }
@@ -207,6 +209,8 @@ void *Graph::poller(void *graph) {
     g_free(q);
     pthread_exit(NULL);
 }
+#undef POLLER_CHECK
+#undef FIREWALL_GC
 
 int Graph::set_cpu(int core_id) {
     cpu_set_t cpu_set;
