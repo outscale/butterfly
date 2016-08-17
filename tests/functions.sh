@@ -748,6 +748,11 @@ check_bin sudo -h
 check_bin ssh -V
 check_bin sudo qemu-system-x86_64 -h
 check_bin sudo socat -h
+check_bin kill -l
+check_bin killall -l
+check_bin nc -h
+check_bin wget -h
+
 clean_all
 clean_pcaps
 
