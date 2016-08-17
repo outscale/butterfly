@@ -688,7 +688,6 @@ function check_bin {
 function clean_all {
     sudo killall -9 butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/* /tmp/butterfly-*.pcap &> /dev/null
-    sleep 0.5
 }
 
 if [ ! -f $BUTTERFLY_SRC_ROOT/LICENSE ]; then
