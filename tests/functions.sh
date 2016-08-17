@@ -159,10 +159,9 @@ function ssd_connection_tests_internal {
 	return $RETURN_CODE
     fi
 
-    ssh_run_background $id1 "nc -w 1 $proto_cmd -lp  $port > /tmp/test"
-    sleep 0.2
-    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc $proto_cmd -w 1 42.0.0.$id1 $port"
-    sleep 0.2
+    ssh_run_background $id1 "nc $proto_cmd -lp  $port > /tmp/test"
+    sleep 0.4
+    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc $proto_cmd 42.0.0.$id1 $port"
     return 0
 }
 
@@ -175,6 +174,20 @@ function ssh_clean_connection {
     ssh_run $id2 "killall nc" &> /dev/null
 }
 
+function ssh_connection_test_file {
+    timeout=50
+    it=0
+    while [ $it -ne $timeout ]; do
+	ssh_run $1 [ -s "/tmp/test" ]
+	if [ "$?" == "0" ]; then
+	    return 0
+	fi
+	sleep 0.1
+	it=$( expr $it + 1 )
+    done
+    return 1
+}
+
 function ssh_connection_test {
     protocol=$1
     id1=$2
@@ -185,7 +198,7 @@ function ssh_connection_test {
 	return
     fi
 
-    ssh_run $id1 [ -s "/tmp/test" ]
+    ssh_connection_test_file $id1
     if [ "$?" == "0" ]; then
 	echo -e "$protocol test $id2 --> $id1 OK"
     else
@@ -193,6 +206,7 @@ function ssh_connection_test {
 	RETURN_CODE=1
     fi
     ssh_clean_connection $id1 $id2
+    return $RETURN_CODE
 }
 
 function ssh_no_connection_test {
@@ -212,6 +226,7 @@ function ssh_no_connection_test {
 	echo -e "no $protocol test $id2 --> $id1 OK"
     fi
     ssh_clean_connection $id1 $id2
+    return $RETURN_CODE
 }
 
 function qemu_start {
@@ -685,9 +700,12 @@ function check_bin {
     fi
 }
 
+function clean_pcaps {
+    sudo rm -rf /tmp/butterfly-*.pcap
+}
 function clean_all {
     sudo killall -9 butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null
-    sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/* /tmp/butterfly-*.pcap &> /dev/null
+    sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
 }
 
@@ -713,6 +731,7 @@ check_bin ssh -V
 check_bin sudo qemu-system-x86_64 -h
 check_bin sudo socat -h
 clean_all
+clean_pcaps
 
 # run sudo one time
 sudo echo "ready to roll !"
