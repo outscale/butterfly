@@ -159,8 +159,8 @@ function ssd_connection_tests_internal {
 	return $RETURN_CODE
     fi
 
-    ssh_run_background $id1 "nc -w 1 $proto_cmd -lp  $port > /tmp/test"
-    sleep 0.2
+    ssh_run_background $id1 "nc -w 2 $proto_cmd -lp  $port > /tmp/test"
+    sleep 0.6
     ssh_run_background $id2 "echo 'this message is from vm $id2' | nc $proto_cmd -w 1 42.0.0.$id1 $port"
     sleep 0.2
     return 0
