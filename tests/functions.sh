@@ -743,10 +743,6 @@ if [ ! -f $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server ]; then
     exit 1
 fi
 
-download $IMG_URL $IMG_MD5 $BUTTERFLY_BUILD_ROOT/vm.qcow
-download $KEY_URL $KEY_MD5 $BUTTERFLY_BUILD_ROOT/vm.rsa
-chmod og-r $BUTTERFLY_BUILD_ROOT/vm.rsa
-
 # Check some binaries
 check_bin sudo -h
 check_bin ssh -V
@@ -754,6 +750,10 @@ check_bin sudo qemu-system-x86_64 -h
 check_bin sudo socat -h
 clean_all
 clean_pcaps
+
+download $IMG_URL $IMG_MD5 $BUTTERFLY_BUILD_ROOT/vm.qcow
+download $KEY_URL $KEY_MD5 $BUTTERFLY_BUILD_ROOT/vm.rsa
+chmod og-r $BUTTERFLY_BUILD_ROOT/vm.rsa
 
 # run sudo one time
 sudo echo "ready to roll !"
