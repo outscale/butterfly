@@ -230,7 +230,6 @@ int Graph::set_cpu(int core_id) {
 
 int Graph::set_sched() {
   app::config.tid = gettid();
-  printf("add pid to group: %lu\n", gettid());
   return 0;
 }
 #undef gettid
