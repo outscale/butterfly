@@ -329,4 +329,20 @@ namespace {
         g_assert(strcmp(pg_brick_type(brick), "antispoof") == 0);
         pg_antispoof_arp_disable(brick);
     }
+
+    struct pg_brick *tap_new(const char *name,
+                             const char *ifname) {
+        struct pg_brick *ret = pg_tap_new(name, ifname, &errp);
+        if (!ret)
+            print_and_free_errp();
+        return ret;
+    }
+
+    const char *tap_ifname(struct pg_brick *brick) {
+        return pg_tap_ifname(brick);
+    }
+
+    bool tap_get_mac(struct pg_brick *brick, struct ether_addr *mac) {
+        return pg_tap_get_mac(brick, mac) == 0;
+    }
 }  // namespace Pg

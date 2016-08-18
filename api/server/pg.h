@@ -145,6 +145,11 @@ namespace Pg {
 
     void antispoof_arp_disable(struct pg_brick *brick);
 
+    struct pg_brick *tap_new(const char *name,
+                             const char *ifname);
+    const char *tap_ifname(struct pg_brick *brick);
+    bool tap_get_mac(struct pg_brick *brick, struct ether_addr *mac);
+
 }  // namespace Pg
 
 #endif  // API_SERVER_PG_H_
