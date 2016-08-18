@@ -116,6 +116,9 @@ For example, we can ask butterfly to listen to existing `eth0` interface:
 sudo butterfly-server -c1 -n1 --socket-mem 64 --vdev=eth_pcap0,iface=eth0 -- -i 192.168.0.1 -s /tmp
 ```
 
+If you don't have a DPDK port available and don't create a vdev interface,
+Butterfly will create a TAP interface.
+
 Alternatively, you can ask Butterfly to read a [configuration file]
 (https://github.com/outscale-jju/butterfly/blob/doc/api/server/original_config.ini)
 at init:

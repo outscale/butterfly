@@ -110,13 +110,24 @@ bool Graph::start(int argc, char **argv) {
     // Create nic brick
     nic_ = Brick(Pg::nic_new_by_id("port-0", 0), Pg::destroy);
     if (nic_.get() == NULL) {
-        LOG_ERROR_("brick-nic failed");
-        return false;
-    }
-
-    // Try to increase mtu
-    if (!Pg::nic_set_mtu(nic_.get(), 2000)) {
-        LOG_WARNING_("cannot increase port MTU");
+        LOG_WARNING_("cannot use DPDK port 0");
+        // Try to create a pcap interface instead
+        nic_ = Brick(Pg::tap_new("port-0", NULL), Pg::destroy);
+        if (nic_.get() == NULL) {
+            LOG_ERROR_("cannot create tap interface");
+            return false;
+        } else if (!Pg::tap_get_mac(nic_.get(), &mac)) {
+             LOG_ERROR_("cannot get mac of tap interface");
+             return false;
+        } else {
+            LOG_INFO_("created tap interface %s", Pg::tap_ifname(nic_.get()));
+        }
+    } else {
+        // Try to increase mtu
+        if (!Pg::nic_set_mtu(nic_.get(), 2000)) {
+            LOG_WARNING_("cannot increase port MTU");
+        }
+        Pg::nic_get_mac(nic_.get(), &mac);
     }
 
     // Create sniffer brick
@@ -133,7 +144,6 @@ bool Graph::start(int argc, char **argv) {
     }
 
     // Create vtep brick
-    Pg::nic_get_mac(nic_.get(), &mac);
     vtep_ = Brick(Pg::vtep_new("vxlan", 1, 50, WEST_SIDE,
                               app::config.external_ip, mac,
                               ALL_OPTI),
