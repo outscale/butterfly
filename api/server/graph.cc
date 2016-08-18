@@ -138,7 +138,7 @@ bool Graph::start(int argc, char **argv) {
                               app::config.external_ip, mac,
                               ALL_OPTI),
                  Pg::destroy);
-    if (nic_.get() == NULL) {
+    if (vtep_.get() == NULL) {
         LOG_ERROR_("brick-vtep failed");
         return false;
     }
