@@ -3,7 +3,7 @@ Butterfly
 Butterfly connects Virtual Machines and control their traffic flow.
 
 Each VM traffic is contained in a specific [VXLAN](https://en.wikipedia.org/wiki/Virtual_Extensible_LAN)
-network and traffic is filtered by a Security Groups.
+network and traffic is filtered by Security Groups.
 
 Security Groups can be applied to any VM interface, SG contain a list of simple
 network rules (dropping traffic by default).
