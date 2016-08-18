@@ -40,11 +40,10 @@ class Graph {
      * bricks of the graph.
      * Sometime, the thread release a mutex permetting the API to change
      * the graph configuration.
-     * @param  argc argument count to pass to packetgraph
-     * @param  argv arguments strings to pass to packetgraph
+     * @param  dpdk_args dpdk arguments in one string
      * @return true if graph has started correctly, false otherwise
      */
-    bool start(int argc, char **argv);
+    bool start(std::string dpdk_args);
     /** Exit and clean graph. */
     void stop(void);
     /** Inject a NIC in packetgraph including all needed bricks

@@ -276,8 +276,7 @@ function server_start {
     id=$1
     echo "starting butterfly $id"
 
-    CMD="sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server --no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge -- -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t"
-    exec $CMD &> /dev/null &
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t &> /dev/null &
     pid=$!
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then

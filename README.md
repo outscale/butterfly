@@ -96,34 +96,27 @@ If you have a DPDK compatible NIC, you can get [some](http://dpdk.org/doc/nics) 
 
 # Run Butterfly server
 
-Butterfly command line is divided in two parts separated by `--`:
-- DPDK arguments
-- Butterfly arguments
-
 First, to get help: `butterfly-server --help`
 
 For example, if you have a DPDK compatible NIC, Butterfly will use the first
-available DPDK port:
+available DPDK port. If no port is found, a (slow) tap interface is created.
 ```
-sudo butterfly-server -c1 -n1 --socket-mem 64 -- -i 192.168.0.1 -s /tmp
+sudo butterfly-server -i 192.168.0.1 -s /tmp
 ```
 
-If you don't have a DPDK compatible card, you can init a DPDK virtual device
-(which is _much_ slower than a DPDK compatible hardware).
+If you don't have a DPDK compatible card, you can also init a DPDK virtual
+device (which is _much_ slower than a DPDK compatible hardware).
 
 For example, we can ask butterfly to listen to existing `eth0` interface:
 ```
-sudo butterfly-server -c1 -n1 --socket-mem 64 --vdev=eth_pcap0,iface=eth0 -- -i 192.168.0.1 -s /tmp
+sudo butterfly-server -i 192.168.0.1 -s /tmp --dpdk-args "-c1 -n1 --socket-mem 64 --vdev=eth_pcap0,iface=eth0"
 ```
-
-If you don't have a DPDK port available and don't create a vdev interface,
-Butterfly will create a TAP interface.
 
 Alternatively, you can ask Butterfly to read a [configuration file]
 (https://github.com/outscale-jju/butterfly/blob/doc/api/server/original_config.ini)
 at init:
 ```
-sudo butterfly-server -c1 -n1 --socket-mem 64 -- -c /etc/butterfly/butterfly.conf
+sudo butterfly-server -c /etc/butterfly/butterfly.conf
 ```
 
 # F.A.Q.

@@ -42,8 +42,7 @@ function butterfly_start {
     local id=$1
     local ip=$2
     local port=$3
-    local CMD="butterfly-server --no-shconf -c1 -n2 --socket-mem 64 -- -l debug -i 43.0.0.$id -s /tmp"
-    ssh_run $ip $port tmux new -d -s $(date +%Y-%m-%d-%H.%M.%S) \'$CMD\'
+    ssh_run $ip $port tmux new -d -s $(date +%Y-%m-%d-%H.%M.%S) \'butterfly-server --dpdk-args \"--no-shconf -c1 -n2 --socket-mem 64\" -l debug -i 43.0.0.$id -s /tmp \'
     sleep 5
     ssh_run $ip $port pgrep -f butterfly-server
 }

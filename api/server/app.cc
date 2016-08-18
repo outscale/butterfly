@@ -42,11 +42,11 @@ Config::Config() {
     log_level = "error";
     graph_core_id = 0;
     packet_trace = false;
+    dpdk_args = DPDK_DEFAULT_ARGS;
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
     bool ret = true;
-    int i;
     bool show_version;
     bool dpdk_help;
 
@@ -58,6 +58,7 @@ bool Config::parse_cmd(int argc, char **argv) {
     std::unique_ptr<gchar, decltype(gfree)> pid_path_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> socket_folder_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> graph_core_id_cmd(nullptr, gfree);
+    std::unique_ptr<gchar, decltype(gfree)> dpdk_args_cmd(nullptr, gfree);
 
     static GOptionEntry entries[] = {
         {"config", 'c', 0, G_OPTION_ARG_FILENAME, &config_path_cmd,
@@ -83,29 +84,19 @@ bool Config::parse_cmd(int argc, char **argv) {
          "Trace packets going through Butterfly", nullptr},
         {"dpdk-help", 0, 0, G_OPTION_ARG_NONE, &dpdk_help,
          "print DPDK help", nullptr},
+        {"dpdk-args", 0, 0, G_OPTION_ARG_STRING, &dpdk_args_cmd,
+         "set dpdk arguments (default='" DPDK_DEFAULT_ARGS "'", nullptr},
         { nullptr }
     };
     GOptionContext *context = g_option_context_new("");
     g_option_context_set_summary(context,
-            "butterfly-server [EAL options] -- [butterfly options]");
+            "butterfly-server [OPTIONS]");
     g_option_context_set_description(context, "example:\n"
-            "butterfly-server -c0xF -n1  --socket-mem 64"
-            " -- -i 43.0.0.1 -e tcp://127.0.0.1:8765 -s /tmp");
+            "butterfly-server --dpdk-args \"-c0xF -n1 --socket-mem 64\" "
+            "-i 43.0.0.1 -e tcp://127.0.0.1:8765 -s /tmp");
     g_option_context_add_main_entries(context, entries, nullptr);
 
     GError *error = nullptr;
-
-    for (i = 0; i < argc; i++) {
-        if (g_strcmp0(argv[i], "--") == 0) {
-            break;
-        }
-    }
-    if (i != argc) {
-        argc -= i;
-        argv += i;
-    } else {
-        ret = false;
-    }
 
     if (!g_option_context_parse(context, &argc, &argv, &error)) {
         if (error != nullptr)
@@ -114,10 +105,8 @@ bool Config::parse_cmd(int argc, char **argv) {
     }
 
     if (dpdk_help) {
-        argc = 2;
-        argv[1] = const_cast<char *>("--help");
-
-        app::graph.start(argc, argv);
+        dpdk_args = "--help";
+        app::graph.start(dpdk_args);
         app::graph.stop();
         return false;
     }
@@ -143,6 +132,9 @@ bool Config::parse_cmd(int argc, char **argv) {
         socket_folder = std::string(&*socket_folder_cmd);
     if (graph_core_id_cmd != nullptr)
         graph_core_id = std::atoi(&*graph_core_id_cmd);
+    if (dpdk_args_cmd != nullptr)
+        dpdk_args = std::string(&*dpdk_args_cmd);
+
     // Load from configuration file if provided
     if (config_path.length() > 0 && !load_config_file(config_path)) {
         std::cerr << "Failed to open configuration file" << std::endl;
@@ -406,7 +398,7 @@ main(int argc, char *argv[]) {
         app::log.info("butterfly starts");
 
         // Prepare & run packetgraph
-        if (!app::graph.start(argc, argv)) {
+        if (!app::graph.start(app::config.dpdk_args)) {
             app::log.error("cannot start packetgraph, exiting");
             app::request_exit = true;
         }

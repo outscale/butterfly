@@ -29,6 +29,7 @@ extern "C" {
  */
 namespace Pg {
     bool start(int argc, char **argv);
+    bool start(std::string);
 
     void stop(void);
 

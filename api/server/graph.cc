@@ -93,11 +93,11 @@ void Graph::stop() {
     started = false;
 }
 
-bool Graph::start(int argc, char **argv) {
+bool Graph::start(std::string dpdk_args) {
     struct ether_addr mac;
 
     // Start packetgraph
-    if (!Pg::start(argc, argv)) {
+    if (!Pg::start(dpdk_args)) {
         return false;
     }
 

@@ -56,6 +56,30 @@ namespace {
         return true;
     }
 
+    bool start(std::string dpdk_args) {
+        gint dpdk_argc;
+        char **dpdk_argv;
+        GError *err;
+
+        dpdk_args.insert(0, "dpdk ");
+        app::log.debug(dpdk_args);
+        if (!g_shell_parse_argv(dpdk_args.c_str(),
+                                &dpdk_argc, &dpdk_argv, &err)) {
+            app::log.error("dpdk arguments parsing failed: %s", err->message);
+            g_error_free(err);
+            return false;
+        }
+        // From dpdk documentation:
+        // """
+        // After the call to rte_eal_init(), all arguments argv[x] with
+        // x < ret may be modified and should not be accessed by the
+        // application.
+        // """
+        // So using g_strfreev(dpdk_argv) to free dpdk_argv after start will
+        // segfault.
+        return start(dpdk_argc, dpdk_argv);
+    }
+
     void stop(void) {
         pg_vhost_stop();
         pg_stop();
