@@ -57,14 +57,14 @@ namespace {
     }
 
     void stop(void) {
-            pg_vhost_stop();
+        pg_vhost_stop();
         pg_stop();
     }
 
     bool link(struct pg_brick *target, struct pg_brick *brick) {
         LOG_DEBUG_("link [%s] to [%s]\n",
-                Pg::brick_name(target),
-                Pg::brick_name(brick));
+                   Pg::brick_name(target),
+                   Pg::brick_name(brick));
         if (pg_brick_link(target, brick, &errp) < 0) {
             print_and_free_errp();
             return false;
