@@ -101,7 +101,7 @@ bool Graph::start(int argc, char **argv) {
         return false;
     }
 
-    // DPDK open log for us sur we WANT our logs back !
+    // DPDK open log for us and we WANT our logs back !
     app::Log::open();
 
     // Start Vhost
