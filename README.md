@@ -114,7 +114,7 @@ sudo butterfly-server -i 192.168.0.1 -s /tmp --dpdk-args "-c1 -n1 --socket-mem 6
 ```
 
 Alternatively, you can ask Butterfly to read a [configuration file]
-(https://github.com/outscale-jju/butterfly/blob/doc/api/server/original_config.ini)
+(https://github.com/outscale/butterfly/blob/doc/api/server/butterfly-server.ini)
 at init:
 ```
 sudo butterfly-server -c /etc/butterfly/butterfly.conf
