@@ -314,6 +314,13 @@ bool load_config_file(std::string config_path) {
     }
     config.tid = 0;
 
+    v = ini.GetValue("general", "dpdk-args", "_");
+    if (std::string(v) != "_") {
+        config.dpdk_args = v;
+        std::string m = "LoadConfig: get dpdk-args from config: " +
+            config.dpdk_args;
+        log.debug(m);
+    }
     return true;
 }
 
