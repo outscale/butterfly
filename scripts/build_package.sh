@@ -57,6 +57,9 @@ cd $INSTALL_ROOT
 mv usr/local/bin usr/
 mv usr/local/etc .
 rm -rf usr/local
+# Path to systemd units distributed with installed RPM packages
+mkdir -p usr/lib/systemd/system
+cp $BUTTERFLY_ROOT/scripts/butterfly.service usr/lib/systemd/system/
 
 cd $ORIGINAL_DIR
 fpm -s dir \

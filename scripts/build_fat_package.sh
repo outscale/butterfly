@@ -68,6 +68,10 @@ echo '/opt/fat-butterfly-client/butterfly-client.sh $@' >> usr/bin/butterfly-cli
 echo '/opt/fat-butterfly-server/butterfly-server.sh $@' >> usr/bin/butterfly-server
 
 cp $BUTTERFLY_ROOT/api/server/butterfly-server.ini etc/butterfly/
+# Path to systemd units distributed with installed RPM packages
+mkdir -p usr/lib/systemd/system
+cp $BUTTERFLY_ROOT/scripts/butterfly.service usr/lib/systemd/system/
+
 
 cd $ORIGINAL_DIR
 fpm -s dir \
