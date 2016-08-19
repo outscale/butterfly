@@ -128,11 +128,9 @@ namespace Pg {
               uint32_t multicast_ip);
 
     struct pg_brick *print_new(const char *name,
-                uint32_t west_max,
-                uint32_t east_max,
-                FILE *output,
-                int flags,
-                uint16_t *type_filter);
+                               FILE *output,
+                               int flags,
+                               uint16_t *type_filter);
 
     void print_set_flags(struct pg_brick *brick, int flags);
     std::string graph_dot(struct pg_brick *brick);

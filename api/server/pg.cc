@@ -278,14 +278,11 @@ namespace {
     }
 
     struct pg_brick *print_new(const char *name,
-                   uint32_t west_max,
-                   uint32_t east_max,
-                   FILE *output,
-                   int flags,
-                   uint16_t *type_filter) {
-        struct pg_brick *ret = pg_print_new(name, west_max, east_max,
-                            output, flags, type_filter,
-                            &errp);
+                               FILE *output,
+                               int flags,
+                               uint16_t *type_filter) {
+        struct pg_brick *ret = pg_print_new(name, output, flags, type_filter,
+                                            &errp);
         if (!ret)
             print_and_free_errp();
         return ret;
