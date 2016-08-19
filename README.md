@@ -12,8 +12,8 @@ network rules (dropping traffic by default).
 
 Butterfly is a daemon you can control over a network API.
 
-It's packaged with a client mainly allowing you to add/remove/list network
-interfaces and security groups.
+It's packaged with a client mainly allowing you to add/remove/list virtual
+network interfaces and security groups.
 
 You can of course directly code your calls to Butterfly's API.
 API message transport is based on [ZeroMQ](http://zeromq.org/) and message
@@ -24,6 +24,10 @@ for more details.
 Here is an example of Butterfly with 6 virtual machines isolated in 3 networks (VNI 42, 51 and 1337).
 
 ![Butterfly execution](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly.svg)
+
+Butterfly binds a dedicated NIC to send/receive VXLAN packets and binds a socket
+(default: tcp) to listen to queries on it's API. If you use a DPDK compatible
+card, you won't be able to access API through it.
 
 # Installing Butterfly
 
