@@ -57,9 +57,8 @@ mkdir $INSTALL_ROOT
 cd $INSTALL_ROOT
 ls -R
 mkdir opt/
-mkdir etc/
-mkdir usr/
-mkdir usr/bin/
+mkdir -p etc/butterfly/
+mkdir -p usr/bin/
 cp -rv ../fat* opt/
 echo '#!/bin/bash' > usr/bin/butterfly-client
 echo '#!/bin/bash' > usr/bin/butterfly-server
@@ -68,7 +67,7 @@ chmod +x usr/bin/butterfly-server
 echo '/opt/fat-butterfly-client/butterfly-client.sh $@' >> usr/bin/butterfly-client
 echo '/opt/fat-butterfly-server/butterfly-server.sh $@' >> usr/bin/butterfly-server
 
-cp $BUTTERFLY_ROOT/api/server/original_config.ini etc/
+cp $BUTTERFLY_ROOT/api/server/butterfly-server.ini etc/butterfly/
 
 cd $ORIGINAL_DIR
 fpm -s dir \
