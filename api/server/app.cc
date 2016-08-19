@@ -63,7 +63,7 @@ bool Config::parse_cmd(int argc, char **argv) {
         {"config", 'c', 0, G_OPTION_ARG_FILENAME, &config_path_cmd,
          "Path to configuration file", "FILE"},
         {"ip", 'i', 0, G_OPTION_ARG_STRING, &external_ip_cmd,
-         "IP address to use", "IP_ADDRESS"},
+         "IP address to use on VXLAN endpoint", "IP_ADDRESS"},
         {"endpoint", 'e', 0, G_OPTION_ARG_STRING, &api_endpoint_cmd,
          "API endpoint to bind (default is 'tcp://0.0.0.0:9999')",
          "API_ENDPOINT"},
