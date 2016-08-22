@@ -55,7 +55,6 @@ bool Config::parse_cmd(int argc, char **argv) {
     std::unique_ptr<gchar, decltype(gfree)> external_ip_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> api_endpoint_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> log_level_cmd(nullptr, gfree);
-    std::unique_ptr<gchar, decltype(gfree)> pid_path_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> socket_folder_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> graph_core_id_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> dpdk_args_cmd(nullptr, gfree);
@@ -73,8 +72,6 @@ bool Config::parse_cmd(int argc, char **argv) {
          "'warning', 'info' or 'debug'", "LOG_LEVEL"},
         {"version", 'V', 0, G_OPTION_ARG_NONE, &show_version,
          "Show butterfly-server version and exit", nullptr},
-        {"pid", 'p', 0, G_OPTION_ARG_FILENAME, &pid_path_cmd,
-         "Write PID of process in specified file", "FILE"},
         {"socket-dir", 's', 0, G_OPTION_ARG_FILENAME, &socket_folder_cmd,
          "Create network sockets in specified directory", "DIR"},
         {"graph-cpu-core", 'u', 0, G_OPTION_ARG_STRING, &graph_core_id_cmd,
@@ -126,8 +123,6 @@ bool Config::parse_cmd(int argc, char **argv) {
         api_endpoint = std::string(&*api_endpoint_cmd);
     if (log_level_cmd != nullptr)
         log_level = std::string(&*log_level_cmd);
-    if (pid_path_cmd != nullptr)
-        pid_path = std::string(&*pid_path_cmd);
     if (socket_folder_cmd != nullptr)
         socket_folder = std::string(&*socket_folder_cmd);
     if (graph_core_id_cmd != nullptr)
@@ -244,19 +239,6 @@ void Log::error(const std::string &message, ...) {
 
 #undef DEBUG_INTERNAL
 
-void write_pid(std::string pid_path) {
-    std::ofstream f;
-    f.open(pid_path, std::ios::out);
-    if (!f.good()) {
-        log.error("Cannot write to PID file");
-        f.close();
-        return;
-    }
-    pid_t pid = getpid();
-    f << pid;
-    f.close();
-}
-
 bool load_config_file(std::string config_path) {
     CSimpleIniA ini;
     ini.SetUnicode();
@@ -286,14 +268,6 @@ bool load_config_file(std::string config_path) {
         config.api_endpoint = v;
         std::string m = "LoadConfig: get endpoint from config: " +
             config.api_endpoint;
-        log.debug(m);
-    }
-
-    v = ini.GetValue("general", "pid", "_");
-    if (std::string(v) != "_") {
-        config.pid_path = v;
-        std::string m = "LoadConfig: get pid path from config: " +
-            config.pid_path;
         log.debug(m);
     }
 
@@ -397,10 +371,6 @@ main(int argc, char *argv[]) {
             "configuration or use --help" << std::endl;
             return 0;
         }
-
-        // Write PID
-        if (app::config.pid_path.length() > 0)
-            app::write_pid(app::config.pid_path);
 
         app::log.info("butterfly starts");
 
