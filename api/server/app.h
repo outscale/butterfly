@@ -41,7 +41,6 @@ struct Config {
     bool missing_mandatory();
     std::string external_ip;
     std::string config_path;
-    std::string pid_path;
     std::string api_endpoint;
     std::string log_level;
     std::string socket_folder;
@@ -86,9 +85,6 @@ bool load_config_file(std::string config_path);
 
 void destroy_cgroup();
 void set_cgroup();
-
-// Manage PID
-void write_pid(std::string pid_path);
 
 // Some global app:: variables
 extern bool request_exit;
