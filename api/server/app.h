@@ -32,7 +32,7 @@
 #define LOG_ERROR_(str, args...) LOG_PRINT_(str, app::log.error, ## args)
 
 #define POLL_THREAD_MULTIPLIER 19
-#define DPDK_DEFAULT_ARGS "-c1 -n1 --socket-mem 64 --no-shconf"
+#define DPDK_DEFAULT_ARGS "-c1 -n1 --socket-mem 64 --no-shconf --huge-unlink"
 
 namespace app {
 struct Config {
