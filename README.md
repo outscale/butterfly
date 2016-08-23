@@ -162,7 +162,7 @@ Results (aug 8 2016):
 
 ## How to connect a Virtual Machine to Butterfly ?
 
-Butterfly does not launch you virtual machine for you, it just create a special
+Butterfly does not launch your virtual machine for you, it just create a special
 network interface (vhost-user) so you can connect your Virtual Machine on it.
 Vhost-user interfaces are unix sockets allowing you to directly communicate with
 virtual machines in userland.
