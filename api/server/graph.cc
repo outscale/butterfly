@@ -253,6 +253,7 @@ bool Graph::poller_update(struct RpcQueue **list) {
     while (a != NULL) {
         switch (a->action) {
             case EXIT:
+                g_free(a);
                 return false;
             case VHOST_START:
                 if (!Pg::vhost_start(app::config.socket_folder)) {
