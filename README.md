@@ -31,11 +31,8 @@ card, you won't be able to access API through it.
 
 # Installing Butterfly
 
-The easiest way to install Butterfly would be to check github releases (coming
-soon).
-
-For now, check out how to build butterfly in the next section. Once build, you
-can run `make install`.
+The easiest way to install Butterfly is to download and install a package from [git releases](https://github.com/outscale/butterfly/releases).
+You can also build yourself butterfly (as shown in the next section) and run `make install`
 
 # Build Butterfly
 
