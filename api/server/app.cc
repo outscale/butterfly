@@ -88,17 +88,19 @@ bool Config::parse_cmd(int argc, char **argv) {
          "set dpdk arguments (default='" DPDK_DEFAULT_ARGS "'", nullptr},
         { nullptr }
     };
-    GOptionContext *context = g_option_context_new("");
-    g_option_context_set_summary(context,
+    std::shared_ptr<GOptionContext> context(g_option_context_new(""),
+                                            g_option_context_free);
+
+    g_option_context_set_summary(context.get(),
             "butterfly-server [OPTIONS]");
-    g_option_context_set_description(context, "example:\n"
+    g_option_context_set_description(context.get(), "example:\n"
             "butterfly-server --dpdk-args \"-c0xF -n1 --socket-mem 64\" "
             "-i 43.0.0.1 -e tcp://127.0.0.1:8765 -s /tmp");
-    g_option_context_add_main_entries(context, entries, nullptr);
+    g_option_context_add_main_entries(context.get(), entries, nullptr);
 
     GError *error = nullptr;
 
-    if (!g_option_context_parse(context, &argc, &argv, &error)) {
+    if (!g_option_context_parse(context.get(), &argc, &argv, &error)) {
         if (error != nullptr)
             std::cout << error->message << std::endl;
         return false;
