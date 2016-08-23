@@ -92,7 +92,11 @@ hugetlbfs       /mnt/huge  hugetlbfs       rw,mode=0777        0 0
 
 ## Prepare DPDK compatible NIC
 
-If you have a DPDK compatible NIC, you can get [some](http://dpdk.org/doc/nics) [help](https://github.com/outscale/packetgraph/tree/master/examples/firewall#configure-your-nics) to configure it.
+Before being able to bind your port, you will need to enable Intel VT-d in your BIOS and having IOMMU explicitly enabled in your kernel parameters.
+Check [DPDK compatible NICs](http://dpdk.org/doc/nics) and how to [bind NIC drivers](http://people.redhat.com/~pmatilai/dpdk-guide/setup/binding.html).
+Packetgraph also have an [example](https://github.com/outscale/packetgraph/tree/master/examples/firewall#configure-your-nics) on how to bind DPDK nics.
+
+Additionally, you may also want to isolate a specific core for Butterfly, check isolcpus [kernel parameters](https://www.kernel.org/doc/Documentation/kernel-parameters.txt)
 
 # Run Butterfly server
 
