@@ -151,14 +151,21 @@ Machines:
 - CPU: AMD Opteron(tm) Processor 3350 HE
 - All details for [host 1](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_1.txt) and [host 2](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_2.txt) (same)
 
-Results (aug 8 2016):
+Results (aug 25 2016):
 ```
                      |  VMs on same host  | VMs on remote host |
  --------------------+--------------------+--------------------|
-| Ping (min/average) |  0.052ms / 0.118ms |  0.62ms / 0.172ms  |
-| TCP                |     5.3 Gbits/s    |     4.2 Gbits/s    |
-| UDP                |     1.4 Gbits/s    |     1.7 Gbits/s    |
+| Ping (min/average) |  0.082ms / 0.107ms |  0.167ms / 0.191ms |
+| TCP                |     4.3 Gbits/s    |     3.5 Gbits/s    |
+| UDP                |     1.5 Gbits/s    |     1.7 Gbits/s    |
 ```
+
+Notes:
+- We can get faster by embeding a more recent libc (`make package-fat`)
+- Most of the time is spent on packet copy in vhost interface (zero copy is coming)
+- Performances are also very impacted by offloading, we are working on several options to speedup things
+
+Well, we have a good margin for improvements :)
 
 ## How to connect a Virtual Machine to Butterfly ?
 
