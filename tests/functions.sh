@@ -465,6 +465,7 @@ function add_nic_port_open {
     nic_id=$4
     vni=$5
     port=$6
+    echo "add nic $nic_id $protocol port $port opened in butterfly $but_id in vni $vni"
     if [ "$protocol" == "tcp" ]; then
 	protocol=6
     elif [ "$protocol" == "udp" ]; then
@@ -474,7 +475,6 @@ function add_nic_port_open {
 	RETURN_CODE=1
     fi
     f=/tmp/butterfly-client.req
-    echo "add nic $nic_id $protocol port $port opened in butterfly $but_id in vni $vni"
 
     echo -e "messages {
   revision: 0
@@ -566,6 +566,7 @@ function add_sg_rule_port_open {
     but_id=$3
     nic_id=$4
     port=$5
+    echo "add sg rule $protocol port $port opened in butterfly $but_id"
     if [ "$protocol" == "tcp" ]; then
 	protocol=6
     elif [ "$protocol" == "udp" ]; then
@@ -574,7 +575,6 @@ function add_sg_rule_port_open {
 	echo -e "protocol $protocol not supported by add_rule_port_open"
 	RETURN_CODE=1
     fi
-    echo "add sg rule $protocol port $port opened in butterfly $but_id"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
