@@ -357,7 +357,7 @@ function request {
     fi
 }
 
-function add_nic {
+function nic_add {
     sg=$1
     but_id=$2
     nic_id=$3
@@ -409,7 +409,7 @@ messages {
     fi
 }
 
-function add_nic_void {
+function nic_add_void {
     but_id=$1
     nic_id=$2
     vni=$3
@@ -440,7 +440,31 @@ function add_nic_void {
     fi
 }
 
-function delete_nic {
+function set_nic_sg {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    echo "set nic $nic_id SG in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_update {
+        id: \"nic-$nic_id\"
+        ip: \"42.0.0.$nic_id\"
+        ip_anti_spoof: true
+        security_group: \"$sg\"
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function nic_del {
     but_id=$1
     nic_id=$2
     f=/tmp/butterfly-client.req
@@ -458,7 +482,7 @@ function delete_nic {
     request $but_id $nic_id $f
 }
 
-function add_nic_port_open {
+function nic_add_port_open {
     protocol=$1
     sg=$2
     but_id=$3
@@ -521,17 +545,17 @@ messages {
     fi
 }
 
-function add_nic_no_rules {
+function nic_add_no_rules {
     sg=$1
     but_id=$2
     nic_id=$3
     vni=$4
     f=/tmp/butterfly-client.req
-    add_nic_void $but_id $nic_id $vni
-    add_sg $sg $but_id $nic_id
+    nic_add_void $but_id $nic_id $vni
+    set_nic_sg $sg $but_id $nic_id
 }
 
-function add_sg_rule_full_open {
+function sg_rule_add_full_open {
     sg=$1
     but_id=$2
     nic_id=$3
@@ -560,7 +584,7 @@ function add_sg_rule_full_open {
     request $but_id $nic_id $f
 }
 
-function add_sg_rule_port_open {
+function sg_rule_add_port_open {
     protocol=$1
     sg=$2
     but_id=$3
@@ -601,22 +625,63 @@ function add_sg_rule_port_open {
     request $but_id $nic_id $f
 }
 
-function add_sg {
+function sg_add_no_rule {
     sg=$1
     but_id=$2
     nic_id=$3
-    echo "add SG to nic $nic_id in butterfly $2"  
+    echo "add SG to nic $nic_id in butterfly $2"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
   revision: 0
   message_0 {
     request {
-      nic_update {
-        id: \"nic-$nic_id\"
-        ip: \"42.0.0.$nic_id\"
-        ip_anti_spoof: true
-        security_group: \"$sg\"
+      sg_add {
+        id: \"$sg\"
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function sg_member_add {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+   echo "add sg member"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_member_add {
+        sg_id: \"$sg\"
+        member: \"42.0.0.$nic_id\"
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function sg_member_del {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    echo "delete SG member "  
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_member_del {
+        sg_id: \"$sg\"
+        member: \"42.0.0.$nic_id\"
       }
     }
   }
@@ -643,7 +708,36 @@ function delete_sg {
     request $but_id 0 $f
 }
 
-function delete_rule_full_open {
+function sg_add {
+    sg=$1
+    but_id=$2
+    nic_id=$3
+    echo "add SG full open to nic $nic_id in butterfly $2"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_add {
+        id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: -1
+          cidr {
+            address: \"0.0.0.0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $nic_id $f
+}
+
+function sg_rule_del_full_open {
     sg=$1
     but_id=$2
     nic_id=$3
@@ -672,7 +766,7 @@ function delete_rule_full_open {
     request $but_id $nic_id $f
 }
 
-function delete_rule_port_open {
+function sg_rule_del_port_open {
     protocol=$1
     sg=$2
     but_id=$3

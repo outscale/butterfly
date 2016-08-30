@@ -7,8 +7,8 @@ source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 
 network_connect 0 1
 server_start 0
-add_nic_port_open udp sg-1 0 1 42 5554
-add_nic_port_open udp sg-1 0 2 42 5554
+nic_add_port_open udp sg-1 0 1 42 5554
+nic_add_port_open udp sg-1 0 2 42 5554
 qemu_start 1
 qemu_start 2
 ssh_connection_test udp 2 1 5554
