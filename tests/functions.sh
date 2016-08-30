@@ -362,7 +362,7 @@ function nic_add {
     nic_id=$3
     vni=$4
     f=/tmp/butterfly-client.req
-    echo "add nic $nic_id full open in butterfly $but_id in vni $vni"
+    echo "add nic $nic_id full open in butterfly $but_id"
 
     echo -e "messages {
   revision: 0
@@ -488,7 +488,7 @@ function nic_add_port_open {
     nic_id=$4
     vni=$5
     port=$6
-    echo "add nic $nic_id $protocol port $port opened in butterfly $but_id in vni $vni"
+    echo "add nic $nic_id $protocol port $port opened in butterfly $but_id"
     if [ "$protocol" == "tcp" ]; then
 	protocol=6
     elif [ "$protocol" == "udp" ]; then
