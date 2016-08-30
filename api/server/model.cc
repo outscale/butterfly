@@ -66,7 +66,7 @@ Sg Sg::operator= (const Sg& a) {
 bool Sg::operator== (const Sg& a) const {
     return (id == a.id &&
             members == a.members &&
-            rules == rules);
+            rules == a.rules);
 }
 
 Cidr::Cidr() {
