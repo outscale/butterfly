@@ -19,6 +19,7 @@
 #define API_CLIENT_H
 
 #include <glib.h>
+#include "api/protocol/message.pb.h"
 
 struct Options
 {
@@ -34,5 +35,9 @@ struct Options
     gboolean verbose;
 };
 
+int request_from_human(const Options &options);
 
+int request(const proto::Messages &request,
+            proto::Messages *response,
+            const Options &options);
 #endif
