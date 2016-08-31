@@ -11,6 +11,7 @@ fi
 
 sources="$BUTTERFLY_ROOT/api/client/client.cc \
 $BUTTERFLY_ROOT/api/client/request.cc \
+$BUTTERFLY_ROOT/api/client/all_infos.cc \
 $BUTTERFLY_ROOT/api/server/app.cc \
 $BUTTERFLY_ROOT/api/server/app.h \
 $BUTTERFLY_ROOT/api/server/server.cc \
