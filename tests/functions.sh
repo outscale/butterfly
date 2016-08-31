@@ -154,7 +154,7 @@ function ssd_connection_tests_internal {
     elif [ "$protocol" == "tcp" ]; then
 	proto_cmd=""
     else
-	echo -e "protocol $protocol not supported by add_nic_port_open"
+	echo -e "protocol $protocol not supported by nic_add_port_open"
 	RETURN_CODE=1
 	return $RETURN_CODE
     fi
@@ -415,7 +415,7 @@ function nic_add_void {
     vni=$3
     f=/tmp/butterfly-client.req
 
-    echo "add a void nic $2 in butterfly $1"
+    echo "add a void nic $nic_id in butterfly $but_id"
     echo -e "messages {
   revision: 0
   message_0 {
@@ -495,7 +495,7 @@ function nic_add_port_open {
     elif [ "$protocol" == "udp" ]; then
 	protocol=17
     else
-	echo -e "protocol $protocol not supported by add_nic_port_open"
+	echo -e "protocol $protocol not supported by nic_add_port_open"
 	RETURN_CODE=1
     fi
     f=/tmp/butterfly-client.req
@@ -596,7 +596,7 @@ function sg_rule_add_port_open {
     elif [ "$protocol" == "udp" ]; then
 	protocol=17
     else
-	echo -e "protocol $protocol not supported by add_rule_port_open"
+	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
 	RETURN_CODE=1
     fi
     f=/tmp/butterfly-client.req
@@ -629,7 +629,7 @@ function sg_add_no_rule {
     sg=$1
     but_id=$2
     nic_id=$3
-    echo "add SG to nic $nic_id in butterfly $2"
+    echo "add SG no rule to nic $nic_id in butterfly $but_id"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -712,7 +712,7 @@ function sg_add {
     sg=$1
     but_id=$2
     nic_id=$3
-    echo "add SG full open to nic $nic_id in butterfly $2"
+    echo "add SG full open to nic $nic_id in butterfly $but_id"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -777,7 +777,7 @@ function sg_rule_del_port_open {
     elif [ "$protocol" == "udp" ]; then
 	protocol=17
     else
-	echo -e "protocol $protocol not supported by delete_rule_port_open"
+	echo -e "protocol $protocol not supported by sg_rule_del_port_open"
 	RETURN_CODE=1
     fi
     echo "delete sg rule $protocol port $port opened in butterfly $but_id"
