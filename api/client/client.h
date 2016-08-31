@@ -15,14 +15,13 @@
  * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef API_CLIENT_H
-#define API_CLIENT_H
+#ifndef API_CLIENT_CLIENT_H_
+#define API_CLIENT_CLIENT_H_
 
 #include <glib.h>
 #include "api/protocol/message.pb.h"
 
-struct Options
-{
+struct Options {
     Options();
     bool parse(int argc, char **argv);
     bool missing();
@@ -43,4 +42,4 @@ int request(const proto::Messages &request,
             const Options &options);
 
 int all_infos(const Options &options);
-#endif
+#endif  // API_CLIENT_CLIENT_H_
