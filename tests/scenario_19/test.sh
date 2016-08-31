@@ -16,7 +16,7 @@ ssh_no_connection_test udp 1 2 5554
 ssh_no_connection_test tcp 1 2 4445
 ssh_no_connection_test tcp 2 1 4445
 
-sg_rule_add_full_open sg-1 0 1
+sg_rule_add_full_open sg-1 0
 ssh_connection_test udp 1 2 4445
 ssh_connection_test udp 2 1 5554
 ssh_connection_test tcp 2 1 5554
