@@ -31,6 +31,7 @@ struct Options
     gchar *output;
     gboolean std_out;
     gchar *proto;
+    gboolean all_infos;
     gboolean version;
     gboolean verbose;
 };
@@ -40,4 +41,6 @@ int request_from_human(const Options &options);
 int request(const proto::Messages &request,
             proto::Messages *response,
             const Options &options);
+
+int all_infos(const Options &options);
 #endif

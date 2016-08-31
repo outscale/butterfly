@@ -32,6 +32,7 @@ Options::Options() {
     input = NULL;
     output = NULL;
     std_out = false;
+    all_infos = false;
     version = false;
     verbose = false;
 }
@@ -46,6 +47,8 @@ bool Options::parse(int argc, char **argv) {
          "JSON description of response message in a file", "FILE"},
         {"stdout", 's', 0, G_OPTION_ARG_NONE, &std_out,
          "JSON description of response message on stdout", NULL},
+        {"all-infos", 'a', 0, G_OPTION_ARG_NONE, &all_infos,
+         "Ask a summarized view of butterfly server", NULL},
         {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
          "show details of on each operations", NULL},
         {"version", 'V', 0, G_OPTION_ARG_NONE, &version,
@@ -65,7 +68,9 @@ bool Options::parse(int argc, char **argv) {
 }
 
 bool Options::missing() {
-    return endpoint == NULL || input == NULL;
+    if (endpoint == NULL)
+        return true;
+    return all_infos == false && input == NULL;
 }
 
 int main(int argc, char **argv) {
@@ -87,6 +92,9 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    return request_from_human(options);
+    if (options.all_infos)
+        return all_infos(options);
+    else
+        return request_from_human(options);
 }
 
