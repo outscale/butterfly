@@ -1,4 +1,4 @@
-set(SOURCES client.cc)
+set(SOURCES client.cc request.cc)
 set (SOURCES_P)
 foreach (_s ${SOURCES})
     set (SOURCES_P ${SOURCES_P} ${PROJECT_SOURCE_DIR}/api/client/${_s})
@@ -28,6 +28,6 @@ target_link_libraries(api_client
                       ${LIBZMQ_LIBRARIES}
                       ${ZMQPP_LIBRARIES})
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -Wall -static-libgcc -static-libstdc++")
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -Wall -static-libgcc -static-libstdc++ -Og -g")
 
 unset (SOURCES_P)
