@@ -162,6 +162,7 @@ message MessageV0 {
     // Note this NIC won't be able to emit any packet to the outside.
     // Setting this option disable any anti-spoof feature on this NIC.
     // The option corresponds to the targeted NIC id.
+    // Warning: not implemented
     optional string sniff_target_nic_id = 7;
   }
 
