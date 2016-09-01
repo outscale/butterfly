@@ -357,7 +357,7 @@ function request {
     fi
 }
 
-function add_nic {
+function nic_add {
     sg=$1
     but_id=$2
     nic_id=$3
@@ -409,7 +409,7 @@ messages {
     fi
 }
 
-function add_nic_void {
+function nic_add_void {
     but_id=$1
     nic_id=$2
     vni=$3
@@ -440,7 +440,7 @@ function add_nic_void {
     fi
 }
 
-function delete_nic {
+function nic_del {
     but_id=$1
     nic_id=$2
     f=/tmp/butterfly-client.req
@@ -458,7 +458,7 @@ function delete_nic {
     request $but_id $nic_id $f
 }
 
-function add_nic_port_open {
+function nic_add_port_open {
     protocol=$1
     sg=$2
     but_id=$3
@@ -521,17 +521,17 @@ messages {
     fi
 }
 
-function add_nic_no_rules {
+function nic_add_no_rules {
     sg=$1
     but_id=$2
     nic_id=$3
     vni=$4
     f=/tmp/butterfly-client.req
-    add_nic_void $but_id $nic_id $vni
-    add_sg $sg $but_id $nic_id
+    nic_add_void $but_id $nic_id $vni
+    set_nic_sg $sg $but_id $nic_id
 }
 
-function add_sg_rule_full_open {
+function sg_rule_add_full_open {
     sg=$1
     but_id=$2
     nic_id=$3
@@ -560,7 +560,7 @@ function add_sg_rule_full_open {
     request $but_id $nic_id $f
 }
 
-function add_sg_rule_port_open {
+function sg_rule_add_port_open {
     protocol=$1
     sg=$2
     but_id=$3
@@ -601,7 +601,7 @@ function add_sg_rule_port_open {
     request $but_id $nic_id $f
 }
 
-function add_sg {
+function set_nic_sg {
     sg=$1
     but_id=$2
     nic_id=$3
@@ -643,7 +643,7 @@ function delete_sg {
     request $but_id 0 $f
 }
 
-function delete_rule_full_open {
+function sg_rule_del_full_open {
     sg=$1
     but_id=$2
     nic_id=$3
@@ -672,7 +672,7 @@ function delete_rule_full_open {
     request $but_id $nic_id $f
 }
 
-function delete_rule_port_open {
+function sg_rule_del_port_open {
     protocol=$1
     sg=$2
     but_id=$3
