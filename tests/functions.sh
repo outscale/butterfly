@@ -622,6 +622,26 @@ function set_nic_sg {
     request $but_id $f
 }
 
+function sg_add {
+    sg=$1
+    but_id=$2
+    echo "add SG to nic in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_add {
+        id: \"$sg\"
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
 function delete_sg {
     sg=$1
     but_id=$2
