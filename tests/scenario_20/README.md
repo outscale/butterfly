@@ -9,8 +9,10 @@
 
 ```
 
-This scenario just connects three virtual machines on the same butterfly
-on the same network (vni) vm1 and vm2 opened on Port 8000, vm3 opened on
-port 9000 and make a bunch of network tests (tcp and udp).
-Delete and Update the security group on the same port for the three vm
-and make a bunch of network tests (tcp and udp).
+This scenario just connects three virtual machines with the same SG on the same butterfly
+- Add a rule in SG listening on the port 8000
+- Make a bunch of network tests (tcp and udp)
+- Remove this rule
+- Make a bunch of network tests (tcp and udp)
+- Add a new rule in SG listening on the port 9000
+- Make a bunch of network tests (tcp and udp)
