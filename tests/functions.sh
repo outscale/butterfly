@@ -614,6 +614,104 @@ function sg_rule_add_port_open {
     request $but_id $f
 }
 
+function sg_rule_add_with_sg_member {
+    protocol=$1
+    sg=$2
+    but_id=$3
+    port=$4
+    sg_member=$5
+    echo "add sg rule with sg member in butterfly $but_id"
+    if [ "$protocol" == "tcp" ]; then
+	protocol=6
+    elif [ "$protocol" == "udp" ]; then
+	protocol=17
+    else
+	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
+	RETURN_CODE=1
+    fi
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          security_group: \"$sg_member\"
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function sg_rule_del_with_sg_member {
+    protocol=$1
+    sg=$2
+    but_id=$3
+    port=$4
+    sg_member=$5
+    echo "delete sg rule with sg member in butterfly $but_id"
+    if [ "$protocol" == "tcp" ]; then
+	protocol=6
+    elif [ "$protocol" == "udp" ]; then
+	protocol=17
+    else
+	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
+	RETURN_CODE=1
+    fi
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_del {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          security_group: \"$sg_member\"
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function sg_member_add {
+    but_id=$1
+    sg=$2
+    ip_member=$3
+    echo "add sg member $ip_member in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_member_add {
+        sg_id: \"$sg\"
+          member: \"$ip_member\"
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
 function set_nic_sg {
     sg=$1
     but_id=$2
@@ -630,6 +728,28 @@ function set_nic_sg {
         ip: \"42.0.0.$nic_id\"
         ip_anti_spoof: true
         security_group: \"$sg\"
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function remove_sg_from_nic {
+    but_id=$1
+    nic_id=$2
+    echo "Remove sg form nic $nic_id in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_update {
+        id: \"nic-$nic_id\"
+        ip: \"42.0.0.$nic_id\"
+        ip_anti_spoof: true
       }
     }
   }
@@ -736,6 +856,28 @@ function sg_rule_del_port_open {
             mask_size: 0
           }
         }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function sg_member_del {
+    but_id=$1
+    sg=$2
+    ip_member=$3
+    echo "delete sg member $ip_member in butterfly $but_id"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_member_del {
+        sg_id: \"$sg\"
+          member: \"$ip_member\"
       }
     }
   }
