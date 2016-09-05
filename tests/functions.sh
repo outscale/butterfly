@@ -598,6 +598,43 @@ function sg_rule_add_port_open {
     request $but_id $f
 }
 
+function sg_rule_add_with_sg_member {
+    protocol=$1
+    sg=$2
+    but_id=$3
+    sg_member=$4
+    echo "add sg rule with sg_member $sg_member in butterfly $but_id"
+    if [ "$protocol" == "tcp" ]; then
+	protocol=6
+    elif [ "$protocol" == "udp" ]; then
+	protocol=17
+    else
+	echo -e "protocol $protocol not supported by sg_rule_add_with_sgmember"
+	RETURN_CODE=1
+    fi
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          security_group: \"$sg_member\"
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
 function set_nic_sg {
     sg=$1
     but_id=$2
@@ -719,6 +756,43 @@ function sg_rule_del_port_open {
             address: \"0.0.0.0\"
             mask_size: 0
           }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function sg_rule_del_with_sg_member {
+    protocol=$1
+    sg=$2
+    but_id=$3
+    sg_member=$4
+    echo "add sg rule with sg_member $sg_member in butterfly $but_id"
+    if [ "$protocol" == "tcp" ]; then
+	protocol=6
+    elif [ "$protocol" == "udp" ]; then
+	protocol=17
+    else
+	echo -e "protocol $protocol not supported by sg_rule_add_with_sgmember"
+	RETURN_CODE=1
+    fi
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_del {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          security_group: \"$sg_member\"
         }
       }
     }
