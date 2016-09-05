@@ -8,8 +8,8 @@ source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 network_connect 0 1
 server_start 0
 server_start 1
-add_nic sg-1 0 1 42
-add_nic sg-1 1 2 42
+nic_add sg-1 0 1 42
+nic_add sg-1 1 2 42
 qemu_start 1
 qemu_start 2
 ssh_ping 1 2
