@@ -7,29 +7,29 @@ source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 
 network_connect 0 1
 server_start 0
-add_nic_void 0 1 42
-add_nic_void 0 2 42
+nic_add_void 0 1 42
+nic_add_void 0 2 42
 qemu_start 1
 qemu_start 2
 
 ssh_no_connection_test tcp 1 2 4454    
 ssh_no_connection_test tcp 2 1 4454
-add_sg sg-1 0 1
-add_sg sg-1 0 2
+set_nic_sg sg-1 0 1
+set_nic_sg sg-1 0 2
 
 for i in {1..3}; do      
     ssh_no_connection_test tcp 1 2 4454
     ssh_no_connection_test tcp 2 1 4454
 
-    add_sg_rule_port_open tcp sg-1 0 2 4454
+    sg_rule_add_port_open tcp sg-1 0 4454
     ssh_connection_test tcp 1 2 4454
     ssh_connection_test tcp 2 1 4454
 
-    delete_rule_port_open tcp sg-1 0 2 4454
+    sg_rule_del_port_open tcp sg-1 0 4454
     ssh_no_connection_test tcp 1 2 4454
     ssh_no_connection_test tcp 2 1 4454
 
-    add_sg_rule_port_open udp sg-1 0 2 5554
+    sg_rule_add_port_open udp sg-1 0 5554
     ssh_connection_test udp 1 2 5554
     ssh_connection_test udp 2 1 5554
 
