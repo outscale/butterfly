@@ -17,11 +17,17 @@ qemu_start 2
 qemu_start 3
 qemu_start 4
 ssh_no_ping 1 2
+is_ssh_test_failed $? 2 4
 ssh_no_ping 1 3
+is_ssh_test_failed $? 2 4
 ssh_ping 1 4
+is_ssh_test_failed $? 2 4
 ssh_ping 4 1
+is_ssh_test_failed $? 2 4
 ssh_no_ping 4 2
+is_ssh_test_failed $? 2 4
 ssh_no_ping 4 3
+is_ssh_test_failed $? 2 4
 qemu_stop 1
 qemu_stop 2
 qemu_stop 3

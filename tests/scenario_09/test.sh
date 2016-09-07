@@ -12,7 +12,9 @@ nic_add sg-1 0 2 42
 qemu_start 1
 qemu_start 2
 ssh_connection_test tcp 1 2 4045
+is_ssh_test_failed $? 1 2
 ssh_connection_test tcp 2 1 1445
+is_ssh_test_failed $? 1 2
 qemu_stop 1
 qemu_stop 2
 server_stop 0

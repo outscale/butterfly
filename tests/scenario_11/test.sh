@@ -17,17 +17,29 @@ qemu_start 2
 qemu_start 3
 qemu_start 4
 ssh_connection_test udp 2 1 1234
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 3 1 5554
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 4 1 4123
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 1 2 1234
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 3 2 5554
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 4 2 4123
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 1 3 1234
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 2 3 5554
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 4 3 4123
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 1 4 5004
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 2 4 5964
+is_ssh_test_failed $? 2 4
 ssh_connection_test udp 3 4 1004
+is_ssh_test_failed $? 2 4
 qemu_stop 1
 qemu_stop 2
 qemu_stop 3

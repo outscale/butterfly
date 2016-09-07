@@ -12,13 +12,21 @@ nic_add sg-1 0 2 42
 qemu_start 1
 qemu_start 2
 ssh_iperf_tcp 1 2
+is_ssh_test_failed $? 1 2
 ssh_iperf_tcp 2 1
+is_ssh_test_failed $? 1 2
 ssh_iperf_udp 1 2
+is_ssh_test_failed $? 1 2
 ssh_iperf_udp 2 1
+is_ssh_test_failed $? 1 2
 ssh_iperf3_tcp 1 2
+is_ssh_test_failed $? 1 2
 ssh_iperf3_tcp 2 1
+is_ssh_test_failed $? 1 2
 ssh_iperf3_udp 1 2
+is_ssh_test_failed $? 1 2
 ssh_iperf3_udp 2 1
+is_ssh_test_failed $? 1 2
 qemu_stop 1
 qemu_stop 2
 server_stop 0

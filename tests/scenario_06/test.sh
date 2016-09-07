@@ -13,7 +13,9 @@ nic_add sg-1 0 2 42
 qemu_start 1
 qemu_start 2
 ssh_ping 1 2
+is_ssh_test_failed $? 1 2
 ssh_ping 2 1
+is_ssh_test_failed $? 1 2
 qemu_stop 1
 qemu_stop 2
 nic_del 0 1
@@ -24,7 +26,9 @@ nic_add sg-1 0 2 42
 qemu_start 1
 qemu_start 2
 ssh_ping 1 2
+is_ssh_test_failed $? 1 2
 ssh_ping 2 1
+is_ssh_test_failed $? 1 2
 qemu_stop 1
 qemu_stop 2
 nic_del 0 1
@@ -35,11 +39,15 @@ nic_add sg-1 0 2 42
 qemu_start 1
 qemu_start 2
 ssh_ping 1 2
+is_ssh_test_failed $? 1 2
 ssh_ping 2 1
+is_ssh_test_failed $? 1 2
 nic_del 0 1
 nic_del 0 2
 ssh_no_ping 1 2
+is_ssh_test_failed $? 1 2
 ssh_no_ping 2 1
+is_ssh_test_failed $? 1 2
 qemu_stop 1
 qemu_stop 2
 
@@ -48,7 +56,9 @@ nic_add sg-1 0 2 42
 qemu_start 1
 qemu_start 2
 ssh_ping 1 2
+is_ssh_test_failed $? 1 2
 ssh_ping 2 1
+is_ssh_test_failed $? 1 2
 qemu_stop 1
 qemu_stop 2
 nic_del 0 1
@@ -59,24 +69,32 @@ nic_add sg-1 0 2 42
 qemu_start 1
 qemu_start 2
 ssh_ping 1 2
+is_ssh_test_failed $? 1 2
 ssh_ping 2 1
-nic_del 0 1
-nic_del 0 2
-ssh_no_ping 1 2
-ssh_no_ping 2 1
-qemu_stop 1
-qemu_stop 2
-
-nic_add sg-1 0 1 42
-nic_add sg-1 0 2 42
-qemu_start 1
-qemu_start 2
-ssh_ping 1 2
-ssh_ping 2 1
+is_ssh_test_failed $? 1 2
 nic_del 0 1
 nic_del 0 2
 ssh_no_ping 1 2
+is_ssh_test_failed $? 1 2
 ssh_no_ping 2 1
+is_ssh_test_failed $? 1 2
+qemu_stop 1
+qemu_stop 2
+
+nic_add sg-1 0 1 42
+nic_add sg-1 0 2 42
+qemu_start 1
+qemu_start 2
+ssh_ping 1 2
+is_ssh_test_failed $? 1 2
+ssh_ping 2 1
+is_ssh_test_failed $? 1 2
+nic_del 0 1
+nic_del 0 2
+ssh_no_ping 1 2
+is_ssh_test_failed $? 1 2
+ssh_no_ping 2 1
+is_ssh_test_failed $? 1 2
 qemu_stop 1
 qemu_stop 2
 
