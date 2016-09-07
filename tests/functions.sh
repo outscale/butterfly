@@ -356,6 +356,22 @@ function request {
     fi
 }
 
+function is_ssh_test_failed {
+    ret=$1
+    server_number=$2
+    qemu_number=$3
+    if [ ! "$ret" == "0" ]; then
+	for ((i = 1; i<= $qemu_number; i += 1)); do
+	    qemu_stop $i
+	done
+	for ((i = 0; i< $server_number; i += 1)); do
+	    server_stop $i
+	done
+	network_disconnect 0 1
+	return_result
+    fi
+}
+
 function nic_add {
     sg=$1
     but_id=$2
