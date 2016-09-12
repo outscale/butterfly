@@ -57,6 +57,7 @@ function ssh_ping {
     else
         echo "ping $id1 --> $id2 OK"
     fi
+    return $RETURN_CODE
 }
 
 function ssh_no_ping {
@@ -69,6 +70,7 @@ function ssh_no_ping {
         echo "no ping $id1 --> $id2 FAIL"
         RETURN_CODE=1
     fi
+    return $RETURN_CODE
 }
 
 function ssh_iperf_tcp {
@@ -85,6 +87,7 @@ function ssh_iperf_tcp {
         echo "iperf tcp $id1 --> $id2 OK"
     fi
     kill $server_pid &> /dev/null
+    return $RETURN_CODE
 }
 
 function ssh_iperf_udp {
@@ -104,6 +107,7 @@ function ssh_iperf_udp {
     fi
     kill server_pid &> /dev/null
     rm /tmp/iperf_tmp_results
+    return $RETURN_CODE
 }
 
 function ssh_iperf3_tcp {
@@ -120,7 +124,7 @@ function ssh_iperf3_tcp {
         echo "iperf3 tcp $id1 --> $id2 OK"
     fi
     kill $server_pid &> /dev/null
-
+    return $RETURN_CODE
 }
 
 function ssh_iperf3_udp {
@@ -140,6 +144,7 @@ function ssh_iperf3_udp {
     fi
     kill -9 $server_pid &> /dev/null
     rm /tmp/iperf3_tmp_results
+    return $RETURN_CODE
 }
 
 function ssd_connection_tests_internal {
