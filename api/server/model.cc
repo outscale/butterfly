@@ -185,6 +185,7 @@ bool Mac::set(std::string a) {
 }
 }  // namespace app
 
+#define CIRCULAR_LEFT_SHIFT(x, s) ((x << s) | (x >> (sizeof(x) - s)))
 std::hash<app::Ip>::result_type
 std::hash<app::Ip>::operator() (argument_type const& a) const {
     return result_type(std::hash<std::string>()(a.str()));
@@ -197,18 +198,18 @@ std::hash<app::Mac>::operator() (argument_type const& a) const {
 
 std::hash<app::Rule>::result_type
 std::hash<app::Rule>::operator() (argument_type const& a) const {
-    const result_type h1 (std::hash<uint8_t>()((uint8_t) a.direction));
-    const result_type h2 (std::hash<int16_t>()(a.protocol));
-    const result_type h3 (std::hash<uint32_t>()(a.port_start));
-    const result_type h4 (std::hash<uint32_t>()(a.port_end));
-    const result_type h5 (std::hash<app::Cidr>()(a.cidr));
-    const result_type h6 (std::hash<std::string>()(a.security_group));
+    result_type h1 (std::hash<uint8_t>()((uint8_t) a.direction));
+    result_type h2 (std::hash<int16_t>()(a.protocol));
+    result_type h3 (std::hash<uint32_t>()(a.port_start));
+    result_type h4 (std::hash<uint32_t>()(a.port_end));
+    result_type h5 (std::hash<app::Cidr>()(a.cidr));
+    result_type h6 (std::hash<std::string>()(a.security_group));
     size_t r = h1;
-    r = r ^ (h2 << 1);
-    r = r ^ (h3 << 1);
-    r = r ^ (h4 << 1);
-    r = r ^ (h5 << 1);
-    r = r ^ (h6 << 1);
+    r = CIRCULAR_LEFT_SHIFT(r, 1) ^ h2;
+    r = CIRCULAR_LEFT_SHIFT(r, 1) ^ h3;
+    r = CIRCULAR_LEFT_SHIFT(r, 1) ^ h4;
+    r = CIRCULAR_LEFT_SHIFT(r, 1) ^ h5;
+    r = CIRCULAR_LEFT_SHIFT(r, 1) ^ h6;
     return r;
 }
 
@@ -216,6 +217,7 @@ std::hash<app::Cidr>::result_type
 std::hash<app::Cidr>::operator() (argument_type const& a) const {
     const result_type h1 (std::hash<app::Ip>()(a.address));
     const result_type h2 (std::hash<uint32_t>()(a.mask_size));
-    return h1 ^ (h2 << 1);
+    return h1 ^ CIRCULAR_LEFT_SHIFT(h2, 1);
 }
+#undef CIRCULAR_LEFT_SHIFT
 
