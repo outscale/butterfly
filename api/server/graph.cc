@@ -344,6 +344,10 @@ std::string Graph::nic_add(const app::Nic &nic) {
     nic.mac.bytes(mac.ether_addr_octet);
     gn.antispoof = Brick(Pg::antispoof_new(name.c_str(), WEST_SIDE, mac),
                          Pg::destroy);
+    if (!gn.antispoof) {
+        LOG_ERROR_("%s creation failed", name.c_str());
+        return "";
+    }
 
     if (nic.ip_anti_spoof) {
         // TODO(jerome.jutteau) patch this when antispoof brick will support
@@ -356,6 +360,10 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "vhost-" + gn.id;
     gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, EAST_SIDE),
                      Pg::destroy);
+    if (!gn.vhost) {
+        LOG_ERROR_("Vhost-user creation failed");
+        return "";
+    }
     name = "sniffer-" + gn.id;
     gn.pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) + "-" +
                           gn.id + ".pcap").c_str(), "w");
@@ -364,6 +372,11 @@ std::string Graph::nic_add(const app::Nic &nic) {
                                      PG_PRINT_FLAG_CLOSE_FILE,
                                      NULL),
                        Pg::destroy);
+    if (!gn.sniffer) {
+        LOG_ERROR_("%s creation failed", name.c_str());
+        return "";
+    }
+
     // Link branch (inside)
     Pg::link(gn.firewall.get(), gn.antispoof.get());
     linkAndStalk(gn.antispoof, gn.vhost, gn.sniffer);
@@ -383,6 +396,10 @@ std::string Graph::nic_add(const app::Nic &nic) {
         name = "switch-" + std::to_string(nic.vni);
         vni.sw = Brick(Pg::switch_new(name.c_str(),
                                       1, 30, EAST_SIDE), Pg::destroy);
+        if (!vni.sw) {
+            LOG_ERROR_("%s creation failed", name.c_str());
+            return "";
+        }
 
         Brick fw1 = vni.nics.begin()->second.firewall;
         Brick as1 = vni.nics.begin()->second.antispoof;
