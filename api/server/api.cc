@@ -283,6 +283,37 @@ void API::sg_update(const app::Sg &sg, const app::Rule &rule) {
     }
 }
 
+void API::sg_update_rule_members(const app::Sg &modified_sg) {
+    std::map<std::string, app::Nic>::iterator it;
+    std::vector<std::string>::iterator sg_it;
+    std::map<std::size_t, app::Rule>::iterator rule_it;
+    auto found = false;
+    for (it = app::model.nics.begin(); it != app::model.nics.end(); it++) {
+        app::Nic &nic = it->second;
+        for (sg_it = nic.security_groups.begin();
+            sg_it != nic.security_groups.end();
+            sg_it++) {
+            auto sg = app::model.security_groups.find(*sg_it);
+            if (sg == app::model.security_groups.end())
+                continue;
+            for (rule_it = sg->second.rules.begin();
+                 rule_it != sg->second.rules.end();
+                 rule_it++) {
+                if (rule_it->second.security_group == modified_sg.id) {
+                    sg_update(sg->second);
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+    if (!found) {
+        std::string m = "modification of security group " + modified_sg.id +
+            " didn't update any other security group";
+        app::log.warning(m);
+    }
+}
+
 bool API::action_sg_add(const app::Sg &sg, app::Error *error) {
     auto itn = app::model.security_groups.find(sg.id);
 
@@ -302,6 +333,7 @@ bool API::action_sg_add(const app::Sg &sg, app::Error *error) {
     }
 
     sg_update(sg);
+    sg_update_rule_members(sg);
     return true;
 }
 
@@ -317,6 +349,7 @@ bool API::action_sg_del(std::string id, app::Error *error) {
     app::model.security_groups.erase(id);
     // Update graph
     sg_update(sg);
+    sg_update_rule_members(sg);
     return true;
 }
 
@@ -426,9 +459,9 @@ bool API::action_sg_member_add(std::string sg_id, const app::Ip &ip,
 
     // Update graph
     sg_update(sg);
+    sg_update_rule_members(sg);
     return true;
 }
-
 
 bool API::action_sg_member_del(std::string sg_id, const app::Ip &ip,
     app::Error *error) {
@@ -455,6 +488,7 @@ bool API::action_sg_member_del(std::string sg_id, const app::Ip &ip,
 
     // Update graph
     sg_update(sg);
+    sg_update_rule_members(sg);
     return true;
 }
 
