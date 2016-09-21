@@ -283,6 +283,50 @@ void API::sg_update(const app::Sg &sg, const app::Rule &rule) {
     }
 }
 
+void API::sg_update_rule_members(const app::Sg &modified_sg) {
+    std::map<std::string, app::Nic>::iterator it;
+    std::map<std::string, app::Nic>::iterator it_end;
+    std::vector<std::string>::iterator sg_it;
+    std::map<std::size_t, app::Rule>::iterator rule_it;
+    std::map<std::size_t, app::Rule>::iterator sg_end;
+    std::vector<std::string> updated_sgs;
+    std::map<std::string, app::Sg>::iterator sg;
+    bool found = false;
+
+    sg_update(modified_sg);
+    for (it_end = app::model.nics.end(),
+         it = app::model.nics.begin(); it != it_end; it++) {
+        app::Nic &nic = it->second;
+        for (sg_it = nic.security_groups.begin();
+            sg_it != nic.security_groups.end();
+            sg_it++) {
+            sg = app::model.security_groups.find(*sg_it);
+            if (sg == app::model.security_groups.end())
+                continue;
+
+            for (sg_end = sg->second.rules.end(),
+                 rule_it = sg->second.rules.begin();
+                 rule_it != sg_end;
+                 rule_it++) {
+                if (rule_it->second.security_group == modified_sg.id &&
+                    std::find(updated_sgs.begin(),
+                    updated_sgs.end(),
+                    sg->second.id) != updated_sgs.end()) {
+                    sg_update(sg->second);
+                    updated_sgs.push_back(sg->second.id);
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+    if (!found) {
+        std::string m = "modification of security group " + modified_sg.id +
+            " didn't update any other security group";
+        app::log.debug(m);
+    }
+}
+
 bool API::action_sg_add(const app::Sg &sg, app::Error *error) {
     auto itn = app::model.security_groups.find(sg.id);
 
@@ -301,7 +345,7 @@ bool API::action_sg_add(const app::Sg &sg, app::Error *error) {
         app::model.security_groups.insert(p);
     }
 
-    sg_update(sg);
+    sg_update_rule_members(sg);
     return true;
 }
 
@@ -316,7 +360,7 @@ bool API::action_sg_del(std::string id, app::Error *error) {
     app::Sg sg = m->second;
     app::model.security_groups.erase(id);
     // Update graph
-    sg_update(sg);
+    sg_update_rule_members(sg);
     return true;
 }
 
@@ -425,10 +469,9 @@ bool API::action_sg_member_add(std::string sg_id, const app::Ip &ip,
     sg.members.push_back(ip);
 
     // Update graph
-    sg_update(sg);
+    sg_update_rule_members(sg);
     return true;
 }
-
 
 bool API::action_sg_member_del(std::string sg_id, const app::Ip &ip,
     app::Error *error) {
@@ -454,7 +497,7 @@ bool API::action_sg_member_del(std::string sg_id, const app::Ip &ip,
     sg.members.erase(res);
 
     // Update graph
-    sg_update(sg);
+    sg_update_rule_members(sg);
     return true;
 }
 
