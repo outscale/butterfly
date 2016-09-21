@@ -185,6 +185,13 @@ class API {
      * @param  rule rule to add in security group
      */
     static void sg_update(const app::Sg &sg, const app::Rule &rule);
+    /* When a security group change it's members, it may impact other
+     * security groups containing a rule allowing members of the modified
+     * security group. This function looks for security groups which has been
+     * impacted by the modified security group and update corresponding NICs.
+     * @param  sg modified security group
+     */
+    static void sg_update_rule_members(const app::Sg &sg);
 };
 
 class API_0: public API {
