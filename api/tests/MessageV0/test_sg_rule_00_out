@@ -38,10 +38,12 @@ messages {
       }
       sg_rule_list {
         direction: INBOUND
-        protocol: -1
+        protocol: 17
+        port_start: 0
+        port_end: 65535
         cidr {
-          address: "2001:db8:0:85a3::ac1f:8001"
-          mask_size: 8
+          address: "1.2.3.0"
+          mask_size: 24
         }
       }
       sg_rule_list {
@@ -53,12 +55,10 @@ messages {
       }
       sg_rule_list {
         direction: INBOUND
-        protocol: 17
-        port_start: 0
-        port_end: 65535
+        protocol: -1
         cidr {
-          address: "1.2.3.0"
-          mask_size: 24
+          address: "2001:db8:0:85a3::ac1f:8001"
+          mask_size: 8
         }
       }
     }
@@ -83,10 +83,12 @@ messages {
       }
       sg_rule_list {
         direction: INBOUND
-        protocol: -1
+        protocol: 17
+        port_start: 0
+        port_end: 65535
         cidr {
-          address: "2001:db8:0:85a3::ac1f:8001"
-          mask_size: 8
+          address: "1.2.3.0"
+          mask_size: 24
         }
       }
       sg_rule_list {
@@ -105,12 +107,10 @@ messages {
       }
       sg_rule_list {
         direction: INBOUND
-        protocol: 17
-        port_start: 0
-        port_end: 65535
+        protocol: -1
         cidr {
-          address: "1.2.3.0"
-          mask_size: 24
+          address: "2001:db8:0:85a3::ac1f:8001"
+          mask_size: 8
         }
       }
     }
@@ -135,10 +135,12 @@ messages {
       }
       sg_rule_list {
         direction: INBOUND
-        protocol: -1
+        protocol: 17
+        port_start: 0
+        port_end: 65535
         cidr {
-          address: "2001:db8:0:85a3::ac1f:8001"
-          mask_size: 8
+          address: "1.2.3.0"
+          mask_size: 24
         }
       }
       sg_rule_list {
@@ -150,12 +152,10 @@ messages {
       }
       sg_rule_list {
         direction: INBOUND
-        protocol: 17
-        port_start: 0
-        port_end: 65535
+        protocol: -1
         cidr {
-          address: "1.2.3.0"
-          mask_size: 24
+          address: "2001:db8:0:85a3::ac1f:8001"
+          mask_size: 8
         }
       }
     }
