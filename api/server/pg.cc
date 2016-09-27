@@ -163,6 +163,15 @@ namespace {
         return pg_vhost_socket_path(vhost, &errp);
     }
 
+
+    uint64_t rx_bytes(struct pg_brick *brick) {
+        return pg_brick_rx_bytes(brick);
+    }
+
+    uint64_t tx_bytes(struct pg_brick *brick) {
+        return pg_brick_tx_bytes(brick);
+    }
+
     struct pg_brick *diode_new(const char *name,
                                uint32_t west_max,
                                uint32_t east_max,
@@ -194,11 +203,6 @@ namespace {
     void nic_get_mac(struct pg_brick *brick, struct ether_addr * addr) {
         g_assert(strcmp(pg_brick_type(brick), "nic") == 0);
         return ::pg_nic_get_mac(brick, addr);
-    }
-
-    void nic_get_stats(struct pg_brick *brick, struct pg_nic_stats *stats) {
-        g_assert(strcmp(pg_brick_type(brick), "nic") == 0);
-        pg_nic_get_stats(brick, stats);
     }
 
     bool nic_set_mtu(struct pg_brick *brick, uint16_t mtu) {

@@ -69,6 +69,10 @@ namespace Pg {
 
     const char *vhost_socket_path(struct pg_brick *vhost);
 
+    uint64_t rx_bytes(struct pg_brick *vhost);
+
+    uint64_t tx_bytes(struct pg_brick *vhost);
+
     struct pg_brick *diode_new(const char *name,
                 uint32_t west_max,
                 uint32_t east_max,
@@ -82,8 +86,6 @@ namespace Pg {
 
     void nic_get_mac(struct pg_brick *brick,
              struct ether_addr *addr);
-
-    void nic_get_stats(struct pg_brick *brick, struct pg_nic_stats *stats);
 
     bool nic_set_mtu(struct pg_brick *brick, uint16_t mtu);
 
