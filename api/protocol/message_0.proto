@@ -61,7 +61,6 @@ message MessageV0 {
 
     // Provide statistics about a particular NIC by giving it's id
     // Reponse MUST have nic_stats filled
-    // Warning: not implemented
     optional string nic_stats = 7;
 
     // Create or Replace a Security Group

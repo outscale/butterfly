@@ -522,13 +522,8 @@ void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
         return;
     }
 
-    // TODO(jerome.jutteau) get stats from vhost when this will be available
-    /*
-    struct pg_vhost_stats stats;
-    Pg::vhost_get_stats(nic_it->second.vhost.get(), &stats);
-    *in = stats.ibytes;
-    *out = stats.obytes;
-    */
+    *in = Pg::rx_bytes(nic_it->second.vhost.get());
+    *out = Pg::tx_bytes(nic_it->second.vhost.get());
 }
 
 void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
