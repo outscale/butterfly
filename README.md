@@ -164,6 +164,7 @@ Notes:
 - We can get faster by embeding a more recent libc (`make package-fat`)
 - Most of the time is spent on packet copy in vhost interface (zero copy is coming)
 - Performances are also very impacted by offloading, we are working on several options to speedup things
+- If you try to run some benchmarks, you may want to configure your [CPU throttling](https://en.wikipedia.org/wiki/Dynamic_frequency_scaling). On Centos7, check [cpufreq governors page](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Power_Management_Guide/cpufreq_governors.html).
 
 Well, we have a good margin for improvements :)
 
