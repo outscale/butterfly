@@ -265,10 +265,9 @@ namespace {
                               uint32_t east_max,
                               enum pg_side output,
                               uint32_t ip,
-                              struct ether_addr mac,
-                              int no_copy) {
+                              struct ether_addr mac) {
         struct pg_brick *ret = pg_vtep_new(name, west_max, east_max,
-                output, ip, mac, no_copy, &errp);
+                output, ip, mac, PG_VTEP_DST_PORT, ALL_OPTI, &errp);
         if (!ret)
             print_and_free_errp();
         return ret;
@@ -279,11 +278,10 @@ namespace {
                               uint32_t east_max,
                               enum pg_side output,
                               std::string ip,
-                              struct ether_addr mac,
-                              int no_copy) {
+                              struct ether_addr mac) {
         uint32_t ipp;
         inet_pton(AF_INET, ip.c_str(), &ipp);
-        return vtep_new(name, west_max, east_max, output, ipp, mac, no_copy);
+        return vtep_new(name, west_max, east_max, output, ipp, mac);
     }
 
     struct ether_addr *vtep_get_mac(struct pg_brick *brick) {
@@ -331,12 +329,9 @@ namespace {
     }
 
     struct pg_brick *antispoof_new(const char *name,
-                                   uint32_t west_max,
-                                   uint32_t east_max,
                                    enum pg_side outside,
                                    struct ether_addr mac) {
-        struct pg_brick *ret = pg_antispoof_new(name, west_max, east_max,
-                                                outside, &mac, &errp);
+        struct pg_brick *ret = pg_antispoof_new(name, outside, &mac, &errp);
         if (!ret)
             print_and_free_errp();
         return ret;

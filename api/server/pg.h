@@ -110,16 +110,14 @@ namespace Pg {
                    uint32_t east_max,
                    enum pg_side output,
                    uint32_t ip,
-                   struct ether_addr mac,
-                   int no_copy);
+                   struct ether_addr mac);
 
     struct pg_brick *vtep_new(const char *name,
                    uint32_t west_max,
                    uint32_t east_max,
                    enum pg_side output,
                    std::string ip,
-                   struct ether_addr mac,
-                   int no_copy);
+                   struct ether_addr mac);
 
     struct ether_addr *vtep_get_mac(struct pg_brick *brick);
 
@@ -137,8 +135,6 @@ namespace Pg {
     std::string graph_dot(struct pg_brick *brick);
 
     struct pg_brick *antispoof_new(const char *name,
-                                   uint32_t west_max,
-                                   uint32_t east_max,
                                    enum pg_side outside,
                                    struct ether_addr mac);
 

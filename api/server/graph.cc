@@ -145,9 +145,8 @@ bool Graph::start(std::string dpdk_args) {
 
     // Create vtep brick
     vtep_ = Brick(Pg::vtep_new("vxlan", 1, 50, WEST_SIDE,
-                              app::config.external_ip, mac,
-                              ALL_OPTI),
-                 Pg::destroy);
+                               app::config.external_ip, mac),
+                  Pg::destroy);
     if (vtep_.get() == NULL) {
         LOG_ERROR_("brick-vtep failed");
         return false;
@@ -343,7 +342,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.ether_addr_octet);
-    gn.antispoof = Brick(Pg::antispoof_new(name.c_str(), 1, 1, WEST_SIDE, mac),
+    gn.antispoof = Brick(Pg::antispoof_new(name.c_str(), WEST_SIDE, mac),
                          Pg::destroy);
 
     if (nic.ip_anti_spoof) {
