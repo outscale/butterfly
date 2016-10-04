@@ -1,3 +1,4 @@
+set -e
 IMG_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-100816.qcow
 IMG_MD5=1ca000ddbc5ac271c77d1875fab71083
 KEY_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-100816.rsa
@@ -22,7 +23,7 @@ function ssh_run {
     id=$1
     cmd="${@:2}"
     key=$BUTTERFLY_BUILD_ROOT/vm.rsa
-    ssh -q -p 500$id -l root -i $key -oStrictHostKeyChecking=no 127.0.0.1 $cmd 
+    ssh -q -p 500$id -l root -i $key -oStrictHostKeyChecking=no 127.0.0.1 $cmd
 }
 
 function ssh_run_background {
@@ -62,6 +63,7 @@ function ssh_ping {
 function ssh_no_ping {
     id1=$1
     id2=$2
+    set +e
     ssh_run $id1 ping 42.0.0.$id2 -c 1 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "no ping $id1 --> $id2 OK"
@@ -69,11 +71,13 @@ function ssh_no_ping {
         echo "no ping $id1 --> $id2 FAIL"
         RETURN_CODE=1
     fi
+    set -e
 }
 
 function ssh_iperf_tcp {
     id1=$1
     id2=$2
+    set +e
     (ssh_run $id1 iperf -s &> /dev/null &)
     local server_pid=$!
     sleep 1
@@ -85,11 +89,13 @@ function ssh_iperf_tcp {
         echo "iperf tcp $id1 --> $id2 OK"
     fi
     kill $server_pid &> /dev/null
+    set -e
 }
 
 function ssh_iperf_udp {
     id1=$1
     id2=$2
+    set +e
     (ssh_run $id1 iperf -s -u &> /tmp/iperf_tmp_results &)
     local server_pid=$!
     sleep 1
@@ -104,11 +110,13 @@ function ssh_iperf_udp {
     fi
     kill server_pid &> /dev/null
     rm /tmp/iperf_tmp_results
+    set -e
 }
 
 function ssh_iperf3_tcp {
     id1=$1
     id2=$2
+    set +e
     (ssh_run $id1 iperf3 -s &> /dev/null &)
     local server_pid=$!
     sleep 1
@@ -120,12 +128,13 @@ function ssh_iperf3_tcp {
         echo "iperf3 tcp $id1 --> $id2 OK"
     fi
     kill $server_pid &> /dev/null
-
+    set -e
 }
 
 function ssh_iperf3_udp {
     id1=$1
     id2=$2
+    set +e
     (ssh_run $id1 iperf3 -s &> /dev/null &)
     local server_pid=$!
     sleep 1
@@ -140,6 +149,7 @@ function ssh_iperf3_udp {
     fi
     kill -9 $server_pid &> /dev/null
     rm /tmp/iperf3_tmp_results
+    set -e
 }
 
 function ssd_connection_tests_internal {
@@ -169,9 +179,9 @@ function ssh_clean_connection {
     id1=$1
     id2=$2
     
-    ssh_run $id1 "rm /tmp/test" &> /dev/null
-    ssh_run $id1 "killall nc" &> /dev/null
-    ssh_run $id2 "killall nc" &> /dev/null
+    ssh_run $id1 "rm /tmp/test" &> /dev/null || true
+    ssh_run $id1 "killall nc" &> /dev/null || true
+    ssh_run $id2 "killall nc" &> /dev/null || true
 }
 
 function ssh_connection_test_file {
@@ -194,6 +204,7 @@ function ssh_connection_test {
     id2=$3
     port=$4
 
+    set +e
     if [ $( ssd_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
 	return
     fi
@@ -205,6 +216,7 @@ function ssh_connection_test {
 	echo -e "$protocol test $id2 --> $id1 FAIL"
 	RETURN_CODE=1
     fi
+    set -e
     ssh_clean_connection $id1 $id2
     return $RETURN_CODE
 }
@@ -215,6 +227,7 @@ function ssh_no_connection_test {
     id2=$3
     port=$4
 
+    set +e
     if [  $( ssd_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
 	return
     fi
@@ -225,6 +238,7 @@ function ssh_no_connection_test {
     else
 	echo -e "no $protocol test $id2 --> $id1 OK"
     fi
+    set -e
     ssh_clean_connection $id1 $id2
     return $RETURN_CODE
 }
@@ -239,6 +253,7 @@ function qemu_start {
     CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
     exec $CMD &> /tmp/qemu_log_$id &
     pid=$!
+    set +e
     echo "joe" | nc -w 1  127.0.0.1 500$id &> /dev/null
     TEST=$?
     while  [ $TEST -ne 0 ]
@@ -247,6 +262,7 @@ function qemu_start {
 	TEST=$?
 	sleep 0.2
     done
+    set -e
     sudo kill -s 0 $pid &> /dev/null
     if [ $? -ne 0 ]; then
         cat /tmp/qemu_log_$id
@@ -741,7 +757,7 @@ function clean_pcaps {
     sudo rm -rf /tmp/butterfly-*.pcap
 }
 function clean_all {
-    sudo killall -9 butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null
+    sudo killall -9 butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null || true
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
 }
