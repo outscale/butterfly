@@ -21,29 +21,21 @@ request_file=$3
 expected_response=$4
 learn_mode=$5
 
+function check_file {
+    file=$1
+    if [ ! -f $file ]; then
+	echo "'$file' not found"
+	exit 1
+    fi
+}
+
 # Check arguments
-err=false
-if [ ! -f $client ]; then
-    echo "client file '$client' not found"
-    err=true
-fi
-if [ ! -f $server ]; then
-    echo "server file '$server' not found"
-    err=true
-fi
-if [ ! -f $request_file ]; then
-    echo "request file '$request_file' not found"
-    err=true
-fi
+check_file $client
+check_file $server
+check_file $request_file
 
 if [ -z $learn_mode ]; then
-    if [ ! -f $expected_response ]; then
-        echo "expected response file '$expected_response' not found"
-        err=true
-    fi
-fi
-if [ $err = true ]; then
-    exit 1
+    check_file $expected_response
 fi
 
 # prepare out.txt
@@ -103,11 +95,10 @@ while [ $state -eq 0 ]; do
     state=$?
 done
 
+set -e
 # Compare results
-if [ ! -f $output ]; then
-    echo "result file not found"
-    exit 1
-fi
+check_file $output
+
 err=false
 diff $output $expected_response
 if [ $? -ne 0 ]; then
