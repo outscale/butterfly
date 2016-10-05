@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # This script permits to send messages to API server using the API client, 
 # compare responses with excepted result and return if the test passed or not.
 
@@ -47,12 +48,14 @@ echo >> out.txt # add some blank lines
 $server --dpdk-args "-c1 -n1 --vdev=eth_ring0" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:8765 --packet-trace &>> out.txt &
 server_pid=$!
 sleep 1
+set +e
 kill -s 0 $server_pid
 if [ $? -ne 0 ]; then
     echo "server stopped running"
     exit 1
 fi
 
+set -e
 # Prepare client to run
 output=/tmp/butterfly_test_api
 client_cmd="$client --endpoint=tcp://127.0.0.1:8765 -i $request_file -o $output -v"
@@ -64,6 +67,7 @@ fi
 # Run client
 $client_cmd  &> client_out.txt &
 client_pid=$!
+set +e
 kill -s 0 $client_pid &> /dev/null
 killret=$?
 killcount=0
@@ -79,6 +83,7 @@ while [ $killret -eq 0 ]; do
     fi
 done
 
+set -e
 # Is server still alive ?
 kill -s 0 $server_pid
 if [ $? -ne 0 ]; then
@@ -88,6 +93,7 @@ fi
 
 # Gently stop server
 kill -s 2 $server_pid
+set +e
 kill -s 0 $server_pid &> /dev/null
 state=$?
 while [ $state -eq 0 ]; do
