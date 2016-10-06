@@ -56,8 +56,6 @@ $ cmake ..
 $ make
 ```
 
-![Let's compile, xkcd.com](http://imgs.xkcd.com/comics/compiling.png) (from [xkcd.com](http://xkcd.com/))
-
 # Prepare your machine
 
 ## Configure huge pages
