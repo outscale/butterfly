@@ -176,7 +176,7 @@ virtual machines in userland.
 We tested Butterfly with Qemu >= 2.5 and add the following parameters to
 machine's arguments (to adapt):
 
-Some shared memory::
+Some shared memory between the guest and butterfly:
 ```
 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc
 ```
@@ -185,6 +185,8 @@ For each network interface:
 ```
 -chardev socket,id=char0,path=/path/to/socket -netdev type=vhost-user,id=mynet0,chardev=char0,vhostforce -device virtio-net-pci,netdev=mynet0,gso=off
 ```
+
+For more details, check [vhost-user dpdk guide](http://dpdk.org/browse/dpdk/plain/doc/guides/prog_guide/vhost_lib.rst)
 
 ## Do you support any containers ?
 
