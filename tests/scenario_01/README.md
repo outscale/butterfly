@@ -9,5 +9,13 @@
 
 ```
 
-This scenario connects two virtual machines through two butterfly.
-Each VM are in the same network (VNI) and can ping.
+This scenario test ping communication through two butterfly.
+
+Initial setup:
+- VM1 configured on vni 42 with security group sg-1
+- VM2 configured on vni 42 with security group sg-1
+- sg-1 has one rule full opened
+
+Test that:
+- ping communication VM1 -> VM2 is OK
+- ping communication VM2 -> VM1 is OK

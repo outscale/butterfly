@@ -9,11 +9,29 @@
 
 ```
 
-- Connects two virtual machines on the same butterfly on the same network (vni)
-- Make machines ping
-- Kill machine 1
-- Start machine 1
-- Make machines ping
-- Kill machine 1
-- Start machine 1
-- Make machines ping
+This scenario test ping communication through two butterfly.
+
+Initial setup:
+- VM1 configured on vni 42 with security group sg-1
+- VM2 configured on vni 42 with security group sg-1
+- sg-1 has one rule full opened
+
+Test that:
+- ping communication VM1 -> VM2 is OK
+- ping communication VM2 -> VM1 is OK
+
+Change step:
+- Stopping VM1
+- restarting VM1
+
+Test that:
+- ping communication VM1 -> VM2 is OK
+- ping communication VM2 -> VM1 is OK
+
+Change step:
+- Stopping VM1
+- restarting VM1
+
+Test that:
+- ping communication VM1 -> VM2 is OK
+- ping communication VM2 -> VM1 is OK
