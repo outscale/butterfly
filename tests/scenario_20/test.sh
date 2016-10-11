@@ -14,6 +14,9 @@ qemu_start 1
 qemu_start 2
 qemu_start 3
 
+ssh_no_connection_test udp 1 3 8000
+ssh_no_connection_test udp 2 3 8000
+
 sg_rule_add_port_open udp sg-1 0 8000
 ssh_connection_test udp 1 3 8000
 ssh_connection_test udp 2 3 8000

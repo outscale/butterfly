@@ -9,6 +9,14 @@
 
 ```
 
-This scenario just connects two virtual machines on the same butterfly
-on the same network (vni) and make a bunch of network tests (sent tcp
-message, ...)
+This scenario test TCP communication between VM on one butterfly.
+
+Initial setup:
+- 1 butterfly
+- VM1 configured on vni 42 with security group sg-1
+- VM2 configured on vni 42 with security group sg-1
+- sg-1 is full open
+
+Test that
+- TCP communication VM2 -> VM1 is OK
+- TCP communication VM1 -> VM2 is OK
