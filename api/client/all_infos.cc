@@ -69,6 +69,22 @@ int all_infos(const Options &options) {
             std::cout << " - sniff_target_nic_id: " <<
                 nic.sniff_target_nic_id() << std::endl;
         }
+
+        proto::Messages req_nic_stats;
+        build_req_message_0(&req_nic_stats);
+        req_nic_stats.mutable_messages(0)->mutable_message_0()->
+            mutable_request()->set_nic_stats(nic.id());
+        proto::Messages res_nic_stats;
+        if (request(req_nic_stats, &res_nic_stats, options) != 0)
+            return 1;
+        MessageV0_Response res_nic_stats_0 =
+            res_nic_stats.messages(0).message_0().response();
+        if (res_nic_stats_0.has_nic_stats()) {
+            std::cout << " - rx: " << res_nic_stats_0.nic_stats().in() <<
+                std::endl;
+            std::cout << " - tx: " << res_nic_stats_0.nic_stats().out() <<
+                std::endl;
+        }
     }
 
     // Get security group listing
