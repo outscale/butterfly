@@ -14,8 +14,8 @@ qemu_start 2
 
 ssh_no_connection_test tcp 1 2 4454    
 ssh_no_connection_test tcp 2 1 4454
-set_nic_sg sg-1 0 1
-set_nic_sg sg-1 0 2
+nic_set_sg 0 1 sg-1
+nic_set_sg 0 2 sg-1
 
 for i in {1..3}; do      
     ssh_no_connection_test tcp 1 2 4454

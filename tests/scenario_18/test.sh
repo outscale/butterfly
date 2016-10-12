@@ -15,7 +15,7 @@ ssh_connection_test udp 2 1 1243
 ssh_connection_test tcp 2 1 5543
 ssh_no_connection_test udp 1 2 1234
 ssh_no_connection_test tcp 1 2 1254
-set_nic_sg sg-1 0 1
+nic_set_sg 0 1 sg-1
 ssh_connection_test udp 2 1 1243
 ssh_connection_test tcp 2 1 5543
 ssh_connection_test udp 1 2 1234

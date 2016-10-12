@@ -543,7 +543,7 @@ function nic_add_no_rules {
     vni=$4
     f=/tmp/butterfly-client.req
     nic_add_void $but_id $nic_id $vni
-    set_nic_sg $sg $but_id $nic_id
+    nic_set_sg $but_id $nic_id $sg
 }
 
 function sg_rule_add_full_open {
@@ -712,11 +712,11 @@ function sg_member_add {
     request $but_id $f
 }
 
-function set_nic_sg {
-    sg=$1
-    but_id=$2
-    nic_id=$3
-    echo "set nic $nic_id SG in butterfly $but_id"
+function nic_set_sg {
+    but_id=$1
+    nic_id=$2
+    sg_list=${@:3}
+    echo "change security group of nic $nic_id in butterfly $but_id to: $sg_list"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -727,12 +727,20 @@ function set_nic_sg {
         id: \"nic-$nic_id\"
         ip: \"42.0.0.$nic_id\"
         ip_anti_spoof: true
-        security_group: \"$sg\"
+        " > $f
+
+    for i in $sg_list; do
+	echo "        security_group: \"$i\"
+    " >> $f
+    done
+
+    echo "
       }
     }
   }
 }
-" > $f
+" >> $f
+
     request $but_id $f
 }
 
