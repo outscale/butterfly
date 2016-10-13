@@ -719,6 +719,7 @@ void Graph::fw_update(const app::Nic &nic) {
 }
 
 void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
+    std::string m;
     if (!started) {
         LOG_ERROR_("Graph has not been stared");
         return;
@@ -726,17 +727,23 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
 
     std::string r = fw_build_rule(rule);
     if (r.length() == 0) {
-        std::string m = "cannot build rule (add) for nic " + nic.id;
+        m = "cannot build rule (add) for nic " + nic.id;
         app::log.error(m);
+        return;
     }
+
+    m = "adding new rule to firewall of nic " + nic.id + ": " + r;
+    app::log.debug(m);
 
     // Get firewall brick
     auto itvni = vnis_.find(nic.vni);
-    if (itvni == vnis_.end())
+    if (itvni == vnis_.end()) {
+        LOG_ERROR_("cannot find nic's firewall");
         return;
+    }
     auto itnic = itvni->second.nics.find(nic.id);
     if (itnic == itvni->second.nics.end()) {
-        std::string m = "nic " + nic.id + " not found";
+        m = "nic " + nic.id + " not found";
         app::log.error(m);
         return;
     }
@@ -744,7 +751,7 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
 
     // Add rule & reload firewall
     if (!Pg::firewall_rule_add(fw.get(), r, WEST_SIDE, 0)) {
-        std::string m = "cannot load rule (add) for nic " + nic.id;
+        m = "cannot load rule (add) for nic " + nic.id;
         app::log.error(m);
         app::log.debug(r);
         return;
