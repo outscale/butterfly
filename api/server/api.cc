@@ -293,7 +293,6 @@ void API::sg_update_rule_members(const app::Sg &modified_sg) {
     std::map<std::string, app::Sg>::iterator sg;
     bool found = false;
 
-    sg_update(modified_sg);
     for (it_end = app::model.nics.end(),
          it = app::model.nics.begin(); it != it_end; it++) {
         app::Nic &nic = it->second;
@@ -345,6 +344,7 @@ bool API::action_sg_add(const app::Sg &sg, app::Error *error) {
         app::model.security_groups.insert(p);
     }
 
+    sg_update(sg);
     sg_update_rule_members(sg);
     return true;
 }
@@ -360,6 +360,7 @@ bool API::action_sg_del(std::string id, app::Error *error) {
     app::Sg sg = m->second;
     app::model.security_groups.erase(id);
     // Update graph
+    sg_update(sg);
     sg_update_rule_members(sg);
     return true;
 }
