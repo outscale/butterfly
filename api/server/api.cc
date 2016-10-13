@@ -297,8 +297,8 @@ void API::sg_update_rule_members(const app::Sg &modified_sg) {
          it = app::model.nics.begin(); it != it_end; it++) {
         app::Nic &nic = it->second;
         for (sg_it = nic.security_groups.begin();
-            sg_it != nic.security_groups.end();
-            sg_it++) {
+             sg_it != nic.security_groups.end();
+             sg_it++) {
             sg = app::model.security_groups.find(*sg_it);
             if (sg == app::model.security_groups.end())
                 continue;
@@ -309,8 +309,8 @@ void API::sg_update_rule_members(const app::Sg &modified_sg) {
                  rule_it++) {
                 if (rule_it->second.security_group == modified_sg.id &&
                     std::find(updated_sgs.begin(),
-                    updated_sgs.end(),
-                    sg->second.id) != updated_sgs.end()) {
+                              updated_sgs.end(),
+                              sg->second.id) != updated_sgs.end()) {
                     sg_update(sg->second);
                     updated_sgs.push_back(sg->second.id);
                     found = true;
