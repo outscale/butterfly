@@ -20,7 +20,7 @@ Test that:
 - ping communication VM1 -> VM2 is OK
 - ping communication VM2 -> VM1 is OK
 
-Change step:
+Change setup:
 - Stopping VM1
 - restarting VM1
 
@@ -28,7 +28,7 @@ Test that:
 - ping communication VM1 -> VM2 is OK
 - ping communication VM2 -> VM1 is OK
 
-Change step:
+Change setup:
 - Stopping VM1
 - restarting VM1
 
