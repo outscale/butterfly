@@ -310,7 +310,7 @@ void API::sg_update_rule_members(const app::Sg &modified_sg) {
                 if (rule_it->second.security_group == modified_sg.id &&
                     std::find(updated_sgs.begin(),
                               updated_sgs.end(),
-                              sg->second.id) != updated_sgs.end()) {
+                              sg->second.id) == updated_sgs.end()) {
                     sg_update(sg->second);
                     updated_sgs.push_back(sg->second.id);
                     found = true;
