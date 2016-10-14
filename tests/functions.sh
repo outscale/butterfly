@@ -620,7 +620,7 @@ function sg_rule_add_with_sg_member {
     but_id=$3
     port=$4
     sg_member=$5
-    echo "add sg rule with sg member in butterfly $but_id"
+    echo "add rule to $sg: allow sg members of $sg_member on $protocol:$port on butterfly $but_id"
     if [ "$protocol" == "tcp" ]; then
 	protocol=6
     elif [ "$protocol" == "udp" ]; then
