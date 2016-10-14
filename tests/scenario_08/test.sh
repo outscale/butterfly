@@ -11,8 +11,8 @@ nic_add sg-1 0 1 42
 nic_add sg-1 0 2 1337
 qemu_start 1
 qemu_start 2
-ssh_no_connection_test udp 1 2 2345
-ssh_no_connection_test udp 2 1 4523
+ssh_no_connection_test udp 2 1 2345
+ssh_no_connection_test udp 1 2 4523
 qemu_stop 1
 qemu_stop 2
 server_stop 0

@@ -11,15 +11,15 @@ nic_add_port_open udp sg-1 0 1 42 5554
 nic_add_port_open udp sg-1 0 2 42 5554
 qemu_start 1
 qemu_start 2
-ssh_connection_test udp 2 1 5554
 ssh_connection_test udp 1 2 5554
-ssh_no_connection_test tcp 1 2 4445
-ssh_no_connection_test tcp 1 2 5554
-ssh_no_connection_test tcp 2 1 1002
-ssh_no_connection_test udp 1 2 1234
-ssh_no_connection_test tcp 2 1 5895
-ssh_no_connection_test udp 1 2 5553
-ssh_no_connection_test udp 2 1 5555
+ssh_connection_test udp 2 1 5554
+ssh_no_connection_test tcp 2 1 4445
+ssh_no_connection_test tcp 2 1 5554
+ssh_no_connection_test tcp 1 2 1002
+ssh_no_connection_test udp 2 1 1234
+ssh_no_connection_test tcp 1 2 5895
+ssh_no_connection_test udp 2 1 5553
+ssh_no_connection_test udp 1 2 5555
 qemu_stop 1
 qemu_stop 2
 server_stop 0
