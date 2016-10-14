@@ -11,8 +11,8 @@ nic_add sg-1 0 1 42
 nic_add sg-1 0 2 42
 qemu_start 1
 qemu_start 2
-ssh_connection_test tcp 1 2 4045
-ssh_connection_test tcp 2 1 1445
+ssh_connection_test tcp 2 1 4045
+ssh_connection_test tcp 1 2 1445
 qemu_stop 1
 qemu_stop 2
 server_stop 0

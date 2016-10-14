@@ -14,33 +14,33 @@ qemu_start 1
 qemu_start 2
 qemu_start 3
 
-ssh_no_connection_test udp 1 3 8000
-ssh_no_connection_test udp 2 3 8000
+ssh_no_connection_test udp 3 1 8000
+ssh_no_connection_test udp 3 2 8000
 
 sg_rule_add_port_open udp sg-1 0 8000
-ssh_connection_test udp 1 3 8000
-ssh_connection_test udp 2 3 8000
+ssh_connection_test udp 3 1 8000
+ssh_connection_test udp 3 2 8000
 
 sg_rule_del_port_open udp sg-1 0 8000
-ssh_no_connection_test udp 1 3 8000
-ssh_no_connection_test udp 2 3 8000
+ssh_no_connection_test udp 3 1 8000
+ssh_no_connection_test udp 3 2 8000
 
 sg_rule_add_port_open udp sg-1 0 9000
-ssh_connection_test udp 1 3 9000
-ssh_connection_test udp 2 3 9000
+ssh_connection_test udp 3 1 9000
+ssh_connection_test udp 3 2 9000
 
 sg_rule_del_port_open udp sg-1 0 9000
 sg_rule_add_port_open tcp sg-1 0 8000
-ssh_connection_test tcp 1 3 8000
-ssh_connection_test tcp 2 3 8000
+ssh_connection_test tcp 3 1 8000
+ssh_connection_test tcp 3 2 8000
 
 sg_rule_del_port_open tcp sg-1 0 8000
-ssh_no_connection_test tcp 1 3 8000
-ssh_no_connection_test tcp 2 3 8000
+ssh_no_connection_test tcp 3 1 8000
+ssh_no_connection_test tcp 3 2  8000
 
 sg_rule_add_port_open tcp sg-1 0 9000
-ssh_connection_test tcp 1 3 9000
-ssh_connection_test tcp 2 3 9000
+ssh_connection_test tcp 3 1 9000
+ssh_connection_test tcp 3 1 9000
 
 qemu_stop 1
 qemu_stop 2

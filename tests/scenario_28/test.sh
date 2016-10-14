@@ -38,19 +38,20 @@ ssh_no_connection_test udp 2 1 9280
 sg_rule_add_port_open tcp sg-1 0 8000
 ssh_no_ping 1 2
 ssh_no_ping 2 1
-ssh_no_connection_test udp 1 2 8000
-ssh_no_connection_test udp 2 1 8000
 ssh_connection_test tcp 1 2 8000
 ssh_connection_test tcp 2 1 8000
+ssh_no_connection_test udp 1 2 8000
+ssh_no_connection_test udp 2 1 8000
 
 sg_rule_del_port_open tcp sg-1 0 8000
 sg_rule_add_port_open udp sg-1 0 8000
 ssh_no_ping 1 2
 ssh_no_ping 2 1
-ssh_no_connection_test tcp 1 2 8000
 ssh_no_connection_test tcp 2 1 8000
+ssh_no_connection_test tcp 1 2 8000
 ssh_connection_test udp 1 2 8000
 ssh_connection_test udp 2 1 8000
+
 qemu_stop 1
 qemu_stop 2
 server_stop 0
