@@ -3,7 +3,7 @@ Butterfly
 Butterfly connects Virtual Machines and control their traffic flow.
 
 Each VM traffic is contained in a specific [VXLAN](https://en.wikipedia.org/wiki/Virtual_Extensible_LAN)
-network and traffic is filtered by Security Groups.
+network and traffic is filtered by an (EC2/Openstack-like) Security Groups.
 
 Security Groups can be applied to any VM interface, SG contain a list of simple
 network rules (dropping traffic by default).
@@ -123,6 +123,7 @@ sudo butterfly-server -c /etc/butterfly/butterfly.conf
 ## Why another virtual switch ?
 
 Because we just want a fast vswitch corresponding to our simple needs:
+- _simple_ API: EC2/Openstack Security Groups style.
 - Have some VXLAN for network isolation.
 - Have some firewalling per Virtual Machine based on Security Groups.
 - Use as little CPU as possible (and let Virtual Machines use all other cores).
