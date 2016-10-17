@@ -8,10 +8,12 @@ source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 network_connect 0 1
 server_start 0
 server_start 1
-nic_add sg-1 0 1 42
-nic_add sg-1 0 2 1337
-nic_add sg-1 1 3 1337
-nic_add sg-1 1 4 42
+nic_add 0 1 42 sg-1
+nic_add 0 2 1337 sg-1
+nic_add 1 3 1337 sg-1
+nic_add 1 4 42 sg-1
+sg_rule_add_all_open 0 sg-1
+sg_rule_add_all_open 1 sg-1
 qemu_start 1
 qemu_start 2
 qemu_start 3
@@ -36,4 +38,3 @@ server_stop 0
 server_stop 1
 network_disconnect 0 1
 return_result
-
