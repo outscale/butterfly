@@ -169,9 +169,9 @@ function ssd_connection_tests_internal {
 	return $RETURN_CODE
     fi
 
-    ssh_run_background $id1 "nc $proto_cmd -lp  $port > /tmp/test"
+    ssh_run_background $id2 "nc $proto_cmd -lp  $port > /tmp/test"
     sleep 0.4
-    ssh_run_background $id2 "echo 'this message is from vm $id2' | nc $proto_cmd 42.0.0.$id1 $port"
+    ssh_run_background $id1 "echo 'this message is from vm $id2' | nc $proto_cmd 42.0.0.$id2 $port"
     return 0
 }
 
@@ -179,7 +179,7 @@ function ssh_clean_connection {
     id1=$1
     id2=$2
     
-    ssh_run $id1 "rm /tmp/test" &> /dev/null || true
+    ssh_run $id2 "rm /tmp/test" &> /dev/null || true
     ssh_run $id1 "killall nc" &> /dev/null || true
     ssh_run $id2 "killall nc" &> /dev/null || true
 }
@@ -209,11 +209,11 @@ function ssh_connection_test {
 	return
     fi
 
-    ssh_connection_test_file $id1
+    ssh_connection_test_file $id2
     if [ "$?" == "0" ]; then
-	echo -e "$protocol test $id2 --> $id1 OK"
+	echo -e "$protocol test $id1 --> $id2 OK"
     else
-	echo -e "$protocol test $id2 --> $id1 FAIL"
+	echo -e "$protocol test $id1 --> $id2 FAIL"
 	RETURN_CODE=1
     fi
     set -e
@@ -231,12 +231,12 @@ function ssh_no_connection_test {
     if [  $( ssd_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
 	return
     fi
-    ssh_run $id1 [ -s "/tmp/test" ]
+    ssh_run $id2 [ -s "/tmp/test" ]
     if [ "$?" == "0" ]; then
-	echo -e "no $protocol test $id2 --> $id1 FAIL"
+	echo -e "no $protocol test $id1 --> $id2 FAIL"
 	RETURN_CODE=1
     else
-	echo -e "no $protocol test $id2 --> $id1 OK"
+	echo -e "no $protocol test $id1 --> $id2 OK"
     fi
     set -e
     ssh_clean_connection $id1 $id2
