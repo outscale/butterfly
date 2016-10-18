@@ -1,22 +1,22 @@
 Butterfly
 =========
-Butterfly connects Virtual Machines and control their traffic flow.
+Butterfly connects Virtual Machines and controls their traffic flow.
 
 Each VM traffic is contained in a specific [VXLAN](https://en.wikipedia.org/wiki/Virtual_Extensible_LAN)
-network and traffic is filtered by an (EC2/Openstack-like) Security Groups.
+network and traffic is filtered by (EC2/Openstack-like) security groups.
 
-Security Groups can be applied to any VM interface, SG contain a list of simple
+Security groups can be applied to any VM interface, and contain a list of simple
 network rules (dropping traffic by default).
 
 # Using Butterfly
 
 Butterfly is a daemon you can control over a network API.
 
-It's packaged with a client mainly allowing you to add/remove/list virtual
+It is packaged with a client mainly allowing you to add/remove/list virtual
 network interfaces and security groups.
 
 You can of course directly code your calls to Butterfly's API.
-API message transport is based on [ZeroMQ](http://zeromq.org/) and message
+API message transport is based on [ZeroMQ](http://zeromq.org/) and messages
 are encoded in [Protobuf](https://github.com/google/protobuf/ "Google's protobuf")
 format. Check out [protocol](https://github.com/outscale/butterfly/tree/master/api/protocol)
 for more details.
@@ -26,19 +26,19 @@ Here is an example of Butterfly with 6 virtual machines isolated in 3 networks (
 ![Butterfly execution](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly.svg)
 
 Butterfly binds a dedicated NIC to send/receive VXLAN packets and binds a socket
-(default: tcp) to listen to queries on it's API. If you use a DPDK compatible
-card, you won't be able to access API through it.
+(default: tcp) to listen to queries on its API. If you use a DPDK compatible
+card, you won't be able to access the API through it.
 
 # Installing Butterfly
 
 The easiest way to install Butterfly is to download and install a package from [git releases](https://github.com/outscale/butterfly/releases).
-You can also build yourself butterfly (as shown in the next section) and run `make install`
+You can also build Butterfly yourself (as shown in the next section) and run `make install` .
 
-# Build Butterfly
+# Building Butterfly
 
-This build procedure has been tested on a fresh Centos7.
+This building procedure has been tested on a fresh Centos7.
 
-First, install some dependencies (jemalloc need manual installation):
+First, install some dependencies (jemalloc needs manual installation):
 ```
 $ sudo yum update -y
 $ sudo yum install -y gcc-c++ glibc-devel glib2-devel libtool libpcap-devel automake kernel-headers make git cmake kernel-devel unzip zlib-devel wget libstdc++-static
@@ -56,7 +56,7 @@ $ cmake ..
 $ make
 ```
 
-# Prepare your machine
+# Preparing your machine
 
 ## Configure huge pages
 
@@ -87,49 +87,49 @@ hugetlbfs       /mnt/huge  hugetlbfs       rw,mode=0777        0 0
 
 ## Prepare DPDK compatible NIC
 
-Before being able to bind your port, you will need to enable Intel VT-d in your BIOS and having IOMMU explicitly enabled in your kernel parameters.
+Before being able to bind your port, you will need to enable Intel VT-d in your BIOS and have IOMMU explicitly enabled in your kernel parameters.
 Check [DPDK compatible NICs](http://dpdk.org/doc/nics) and how to [bind NIC drivers](http://people.redhat.com/~pmatilai/dpdk-guide/setup/binding.html).
-Packetgraph also have an [example](https://github.com/outscale/packetgraph/tree/master/examples/firewall#configure-your-nics) on how to bind DPDK nics.
+Packetgraph also has an [example](https://github.com/outscale/packetgraph/tree/master/examples/firewall#configure-your-nics) on how to bind DPDK NICs.
 
 Additionally, you may also want to isolate a specific core for Butterfly, check isolcpus [kernel parameters](https://www.kernel.org/doc/Documentation/kernel-parameters.txt)
 
-# Run Butterfly server
+# Running Butterfly server
 
-First, to get help: `butterfly-server --help`
+To get help, see: `butterfly-server --help`
 
 For example, if you have a DPDK compatible NIC, Butterfly will use the first
 available DPDK port. If no port is found, a (slow) tap interface is created.
 ```
-sudo butterfly-server -i 192.168.0.1 -s /tmp
+$ sudo butterfly-server -i 192.168.0.1 -s /tmp
 ```
 
 If you don't have a DPDK compatible card, you can also init a DPDK virtual
 device (which is _much_ slower than a DPDK compatible hardware).
 
-For example, we can ask butterfly to listen to existing `eth0` interface:
+For example, we can ask Butterfly to listen to existing `eth0` interface:
 ```
-sudo butterfly-server -i 192.168.0.1 -s /tmp --dpdk-args "-c1 -n1 --socket-mem 64 --vdev=eth_pcap0,iface=eth0"
+$ sudo butterfly-server -i 192.168.0.1 -s /tmp --dpdk-args "-c1 -n1 --socket-mem 64 --vdev=eth_pcap0,iface=eth0"
 ```
 
 Alternatively, you can ask Butterfly to read a [configuration file]
 (https://github.com/outscale/butterfly/blob/master/api/server/butterfly-server.ini)
 at init:
 ```
-sudo butterfly-server -c /etc/butterfly/butterfly.conf
+$ sudo butterfly-server -c /etc/butterfly/butterfly.conf
 ```
 
 # F.A.Q.
 
-## Why another virtual switch ?
+## Why another virtual switch?
 
 Because we just want a fast vswitch corresponding to our simple needs:
-- _simple_ API: EC2/Openstack Security Groups style.
+- _simple_ API: EC2/Openstack security groups style.
 - Have some VXLAN for network isolation.
-- Have some firewalling per Virtual Machine based on Security Groups.
+- Have some firewalling per Virtual Machine based on security groups.
 - Use as little CPU as possible (and let Virtual Machines use all other cores).
-- Ease a (cloud) orchestrator to control the whole thing through a simple API.
+- Ease a (Cloud) orchestrator to control the whole thing through a simple API.
 
-## What's behind Butterfly ?
+## What's behind Butterfly?
 
 Butterfly is based on:
 - [Packetgraph](http://github.com/outscale/packetgraph): creates network graph.
@@ -138,7 +138,7 @@ Butterfly is based on:
 - [ZeroMQ](http://zeromq.org/): message transport.
 - [Protobuf](https://github.com/google/protobuf/ "Google's protobuf"): message encoding/versioning.
 
-## How fast ?
+## How fast?
 
 Benchmarks setup:
 - Two physical machines directly connected.
@@ -160,24 +160,24 @@ Results (aug 25 2016):
 ```
 
 Notes:
-- We can get faster by embeding a more recent libc (`make package-fat`)
-- Most of the time is spent on packet copy in vhost interface (zero copy is coming)
-- Performances are also very impacted by offloading, we are working on several options to speedup things
+- We can get faster by embedding a more recent libc (`make package-fat`).
+- Most of the time is spent on packet copy in vhost interface (zero copy is coming).
+- Performances are also very impacted by offloading. We are working on several options to speed things up.
 - If you try to run some benchmarks, you may want to configure your [CPU throttling](https://en.wikipedia.org/wiki/Dynamic_frequency_scaling). On Centos7, check [cpufreq governors page](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Power_Management_Guide/cpufreq_governors.html).
 
 Well, we have a good margin for improvements :)
 
-## How to connect a Virtual Machine to Butterfly ?
+## How to connect a Virtual Machine to Butterfly?
 
-Butterfly does not launch your virtual machine for you, it just create a special
+Butterfly does not launch your virtual machine for you, it just creates a special
 network interface (vhost-user) so you can connect your Virtual Machine on it.
-Vhost-user interfaces are unix sockets allowing you to directly communicate with
+Vhost-user interfaces are Unix sockets allowing you to directly communicate with
 virtual machines in userland.
 
-We tested Butterfly with Qemu >= 2.5 and add the following parameters to
-machine's arguments (to adapt):
+We tested Butterfly with Qemu >= 2.5 and added the following parameters to
+the machine's arguments (to adapt):
 
-Some shared memory between the guest and butterfly:
+Some shared memory between the guest and Butterfly:
 ```
 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc
 ```
@@ -187,64 +187,64 @@ For each network interface:
 -chardev socket,id=char0,path=/path/to/socket -netdev type=vhost-user,id=mynet0,chardev=char0,vhostforce -device virtio-net-pci,netdev=mynet0,gso=off
 ```
 
-For more details, check [vhost-user dpdk guide](http://dpdk.org/browse/dpdk/plain/doc/guides/prog_guide/vhost_lib.rst)
+For more details, check [vhost-user dpdk guide](http://dpdk.org/browse/dpdk/plain/doc/guides/prog_guide/vhost_lib.rst).
 
-## Do you support any containers ?
+## Do you support any containers?
 
-Not yet, Butterfly only support vhost-user network interfaces.
+Not yet, Butterfly only supports vhost-user network interfaces.
 
-Anyway, connect a container should be possible too.
+Anyways, connecting a container should be possible too.
 
-## Does Butterfly support IPv6 ?
+## Does Butterfly support IPv6?
 
-- Virtual Machine traffic can be in IPv6
-- Outer nework (VXLAN's side) is made in IPv4 for the moment
+- Virtual Machine traffic can be in IPv6.
+- Outer network (VXLAN's side) is made in IPv4 for the moment.
 
-## What if my virtual machine crash/reboot/stop ?
+## What if my virtual machine crashes/reboots/stops?
 
-Vhost-user interface will still exist until it is removed in Butterfly.
+Vhost-user interface will still exist until it is removed from Butterfly.
 
-You can just restart your VM, it will be reconnected to butterfly and run as
+You can just restart your VM, it will be reconnected to Butterfly and run as
 before.
 
-This is possible because Butterfly act as "server" in vhost-user communication.
+This is possible because Butterfly acts as "server" in vhost-user communication.
 
-## What if Butterfly crash ?
+## What if Butterfly crashes?
 
-Too bad, you can just restart butterfly but VM won't reconnect as vhost-user
-"server" is located on butterfly's side.
+Too bad, you can just restart Butterfly but the VM won't reconnect, as vhost-user
+"server" is located on Butterfly's side.
 
-Filling an issue is very valuable for project, please provide:
-- Operating system with version
-- Butterfly version (butterfly --version)
-- Butterfly logs (check syslogs)
-- Is your system under memory pressure ?
-- What was doing Butterfly ? (Heavy traffic ? Doing nothing ? How many VM ?)
-- Estimated Butterfly uptime until crash
-- Do you have a way to reproduce it ?
+Filling an issue is very valuable to the project. Please provide the following information:
+- The operating system with its version
+- The Butterfly version (butterfly --version)
+- The Butterfly logs (check syslogs)
+- Is your system under memory pressure?
+- What was Butterfly doing? (Heavy traffic? Doing nothing? How many VMs?)
+- The estimated Butterfly uptime until crash.
+- Do you have a way to reproduce it?
 
-It may be soon possible to choose which is vhost-user server between Qemu and
+It may be soon possible to choose which one is the vhost-user server between Qemu and
 Butterfly, [comming soon in DPDK](http://dpdk.org/ml/archives/dev/2016-May/038627.html) :)
 
-## What is Butterfly license ?
+## What is Butterfly’s license?
 
-Butterfly is licensed under [GPLv3](http://gplv3.fsf.org/)
+Butterfly is licensed under [GPLv3](http://gplv3.fsf.org/).
 
-## Is there any authentification on API or protection ?
+## Is there any authentification on the API or protection?
 
-Network API is currently not protected at all.
+The network API is currently not protected at all.
 
-For now, it's up to you to secure your administration network where butterfly
-API listen.
+For now, it's up to you to secure your administration network where the Butterfly
+API listens.
 
-## On which port does Butterfly listen ?
+## On which port does Butterfly listen?
 
-By default Butterfly listen on `tcp://0.0.0.0:9999` but it's up to you !
+By default, Butterfly listens on the `tcp://0.0.0.0:9999` port, but it's up to you!
 
 Butterfly uses ZeroMQ for message transport and allows you to bind in
-[different ways](http://api.zeromq.org/4-0:zmq-bind) (like tcp, ipc, inproc, pgm, ...)
+[different ways](http://api.zeromq.org/4-0:zmq-bind). (like tcp, ipc, inproc, pgm, ...)
 
-## Question ? Troubles ? Contact us !
+## Questions? Problems? Contact us!
 
 Butterfly is an open-source project, feel free to [chat with us on IRC]
 (https://webchat.freenode.net/?channels=betterfly&nick=butterfly_user), open
@@ -253,4 +253,3 @@ a Github issue or propose a pull request.
 > server: irc.freenode.org
 
 > chan: #betterfly
-
