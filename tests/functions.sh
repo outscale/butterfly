@@ -316,7 +316,7 @@ function server_stop {
 function network_connect {
     id1=$1
     id2=$2
-    echo "network connect but$id1 <--> but$id2"
+    echo "network connect butterfly-$id1 <--> butterfly-$id2"
     sudo socat TUN:192.168.42.$id1/24,tun-type=tap,iff-running,iff-up,iff-promisc,tun-name=but$id1 TUN:192.168.42.$id2/24,tun-type=tap,iff-running,iff-promisc,iff-up,tun-name=but$id2 &
     pid=$!
     sleep 0.2
@@ -334,7 +334,7 @@ function network_connect {
 function network_disconnect {
     id1=$1
     id2=$2
-    echo "network disconnect but$id1 <--> but$id2"
+    echo "network disconnect butterfly-$id1 <--> butterfly-$id2"
     sudo kill -9 $(ps --ppid ${socat_pids[$id1$id2]} -o pid=)
 }
 
