@@ -20,7 +20,7 @@ for i in {1..10}; do
     ssh_connection_test udp 1 2 6000
     ssh_connection_test udp 2 1 6000
 
-    delete_sg 0 sg-1
+    sg_del 0 sg-1
     ssh_no_connection_test tcp 1 2 6000
     ssh_no_connection_test tcp 2 1 6000
 
@@ -28,7 +28,7 @@ for i in {1..10}; do
     ssh_connection_test tcp 1 2 6000
     ssh_connection_test tcp 2 1 6000
 
-    delete_sg 0 sg-1
+    sg_del 0 sg-1
 done
 qemu_stop 1
 qemu_stop 2

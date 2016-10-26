@@ -669,7 +669,7 @@ function sg_add {
     request $but_id $f
 }
 
-function delete_sg {
+function sg_del {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete $sg"

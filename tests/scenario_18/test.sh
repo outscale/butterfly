@@ -22,7 +22,7 @@ ssh_connection_test tcp 1 2 5543
 ssh_connection_test udp 2 1 1234
 ssh_connection_test tcp 2 1 1354
 
-delete_sg 0 sg-1
+sg_del 0 sg-1
 ssh_no_connection_test tcp 1 2 1903
 ssh_no_connection_test udp 1 2 5043
 ssh_no_connection_test tcp 2 1 1043
