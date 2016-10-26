@@ -379,7 +379,7 @@ function nic_add {
     sg_list=${@:4}
 
     f=/tmp/butterfly-client.req
-    echo "add nic $nic_id in butterfly $but_id with vni $vni"
+    echo "[butterfly-$but_id] add nic $nic_id with vni $vni"
 
     echo -e "messages {
   revision: 0
@@ -415,7 +415,7 @@ function nic_del {
     but_id=$1
     nic_id=$2
     f=/tmp/butterfly-client.req
-    echo "delete nic $nic_id in butterfly $but_id"
+    echo "[butterfly-$but_id] delete nic $nic_id"
 
     echo -e "messages {
   revision: 0
@@ -432,7 +432,7 @@ function nic_del {
 function sg_rule_add_all_open {
     but_id=$1
     sg=$2
-    echo "add rule all open in $sg"
+    echo "[butterfly-$but_id] add rule all open in $sg"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -462,7 +462,7 @@ function sg_rule_add_port_open {
     but_id=$2
     port=$3
     sg=$4
-    echo "add rule $protocol port $port open in $sg"
+    echo "[butterfly-$but_id] add rule $protocol port $port open in $sg"
     if [ "$protocol" == "tcp" ]; then
 	protocol=6
     elif [ "$protocol" == "udp" ]; then
@@ -503,7 +503,7 @@ function sg_rule_add_with_sg_member {
     but_id=$3
     port=$4
     sg_member=$5
-    echo "add rule to $sg: allow sg members of $sg_member on $protocol:$port on butterfly $but_id"
+    echo "[butterfly-$but_id] add rule to $sg: allow sg members of $sg_member on $protocol:$port"
     if [ "$protocol" == "tcp" ]; then
 	protocol=6
     elif [ "$protocol" == "udp" ]; then
@@ -541,7 +541,7 @@ function sg_rule_del_with_sg_member {
     but_id=$3
     port=$4
     sg_member=$5
-    echo "delete rule from $sg: allow sg members of $sg_member on $protocol:$port on butterfly $but_id"
+    echo "[butterfly-$but_id] delete rule from $sg: allow sg members of $sg_member on $protocol:$port"
     if [ "$protocol" == "tcp" ]; then
 	protocol=6
     elif [ "$protocol" == "udp" ]; then
@@ -577,7 +577,7 @@ function sg_member_add {
     but_id=$1
     sg=$2
     ip_member=$3
-    echo "add member $ip_member in $sg"
+    echo "[butterfly-$but_id] add member $ip_member in $sg"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -599,7 +599,7 @@ function nic_set_sg {
     but_id=$1
     nic_id=$2
     sg_list=${@:3}
-    echo "change security group of nic $nic_id in butterfly $but_id to: $sg_list"
+    echo "[butterfly-$but_id] update nic's security groups of $nic_id to: $sg_list"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -630,7 +630,7 @@ function nic_set_sg {
 function remove_sg_from_nic {
     but_id=$1
     nic_id=$2
-    echo "remove sg from nic $nic_id on butterfly $but_id"
+    echo "[butterfly-$but_id] remove sg from nic $nic_id"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -652,7 +652,7 @@ function remove_sg_from_nic {
 function sg_add {
     sg=$1
     but_id=$2
-    echo "add $sg in butterfly $but_id"
+    echo "[butterfly-$but_id] add $sg"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -672,7 +672,7 @@ function sg_add {
 function delete_sg {
     but_id=$1
     sg=$2
-    echo "delete $sg in butterfly $but_id"
+    echo "[butterfly-$but_id] delete $sg"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -705,7 +705,7 @@ function sg_rule_del {
 function sg_rule_del_all_open {
     but_id=$1
     sg=$2
-    echo "delete rule all open from $sg"
+    echo "[butterfly-$but_id] delete rule all open from $sg"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
@@ -735,7 +735,7 @@ function sg_rule_del_port_open {
     sg=$2
     protocol=$3
     port=$4
-    echo "delete rule $protocol port $port open from $sg"
+    echo "[butterfly-$but_id] delete rule $protocol port $port open from $sg"
 
     if [ "$protocol" == "tcp" ]; then
 	protocol=6
@@ -775,7 +775,7 @@ function sg_member_del {
     but_id=$1
     sg=$2
     ip_member=$3
-    echo "delete member $ip_member from $sg"
+    echo "[butterfly-$but_id] delete member $ip_member from $sg"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
