@@ -290,7 +290,7 @@ function qemu_stop {
 
 function server_start {
     id=$1
-    echo "starting butterfly $id"
+    echo "[butterfly-$id] starting"
 
     exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t &> /dev/null &
     pid=$!
@@ -306,7 +306,7 @@ function server_start {
 
 function server_stop {
     id=$1
-    echo "stopping butterfly $id"
+    echo "[butterfly-$id] stopping"
     sudo kill -2 $(ps --ppid ${server_pids[$id]} -o pid=)
     while sudo kill -s 0 ${server_pids[$id]} &> /dev/null ; do
         sleep 0.1
