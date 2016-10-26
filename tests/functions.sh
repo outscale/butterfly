@@ -53,10 +53,10 @@ function ssh_ping {
     id2=$2
     ssh_run $id1 ping 42.0.0.$id2 -c 1 &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "ping VM $id1 --> VM $id2 FAIL"
+        echo "ping VM $id1 ---> VM $id2 FAIL"
         RETURN_CODE=1
     else
-        echo "ping VM $id1 --> VM $id2 OK"
+        echo "ping VM $id1 ---> VM $id2 OK"
     fi
 }
 
@@ -66,9 +66,9 @@ function ssh_no_ping {
     set +e
     ssh_run $id1 ping 42.0.0.$id2 -c 1 &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "no ping VM $id1 --> VM $id2 OK"
+        echo "ping VM $id1 -/-> VM $id2 OK"
     else
-        echo "no ping VM $id1 --> VM $id2 FAIL"
+        echo "ping VM $id1 -/-> VM $id2 FAIL"
         RETURN_CODE=1
     fi
     set -e
@@ -83,10 +83,10 @@ function ssh_iperf_tcp {
     sleep 1
     ssh_run $id2 iperf -c 42.0.0.$id1 -t 3 &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "iperf tcp VM $id1 --> VM $id2 FAIL"
+        echo "iperf tcp VM $id1 ---> VM $id2 FAIL"
         RETURN_CODE=1
     else
-        echo "iperf tcp VM $id1 --> VM $id2 OK"
+        echo "iperf tcp VM $id1 ---> VM $id2 OK"
     fi
     kill $server_pid &> /dev/null
     set -e
@@ -103,10 +103,10 @@ function ssh_iperf_udp {
     ret=$?
     res=$(cat /tmp/iperf_tmp_results |grep "%" | cut -d '(' -f 2 | cut -d '%' -f 1)
     if [ $ret -ne 0 ] || [ ".$res" != ".0" ]; then
-        echo "iperf udp VM $id1 --> VM $id2 FAIL"
+        echo "iperf udp VM $id1 ---> VM $id2 FAIL"
         RETURN_CODE=1
     else
-        echo "iperf udp VM $id1 --> VM $id2 OK"
+        echo "iperf udp VM $id1 ---> VM $id2 OK"
     fi
     kill server_pid &> /dev/null
     rm /tmp/iperf_tmp_results
@@ -122,10 +122,10 @@ function ssh_iperf3_tcp {
     sleep 1
     ssh_run $id2 iperf3 -c 42.0.0.$id1 -t 3 &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "iperf3 tcp VM $id1 --> VM $id2 FAIL"
+        echo "iperf3 tcp VM $id1 ---> VM $id2 FAIL"
         RETURN_CODE=1
     else
-        echo "iperf3 tcp VM $id1 --> VM $id2 OK"
+        echo "iperf3 tcp VM $id1 ---> VM $id2 OK"
     fi
     kill $server_pid &> /dev/null
     set -e
@@ -142,10 +142,10 @@ function ssh_iperf3_udp {
     local ret=$?
     local res=$(cat /tmp/iperf3_tmp_results | grep packets | tail -n 1 | cut -d ':' -f 2 | cut -d ',' -f 1 | tr -d ' ' | tr -d '\t')
     if [ $res -eq 0 ] || [ $ret -ne 0 ]; then
-        echo "iperf3 udp VM $id1 --> VM $id2 FAIL"
+        echo "iperf3 udp VM $id1 ---> VM $id2 FAIL"
         RETURN_CODE=1
     else
-        echo "iperf3 udp VM $id1 --> VM $id2 OK"
+        echo "iperf3 udp VM $id1 ---> VM $id2 OK"
     fi
     kill -9 $server_pid &> /dev/null
     rm /tmp/iperf3_tmp_results
@@ -211,9 +211,9 @@ function ssh_connection_test {
 
     ssh_connection_test_file $id2
     if [ "$?" == "0" ]; then
-	echo -e "$protocol test VM $id1 --> VM $id2 OK"
+	echo -e "$protocol test VM $id1 ---> VM $id2 OK"
     else
-	echo -e "$protocol test VM $id1 --> VM $id2 FAIL"
+	echo -e "$protocol test VM $id1 ---> VM $id2 FAIL"
 	RETURN_CODE=1
     fi
     set -e
@@ -233,10 +233,10 @@ function ssh_no_connection_test {
     fi
     ssh_run $id2 [ -s "/tmp/test" ]
     if [ "$?" == "0" ]; then
-	echo -e "no $protocol test VM $id1 --> VM $id2 FAIL"
+	echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL"
 	RETURN_CODE=1
     else
-	echo -e "no $protocol test VM $id1 --> VM $id2 OK"
+	echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
     fi
     set -e
     ssh_clean_connection $id1 $id2
