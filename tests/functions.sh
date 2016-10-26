@@ -630,7 +630,7 @@ function nic_set_sg {
 function remove_sg_from_nic {
     but_id=$1
     nic_id=$2
-    echo "Remove sg form nic $nic_id in butterfly $but_id"
+    echo "remove sg from nic $nic_id on butterfly $but_id"
     f=/tmp/butterfly-client.req
 
     echo -e "messages {
