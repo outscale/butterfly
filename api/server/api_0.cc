@@ -531,9 +531,9 @@ bool API_0::validate_nic(const MessageV0_Nic &nic) {
     if (!validate_mac(nic.mac()))
         return false;
 
-    // Check VNI
+    // Check VNI < 2^24
     uint32_t vni = nic.vni();
-    if ((vni & (((uint32_t)-1) >> 8)) != vni)
+    if (vni > 16777215)
         return false;
 
     // Check IP list
@@ -699,7 +699,7 @@ bool API_0::convert(const MessageV0_Nic &nic_message, app::Nic *nic_model) {
     if (!convert(nic_message.mac(), &nic_model->mac))
         return false;
     // VNI
-    nic_model->vni = nic_message.vni() & (((uint32_t)-1) >> 8);
+    nic_model->vni = nic_message.vni();
     // IP list of NIC
     for (int a = 0; a < nic_message.ip_size(); a++) {
         app::Ip ip;
