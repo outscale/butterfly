@@ -140,10 +140,7 @@ message MessageV0 {
     // MAC-48 address separated by colons (:) in transmission order
     // e.g. 52:54:00:00:d7:11
     required string mac = 2;
-    // 24 bits Virtual Network Id in lsb format
-    // Note: only the least significant bits will be taken
-    // Other bits MUST be set to zero
-    // vni = vni & (UINT32_MAX >> 8)
+    // 24 bits Virtual Network Id, must be < 2^24
     required uint32 vni = 3;
     // NIC can have several IP (v4 or/and v6)
     // Note that NIC IP(s) are only used for the IP anti-spoof if activated
