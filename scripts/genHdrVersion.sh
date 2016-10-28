@@ -29,7 +29,7 @@ DATE=`git log -1 | grep Date | awk -F "   " '{ print $2 }' | awk -F '+' '{ print
 NAME=`git log --oneline -1 | awk -F ' ' '{print $1}'`
 
 PROTO_REVISION=0
-BUTTERFLY_VERSION=0.1
+BUTTERFLY_VERSION=0.2
 
 tmp=version_tmp.h
 echo "" > $tmp
