@@ -3,7 +3,6 @@ set(SOURCES app.cc
             model.cc
             api.cc
             api_0.cc
-            pg.cc
             graph.cc)
 
 set (SOURCES_P)

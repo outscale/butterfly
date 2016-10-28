@@ -27,8 +27,11 @@ extern "C" {
 #include <thread>
 #include <chrono>
 #include "api/server/app.h"
-#include "api/server/pg.h"
 #include "api/server/graph.h"
+
+namespace {
+void pg_fake_destroy(struct pg_brick *) {}
+}
 
 Graph::Graph(void) {
     // Init rpc queue
@@ -43,14 +46,15 @@ Graph::~Graph(void) {
 bool Graph::linkAndStalk(Graph::Brick eastBrick, Graph::Brick westBrick,
         Graph::Brick sniffer) {
     if (app::config.packet_trace) {
-        if (!Pg::link(eastBrick.get(), sniffer.get()) ||
-            !Pg::link(sniffer.get(), westBrick.get())) {
-            LOG_ERROR_("Link fail");
+        if (pg_brick_chained_links(&app::pg_error, eastBrick.get(),
+                                   sniffer.get(), westBrick.get()) < 0) {
+            PG_ERROR_(app::pg_error);
             return false;
         }
     } else {
-        if (!Pg::link(eastBrick.get(), westBrick.get())) {
-            LOG_ERROR_("Link fail");
+        if (pg_brick_link(eastBrick.get(), westBrick.get(),
+                          &app::pg_error) < 0) {
+            PG_ERROR_(app::pg_error);
             return false;
         }
     }
@@ -88,7 +92,7 @@ void Graph::stop() {
 
     // Byby packetgraph
     vnis_.clear();
-    Pg::stop();
+    pg_stop();
     app::destroy_cgroup();
     started = false;
 }
@@ -97,7 +101,7 @@ bool Graph::start(std::string dpdk_args) {
     struct ether_addr mac;
 
     // Start packetgraph
-    if (!Pg::start(dpdk_args)) {
+    if (!app::pg_start(dpdk_args)) {
         return false;
     }
 
@@ -108,47 +112,51 @@ bool Graph::start(std::string dpdk_args) {
     vhost_start();
 
     // Create nic brick
-    nic_ = Brick(Pg::nic_new_by_id("port-0", 0), Pg::destroy);
+    nic_ = Brick(pg_nic_new_by_id("port-0", 0, &app::pg_error),
+                 pg_brick_destroy);
     if (nic_.get() == NULL) {
         LOG_WARNING_("cannot use DPDK port 0");
         // Try to create a pcap interface instead
-        nic_ = Brick(Pg::tap_new("port-0", NULL), Pg::destroy);
+        nic_ = Brick(pg_tap_new("port-0", NULL, &app::pg_error),
+                     pg_brick_destroy);
         if (nic_.get() == NULL) {
             LOG_ERROR_("cannot create tap interface");
             return false;
-        } else if (!Pg::tap_get_mac(nic_.get(), &mac)) {
+        } else if (pg_tap_get_mac(nic_.get(), &mac) < 0) {
              LOG_ERROR_("cannot get mac of tap interface");
              return false;
         } else {
-            LOG_INFO_("created tap interface %s", Pg::tap_ifname(nic_.get()));
+            LOG_INFO_("created tap interface %s", pg_tap_ifname(nic_.get()));
         }
     } else {
         // Try to increase mtu
-        if (!Pg::nic_set_mtu(nic_.get(), 2000)) {
-            LOG_WARNING_("cannot increase port MTU");
+        if (pg_nic_set_mtu(nic_.get(), 2000, &app::pg_error) < 0) {
+            PG_WARNING_(app::pg_error);
         }
-        Pg::nic_get_mac(nic_.get(), &mac);
+        pg_nic_get_mac(nic_.get(), &mac);
     }
 
     // Create sniffer brick
     pcap_file_ = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
                         "-main.pcap").c_str(), "w");
     std::string sniffer_name = "main-sniffer-" + std::to_string(getpid());
-    sniffer_ = Brick(Pg::print_new(sniffer_name.c_str(), pcap_file_,
+    sniffer_ = Brick(pg_print_new(sniffer_name.c_str(), pcap_file_,
                                   PG_PRINT_FLAG_PCAP | PG_PRINT_FLAG_CLOSE_FILE,
-                                  NULL),
-                    Pg::destroy);
+                                  NULL, &app::pg_error),
+                    pg_brick_destroy);
     if (sniffer_.get() == NULL) {
-        LOG_ERROR_("brick-sniffer failed");
+        PG_ERROR_(app::pg_error);
         return false;
     }
 
     // Create vtep brick
-    vtep_ = Brick(Pg::vtep_new("vxlan", 1, 50, WEST_SIDE,
-                               app::config.external_ip, mac),
-                  Pg::destroy);
+    uint32_t ipp;
+    inet_pton(AF_INET, app::config.external_ip.c_str(), &ipp);
+    vtep_ = Brick(pg_vtep_new("vxlan", 1, 50, WEST_SIDE, ipp, mac,
+                              PG_VTEP_DST_PORT, ALL_OPTI, &app::pg_error),
+                  pg_brick_destroy);
     if (vtep_.get() == NULL) {
-        LOG_ERROR_("brick-vtep failed");
+        PG_ERROR_(app::pg_error);
         return false;
     }
 
@@ -193,14 +201,20 @@ void *Graph::poller(void *graph) {
             }
         }
 
-        Pg::poll(nic, &pkts_count);
+        if (pg_brick_poll(nic, &pkts_count, &app::pg_error) < 0)
+            PG_ERROR_(app::pg_error);
         sched_yield();
         /* Poll all pollable vhosts. */
         for (uint32_t v = 0; v < size; v++) {
             for (uint32_t i = 0; i < 4; ++i) {
-                Pg::poll(list->pollables[v], &pkts_count);
+                if (pg_brick_poll(list->pollables[v],
+                                  &pkts_count, &app::pg_error) < 0) {
+                    PG_ERROR_(app::pg_error);
+                }
                 sched_yield();
-                Pg::poll(nic, &pkts_count);
+                if (pg_brick_poll(nic, &pkts_count, &app::pg_error) < 0) {
+                    PG_ERROR_(app::pg_error);
+                }
                 sched_yield();
             }
         }
@@ -209,7 +223,7 @@ void *Graph::poller(void *graph) {
         if (FIREWALL_GC(cnt)) {
             cnt = 0;
             for (uint32_t v = 0; v < size; v++) {
-                Pg::firewall_gc(list->firewalls[v]);
+                pg_firewall_gc(list->firewalls[v]);
              }
             usleep(5);
         }
@@ -255,24 +269,26 @@ bool Graph::poller_update(struct RpcQueue **list) {
                 g_free(a);
                 return false;
             case VHOST_START:
-                if (!Pg::vhost_start(app::config.socket_folder)) {
-                    LOG_ERROR_("brick-vhost failed");
+                if (pg_vhost_start(app::config.socket_folder.c_str(),
+                                   &app::pg_error) < 0) {
+                    PG_ERROR_(app::pg_error);
                 }
                 break;
             case VHOST_STOP:
-                Pg::vhost_stop();
+                pg_vhost_stop();
                 break;
             case LINK:
-                Pg::link(a->link.w, a->link.e);
+                pg_brick_link(a->link.w, a->link.e, &app::pg_error);
                 break;
             case UNLINK:
-                Pg::unlink(a->unlink.b);
+                pg_brick_unlink(a->unlink.b, &app::pg_error);
                 break;
             case ADD_VNI:
-                Pg::vtep_add_vni(a->add_vni.vtep,
-                                 a->add_vni.neighbor,
-                                 a->add_vni.vni,
-                                 a->add_vni.multicast_ip);
+                pg_vtep_add_vni(a->add_vni.vtep,
+                                a->add_vni.neighbor,
+                                a->add_vni.vni,
+                                a->add_vni.multicast_ip,
+                                &app::pg_error);
                 break;
             case UPDATE_POLL:
                 // Swap with the old list
@@ -281,16 +297,17 @@ bool Graph::poller_update(struct RpcQueue **list) {
                 *list = tmp;
                 break;
             case FW_RELOAD:
-                Pg::firewall_reload(a->fw_reload.firewall);
+                pg_firewall_reload(a->fw_reload.firewall, &app::pg_error);
                 break;
             case FW_NEW:
-                *(a->fw_new.result) = Pg::firewall_new(a->fw_new.name,
-                                                       a->fw_new.west_max,
-                                                       a->fw_new.east_max,
-                                                       a->fw_new.flags);
+                *(a->fw_new.result) = pg_firewall_new(a->fw_new.name,
+                                                      a->fw_new.west_max,
+                                                      a->fw_new.east_max,
+                                                      a->fw_new.flags,
+                                                      &app::pg_error);
                 break;
             case BRICK_DESTROY:
-                Pg::destroy(a->brick_destroy.b);
+                pg_brick_destroy(a->brick_destroy.b);
                 break;
 
             default:
@@ -338,12 +355,13 @@ std::string Graph::nic_add(const app::Nic &nic) {
         LOG_ERROR_("Firewall creation failed");
         return "";
     }
-    gn.firewall = Brick(tmp_fw, Pg::fake_destroy);
+    gn.firewall = Brick(tmp_fw, pg_fake_destroy);
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.ether_addr_octet);
-    gn.antispoof = Brick(Pg::antispoof_new(name.c_str(), WEST_SIDE, mac),
-                         Pg::destroy);
+    gn.antispoof = Brick(pg_antispoof_new(name.c_str(), WEST_SIDE, &mac,
+                                          &app::pg_error),
+                         pg_brick_destroy);
     if (!gn.antispoof) {
         LOG_ERROR_("%s creation failed", name.c_str());
         return "";
@@ -354,12 +372,15 @@ std::string Graph::nic_add(const app::Nic &nic) {
         // several IP for arp antispoofing.
         // Get the first IP of the VM
         std::string ip = nic.ip_list.front().str();
-        Pg::antispoof_arp_enable(gn.antispoof.get(), ip);
+        uint32_t ipp;
+        inet_pton(AF_INET, ip.c_str(), &ipp);
+        pg_antispoof_arp_enable(gn.antispoof.get(), ipp);
     }
 
     name = "vhost-" + gn.id;
-    gn.vhost = Brick(Pg::vhost_new(name.c_str(), 1, 1, EAST_SIDE),
-                     Pg::destroy);
+    gn.vhost = Brick(pg_vhost_new(name.c_str(), 1, 1, EAST_SIDE,
+                                  &app::pg_error),
+                     pg_brick_destroy);
     if (!gn.vhost) {
         LOG_ERROR_("%s creation failed", name.c_str());
         return "";
@@ -367,18 +388,18 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "sniffer-" + gn.id;
     gn.pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) + "-" +
                           gn.id + ".pcap").c_str(), "w");
-    gn.sniffer = Brick(Pg::print_new(name.c_str(), gn.pcap_file,
-                                     PG_PRINT_FLAG_PCAP |
-                                     PG_PRINT_FLAG_CLOSE_FILE,
-                                     NULL),
-                       Pg::destroy);
+    gn.sniffer = Brick(pg_print_new(name.c_str(), gn.pcap_file,
+                                    PG_PRINT_FLAG_PCAP |
+                                    PG_PRINT_FLAG_CLOSE_FILE,
+                                    NULL, &app::pg_error),
+                       pg_brick_destroy);
     if (!gn.sniffer) {
         LOG_ERROR_("%s creation failed", name.c_str());
         return "";
     }
 
     // Link branch (inside)
-    Pg::link(gn.firewall.get(), gn.antispoof.get());
+    pg_brick_link(gn.firewall.get(), gn.antispoof.get(), &app::pg_error);
     linkAndStalk(gn.antispoof, gn.vhost, gn.sniffer);
     // Link branch to the vtep
     if (vni.nics.size() == 0) {
@@ -394,8 +415,8 @@ std::string Graph::nic_add(const app::Nic &nic) {
         // - re-link the first firewall to it's antispoof
         // - link the second firewall to the switch
         name = "switch-" + std::to_string(nic.vni);
-        vni.sw = Brick(Pg::switch_new(name.c_str(),
-                                      1, 30, EAST_SIDE), Pg::destroy);
+        vni.sw = Brick(pg_switch_new(name.c_str(), 1, 30, EAST_SIDE,
+                                     &app::pg_error), pg_brick_destroy);
         if (!vni.sw) {
             LOG_ERROR_("%s creation failed", name.c_str());
             return "";
@@ -425,7 +446,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     fw_update(nic);
     app::set_cgroup();
 
-    return std::string(Pg::vhost_socket_path(gn.vhost.get()));
+    return std::string(pg_vhost_socket_path(gn.vhost.get(), &app::pg_error));
 }
 
 void Graph::nic_del(const app::Nic &nic) {
@@ -522,8 +543,8 @@ void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
         return;
     }
 
-    *in = Pg::rx_bytes(nic_it->second.vhost.get());
-    *out = Pg::tx_bytes(nic_it->second.vhost.get());
+    *in = pg_brick_rx_bytes(nic_it->second.vhost.get());
+    *out = pg_brick_tx_bytes(nic_it->second.vhost.get());
 }
 
 void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
@@ -558,10 +579,12 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
         // several IP for arp antispoofing.
         // Get the first IP of the VM
         std::string ip = nic.ip_list.front().str();
-        Pg::antispoof_arp_enable(antispoof.get(), ip);
+        uint32_t ipp;
+        inet_pton(AF_INET, ip.c_str(), &ipp);
+        pg_antispoof_arp_enable(antispoof.get(), ipp);
 
     } else {
-        Pg::antispoof_arp_disable(antispoof.get());
+        pg_antispoof_arp_disable(antispoof.get());
     }
 }
 
@@ -707,20 +730,22 @@ void Graph::fw_update(const app::Nic &nic) {
     }
 
     // Push rules to the firewall
-    Pg::firewall_rule_flush(fw.get());
+    pg_firewall_rule_flush(fw.get());
     std::string m;
     m = "rules (in) for nic " + nic.id + ": " + in_rules;
     app::log.debug(m);
     m = "rules (out) for nic " + nic.id + ": " + out_rules;
     app::log.debug(m);
     if (in_rules.length() > 0 &&
-        !Pg::firewall_rule_add(fw.get(), in_rules, WEST_SIDE, 0)) {
+        (pg_firewall_rule_add(fw.get(), in_rules.c_str(), WEST_SIDE,
+                              0, &app::pg_error) < 0)) {
         std::string m = "cannot build rules (in) for nic " + nic.id;
         app::log.error(m);
         return;
     }
     if (out_rules.length() > 0 &&
-        !Pg::firewall_rule_add(fw.get(), out_rules, EAST_SIDE, 1)) {
+        pg_firewall_rule_add(fw.get(), out_rules.c_str(), EAST_SIDE,
+                             1,  &app::pg_error) < 0) {
         std::string m = "cannot build rules (out) for nic " + nic.id;
         app::log.error(m);
         return;
@@ -762,7 +787,8 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
     Brick &fw = itnic->second.firewall;
 
     // Add rule & reload firewall
-    if (!Pg::firewall_rule_add(fw.get(), r, WEST_SIDE, 0)) {
+    if (pg_firewall_rule_add(fw.get(), r.c_str(), WEST_SIDE,
+                             0, &app::pg_error) < 0) {
         m = "cannot load rule (add) for nic " + nic.id;
         app::log.error(m);
         app::log.debug(r);
@@ -773,7 +799,7 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
 
 std::string Graph::dot() {
     // Build the graph from the physical NIC
-    return Pg::graph_dot(nic_.get());
+    return app::graph_dot(nic_.get());
 }
 
 void Graph::exit() {

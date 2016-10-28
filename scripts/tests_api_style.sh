@@ -22,8 +22,6 @@ $BUTTERFLY_ROOT/api/server/model.h \
 $BUTTERFLY_ROOT/api/server/api.cc \
 $BUTTERFLY_ROOT/api/server/api.h \
 $BUTTERFLY_ROOT/api/server/api_0.cc \
-$BUTTERFLY_ROOT/api/server/pg.cc \
-$BUTTERFLY_ROOT/api/server/pg.h \
 $BUTTERFLY_ROOT/api/server/graph.cc \
 $BUTTERFLY_ROOT/api/server/graph.h"
 

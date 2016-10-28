@@ -101,4 +101,3 @@ APIServer::process(const zmqpp::message &req, zmqpp::message *res) {
     LOG_DEBUG_("pack response in a ZMQmessage");
     *res << response_string;
 }
-
