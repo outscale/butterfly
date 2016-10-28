@@ -31,7 +31,7 @@ card, you won't be able to access the API through it.
 
 # Installing Butterfly
 
-The easiest way to install Butterfly is to download and install a package from [git releases](https://github.com/outscale/butterfly/releases).
+The easiest way to install Butterfly is to download and install a package from [github releases](https://github.com/outscale/butterfly/releases).
 You can also build Butterfly yourself (as shown in the next section) and run `make install` .
 
 # Building Butterfly
@@ -160,9 +160,12 @@ Results (aug 25 2016):
 ```
 
 Notes:
+- We can already make more than 10GB/s between two VM on the same host by
+enabling virtio-net offloading. We will 
+- We can get even faster with zero copy in vhost-user (in future DPDK versions)
+- We are working on hardware offloading, we should be able to run at line rate
+(10Gbits/s) bewteen two butterfly on different hosts.
 - We can get faster by embedding a more recent libc (`make package-fat`).
-- Most of the time is spent on packet copy in vhost interface (zero copy is coming).
-- Performances are also very impacted by offloading. We are working on several options to speed things up.
 - If you try to run some benchmarks, you may want to configure your [CPU throttling](https://en.wikipedia.org/wiki/Dynamic_frequency_scaling). On Centos7, check [cpufreq governors page](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Power_Management_Guide/cpufreq_governors.html).
 
 Well, we have a good margin for improvements :)
