@@ -18,6 +18,11 @@
 #ifndef API_SERVER_APP_H_
 #define API_SERVER_APP_H_
 
+extern "C" {
+#include <net/ethernet.h>
+#include <packetgraph/packetgraph.h>
+}
+
 #include <string>
 #include "api/server/model.h"
 #include "api/server/graph.h"
@@ -30,6 +35,19 @@
 #define LOG_INFO_(str, args...) LOG_PRINT_(str, app::log.info, ## args)
 #define LOG_WARNING_(str, args...) LOG_PRINT_(str, app::log.warning, ## args)
 #define LOG_ERROR_(str, args...) LOG_PRINT_(str, app::log.error, ## args)
+#define PG_ERROR_(error) do {                                           \
+        LOG_ERROR_("%s",                                                \
+                   (error) ? (error)->message : "error is NULL");       \
+        pg_error_free((error));                                         \
+        (error) = NULL;                                                 \
+    } while (0)
+
+#define PG_WARNING_(error) do {                                         \
+        LOG_WARNING_("%s",                                              \
+                     (error) ? (error)->message : "error is NULL");     \
+        pg_error_free((error));                                         \
+        (error) = NULL;                                                 \
+    } while (0)
 
 #define POLL_THREAD_MULTIPLIER 19
 #define DPDK_DEFAULT_ARGS "-c1 -n1 --socket-mem 64 --no-shconf --huge-unlink"
@@ -86,6 +104,9 @@ bool load_config_file(std::string config_path);
 void destroy_cgroup();
 void set_cgroup();
 
+std::string graph_dot(struct pg_brick *brick);
+bool pg_start(std::string dpdk_args);
+
 // Some global app:: variables
 extern bool request_exit;
 extern Config config;
@@ -93,6 +114,7 @@ extern Stats stats;
 extern Model model;
 extern Log log;
 extern Graph graph;
+extern pg_error *pg_error;
 }  // namespace app
 
 #endif  // API_SERVER_APP_H_

@@ -27,7 +27,6 @@ extern "C" {
 #include <string>
 #include <vector>
 #include "api/server/app.h"
-#include "api/server/pg.h"
 
 #define GRAPH_VHOST_MAX_SIZE 50
 
