@@ -743,6 +743,15 @@ void Graph::fw_update(const app::Nic &nic) {
             out_rules += " || ";
     }
 
+    // Allow DHCP to exit
+    // FIXME jerome.jutteau@outscale.com
+    // This will be removed with OUTBOUND direction support.
+    if (out_rules.length() > 0) {
+        out_rules += " || ";
+    }
+    out_rules += "(src host 0.0.0.0 and dst host 255.255.255.255 and "
+                 "udp src port 68 and udp dst port 67)";
+
     // Push rules to the firewall
     pg_firewall_rule_flush(fw.get());
     std::string m;
