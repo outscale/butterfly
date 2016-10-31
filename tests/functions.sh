@@ -41,6 +41,14 @@ function ssh_run_timeout {
     ssh -q -p 500$id -l root -i $key -oStrictHostKeyChecking=no -oConnectTimeout=$timeout 127.0.0.1 $cmd 
 }
 
+function scp_to {
+    id=$1
+    local_file=$2
+    distant_file=$3
+    key=$BUTTERFLY_BUILD_ROOT/vm.rsa
+    scp -P 500$id -i $key $local_file root@127.0.0.1:$distant_file &> /dev/null
+}
+
 function ssh_bash {
     id=$1
     cmd="${@:2}"
@@ -245,6 +253,7 @@ function ssh_no_connection_test {
 
 function qemu_start {
     id=$1
+    ip=$2
     echo "starting VM $id"
     SOCKET_PATH=/tmp/qemu-vhost-nic-$id
     IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
@@ -279,7 +288,40 @@ function qemu_start {
 
     # Configure IP on vhost interface
     ssh_run $id ip link set ens4 up
-    ssh_run $id ip addr add 42.0.0.$id/16 dev ens4
+    if [ "$ip" == "dhcp-server" ]; then
+        ssh_run $id pacman --noconfirm -Sy dhcp &> /dev/null
+        ssh_run $id ip addr add 42.0.0.$id/24 dev ens4
+        echo -e "
+            option domain-name-servers 8.8.8.8, 8.8.4.4;
+            option subnet-mask 255.255.255.0;
+            option routers 42.0.0.$id;
+            subnet 42.0.0.0 netmask 255.255.255.0 {
+              range 42.0.0.20 42.0.0.50;
+              host vm1{
+                hardware ethernet 52:54:00:12:34:01;
+                fixed-address 42.0.0.1;
+              }
+              host vm2{
+                hardware ethernet 52:54:00:12:34:02;
+                fixed-address 42.0.0.2;
+              }
+              host vm3{
+                hardware ethernet 52:54:00:12:34:03;
+                fixed-address 42.0.0.3;
+              }
+              host vm4{
+                hardware ethernet 52:54:00:12:34:04;
+                fixed-address 42.0.0.4;
+              }
+            }" > /tmp/tmp_dhcpd.conf
+        scp_to $id /tmp/tmp_dhcpd.conf /etc/dhcpd.conf
+        rm /tmp/tmp_dhcpd.conf
+        ssh_run $id systemctl start dhcpd4 &> /dev/null
+    elif [ "$ip" == "dhcp-client" ]; then
+        ssh_run $id dhcpcd ens4 &> /dev/null || ( echo "DHCP failed !" && false )
+    else
+        ssh_run $id ip addr add 42.0.0.$id/24 dev ens4
+    fi
 }
 
 function qemu_stop {
@@ -571,6 +613,20 @@ function sg_rule_del_with_sg_member {
 }
 " > $f
     request $but_id $f
+}
+
+function sg_rule_add_dhcp {
+    but_id=$1
+    sg=$2
+    sg_rule_add_port_open udp $but_id 67 $sg
+    sg_rule_add_port_open udp $but_id 68 $sg
+}
+
+function sg_rule_del_dhcp {
+    but_id=$1
+    sg=$2
+    sg_rule_del_port_open udp $but_id 67 $sg
+    sg_rule_del_port_open udp $but_id 68 $sg
 }
 
 function sg_member_add {
