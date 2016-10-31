@@ -161,10 +161,10 @@ Results (aug 25 2016):
 
 Notes:
 - We can already make more than 10GB/s between two VM on the same host by
-enabling virtio-net offloading. We will 
-- We can get even faster with zero copy in vhost-user (in future DPDK versions)
+enabling virtio-net offloading.
+- We can get even faster with zero copy in vhost-user (in future DPDK versions).
 - We are working on hardware offloading, we should be able to run at line rate
-(10Gbits/s) bewteen two butterfly on different hosts.
+(10Gbits/s) between two butterfly on different hosts.
 - We can get faster by embedding a more recent libc (`make package-fat`).
 - If you try to run some benchmarks, you may want to configure your [CPU throttling](https://en.wikipedia.org/wiki/Dynamic_frequency_scaling). On Centos7, check [cpufreq governors page](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Power_Management_Guide/cpufreq_governors.html).
 
