@@ -305,7 +305,7 @@ message MessageV0 {
   }
 
   message AppConfigReq {
-    // If set, permet to change log level of application
+    // Change log level of application
     // Valid values are 'none', 'error', 'warning', 'info' or 'debug'
     optional string log_level = 1;
   }
