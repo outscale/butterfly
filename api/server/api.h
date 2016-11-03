@@ -47,6 +47,7 @@ class API {
         bool ip_anti_spoof;
         std::vector<app::Ip> ip;
         std::vector<std::string> security_groups;
+        uint32_t nic_mtu;
     };
 
  protected:
@@ -172,6 +173,16 @@ class API {
      * This method centralize program shutdown for all API versions
      */
     static void action_app_quit();
+
+    /** Get physical NIC MTU
+     * @return current mtu size in bytes
+     */
+    static uint32_t action_get_nic_mtu();
+    /** Set physical NIC MTU
+     * @param  mtu mtu size in bytes
+     * @return true if mtu has been successfully set, false otherwise
+     */
+    static bool action_set_nic_mtu(uint32_t);
 
  private:
     /* Find all NICs who are concerned by a specific SG and update the

@@ -82,6 +82,15 @@ class Graph {
      * @return  a string describing the whole graph
      */
     std::string dot();
+    /** Get physical NIC MTU
+     * @return current mtu size in bytes
+     */
+    uint32_t get_nic_mtu();
+    /** Set physical NIC MTU
+     * @param  mtu mtu size in bytes
+     * @return true if mtu has been successfully set, false otherwise
+     */
+    bool set_nic_mtu(uint32_t mtu);
 
  private:
     /* Check if graph has been started or not. */

@@ -506,6 +506,14 @@ std::string API::action_graph_dot() {
     return app::graph.dot();
 }
 
+uint32_t API::action_get_nic_mtu() {
+    return app::graph.get_nic_mtu();
+}
+
+bool API::action_set_nic_mtu(uint32_t mtu) {
+    return app::graph.set_nic_mtu(mtu);
+}
+
 void API::action_app_quit() {
     app::request_exit = true;
 }

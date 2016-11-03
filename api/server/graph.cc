@@ -802,6 +802,26 @@ std::string Graph::dot() {
     return app::graph_dot(nic_.get());
 }
 
+uint32_t Graph::get_nic_mtu() {
+    uint16_t mtu;
+    if (pg_nic_get_mtu(nic_.get(), &mtu, &app::pg_error) < 0) {
+        app::log.error("cannot get physical NIC MTU");
+        PG_ERROR_(app::pg_error);
+        return 0;
+    }
+    return static_cast<uint32_t>(mtu);
+}
+
+bool Graph::set_nic_mtu(uint32_t mtu) {
+    if (pg_nic_set_mtu(nic_.get(), static_cast<uint16_t>(mtu),
+                       &app::pg_error) < 0) {
+        app::log.error("Cannot set physical NIC MTU");
+        PG_ERROR_(app::pg_error);
+        return false;
+    }
+    return true;
+}
+
 void Graph::exit() {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = EXIT;

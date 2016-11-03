@@ -449,6 +449,7 @@ void API_0::app_status(const MessageV0_Request &req,
     a->set_current_date(time(NULL));
     a->set_request_counter(app::stats.request_counter);
     a->set_graph_dot(action_graph_dot());
+    a->set_nic_mtu(action_get_nic_mtu());
 
     build_ok_res(res);
 }
@@ -470,6 +471,10 @@ void API_0::app_config(const MessageV0_Request &req, MessageV0_Response *res) {
     if (config.has_log_level()) {
         if (!app::log.set_log_level(config.log_level()))
             err = err + "log level: failed ";
+    }
+
+    if (config.has_nic_mtu() && !action_set_nic_mtu(config.nic_mtu())) {
+            err = err + "nic mtu set: failed ";
     }
 
     if (err.length() == 0) {
