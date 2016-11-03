@@ -66,6 +66,7 @@ struct Cidr {
     Ip address;
     uint32_t mask_size;
     bool operator== (const Cidr& a) const;
+    std::string str() const;
 };
 
 struct Nic {
