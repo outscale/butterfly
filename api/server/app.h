@@ -49,7 +49,7 @@ extern "C" {
         (error) = NULL;                                                 \
     } while (0)
 
-#define POLL_THREAD_MULTIPLIER 19
+#define POLL_THREAD_MULTIPLIER 10
 #define DPDK_DEFAULT_ARGS "-c1 -n1 --socket-mem 64 --no-shconf --huge-unlink"
 
 namespace app {
