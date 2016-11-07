@@ -201,30 +201,22 @@ void *Graph::poller(void *graph) {
             }
         }
 
+        /* Poll all pollable vhosts. */
         if (pg_brick_poll(nic, &pkts_count, &app::pg_error) < 0)
             PG_ERROR_(app::pg_error);
-        sched_yield();
-        /* Poll all pollable vhosts. */
         for (uint32_t v = 0; v < size; v++) {
-            for (uint32_t i = 0; i < 4; ++i) {
-                if (pg_brick_poll(list->pollables[v],
-                                  &pkts_count, &app::pg_error) < 0) {
-                    PG_ERROR_(app::pg_error);
-                }
-                sched_yield();
-                if (pg_brick_poll(nic, &pkts_count, &app::pg_error) < 0) {
-                    PG_ERROR_(app::pg_error);
-                }
-                sched_yield();
+            if (pg_brick_poll(list->pollables[v],
+                              &pkts_count, &app::pg_error) < 0) {
+                PG_ERROR_(app::pg_error);
             }
         }
+        sched_yield();
 
         /* Call firewall garbage callector. */
         if (FIREWALL_GC(cnt)) {
             cnt = 0;
-            for (uint32_t v = 0; v < size; v++) {
+            for (uint32_t v = 0; v < size; v++)
                 pg_firewall_gc(list->firewalls[v]);
-             }
             usleep(5);
         }
     }
