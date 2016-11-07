@@ -113,8 +113,14 @@ bool Graph::start(std::string dpdk_args) {
     vhost_start();
 
     // Create nic brick
-    nic_ = Brick(pg_nic_new_by_id("port-0", 0, &app::pg_error),
-                 pg_brick_destroy);
+    if (app::config.dpdk_port < 0) {
+        app::log.error("invalid DPDK port " +
+                       std::to_string(app::config.dpdk_port));
+        return false;
+    }
+    nic_ = Brick(pg_nic_new_by_id(
+        ("port-" + std::to_string(app::config.dpdk_port)).c_str(),
+        app::config.dpdk_port, &app::pg_error), pg_brick_destroy);
     if (nic_.get() == NULL) {
         PG_WARNING_(app::pg_error);
         // Try to create a pcap interface instead
@@ -131,6 +137,8 @@ bool Graph::start(std::string dpdk_args) {
             LOG_INFO_("created tap interface %s", pg_tap_ifname(nic_.get()));
         }
     } else {
+        app::log.debug("using dpdk port " +
+                       std::to_string(app::config.dpdk_port));
         set_config_mtu();
         pg_nic_get_mac(nic_.get(), &mac);
     }

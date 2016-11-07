@@ -71,6 +71,7 @@ struct Config {
     bool packet_trace;
     int tid;
     std::string nic_mtu;
+    int dpdk_port;
 };
 
 struct Stats {
