@@ -46,6 +46,7 @@ Config::Config() {
     dpdk_args = DPDK_DEFAULT_ARGS;
     tid = 0;
     nic_mtu = "";
+    dpdk_port = 0;
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
@@ -62,6 +63,7 @@ bool Config::parse_cmd(int argc, char **argv) {
     std::unique_ptr<gchar, decltype(gfree)> graph_core_id_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> dpdk_args_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> nic_mtu_cmd(nullptr, gfree);
+    std::unique_ptr<gchar, decltype(gfree)> dpdk_port_cmd(nullptr, gfree);
 
     static GOptionEntry entries[] = {
         {"config", 'c', 0, G_OPTION_ARG_FILENAME, &config_path_cmd,
@@ -91,6 +93,8 @@ bool Config::parse_cmd(int argc, char **argv) {
          "set MTU your physical NIC, may fail if not supported. Parameter can"
          " be set to 'max' and butterfly will try to find the maximal MTU.",
          "MTU"},
+        {"dpdk-port", 0, 0, G_OPTION_ARG_STRING, &dpdk_port_cmd,
+         "choose which dpdk port to use (default=0)", "PORT"},
         { nullptr }
     };
     std::shared_ptr<GOptionContext> context(g_option_context_new(""),
@@ -141,6 +145,8 @@ bool Config::parse_cmd(int argc, char **argv) {
         dpdk_args = std::string(&*dpdk_args_cmd);
     if (nic_mtu_cmd != nullptr)
         nic_mtu = std::string(&*nic_mtu_cmd);
+    if (dpdk_port_cmd != nullptr)
+        nic_mtu = std::atoi(&*dpdk_port_cmd);
 
     // Load from configuration file if provided
     if (config_path.length() > 0 && !load_config_file(config_path)) {
@@ -314,6 +320,15 @@ bool load_config_file(std::string config_path) {
             config.nic_mtu;
         log.debug(m);
     }
+
+    v = ini.GetValue("general", "dpdk-port", "_");
+    if (std::string(v) != "_") {
+        config.dpdk_port = std::stoi(v);
+        std::string m = "LoadConfig: get dpdk-port from config: " +
+            config.dpdk_port;
+        log.debug(m);
+    }
+
     return true;
 }
 
