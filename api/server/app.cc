@@ -45,6 +45,7 @@ Config::Config() {
     packet_trace = false;
     dpdk_args = DPDK_DEFAULT_ARGS;
     tid = 0;
+    nic_mtu = "";
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
@@ -60,6 +61,7 @@ bool Config::parse_cmd(int argc, char **argv) {
     std::unique_ptr<gchar, decltype(gfree)> socket_folder_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> graph_core_id_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> dpdk_args_cmd(nullptr, gfree);
+    std::unique_ptr<gchar, decltype(gfree)> nic_mtu_cmd(nullptr, gfree);
 
     static GOptionEntry entries[] = {
         {"config", 'c', 0, G_OPTION_ARG_FILENAME, &config_path_cmd,
@@ -85,6 +87,10 @@ bool Config::parse_cmd(int argc, char **argv) {
          "print DPDK help", nullptr},
         {"dpdk-args", 0, 0, G_OPTION_ARG_STRING, &dpdk_args_cmd,
          "set dpdk arguments (default='" DPDK_DEFAULT_ARGS "'", nullptr},
+        {"nic-mtu", 'm', 0, G_OPTION_ARG_STRING, &nic_mtu_cmd,
+         "set MTU your physical NIC, may fail if not supported. Parameter can"
+         " be set to 'max' and butterfly will try to find the maximal MTU.",
+         "MTU"},
         { nullptr }
     };
     std::shared_ptr<GOptionContext> context(g_option_context_new(""),
@@ -133,6 +139,8 @@ bool Config::parse_cmd(int argc, char **argv) {
         graph_core_id = std::atoi(&*graph_core_id_cmd);
     if (dpdk_args_cmd != nullptr)
         dpdk_args = std::string(&*dpdk_args_cmd);
+    if (nic_mtu_cmd != nullptr)
+        nic_mtu = std::string(&*nic_mtu_cmd);
 
     // Load from configuration file if provided
     if (config_path.length() > 0 && !load_config_file(config_path)) {
@@ -296,6 +304,14 @@ bool load_config_file(std::string config_path) {
         config.dpdk_args = v;
         std::string m = "LoadConfig: get dpdk-args from config: " +
             config.dpdk_args;
+        log.debug(m);
+    }
+
+    v = ini.GetValue("general", "nic-mtu", "_");
+    if (std::string(v) != "_") {
+        config.nic_mtu = v;
+        std::string m = "LoadConfig: get nic_mtu from config: " +
+            config.nic_mtu;
         log.debug(m);
     }
     return true;
