@@ -130,10 +130,7 @@ bool Graph::start(std::string dpdk_args) {
             LOG_INFO_("created tap interface %s", pg_tap_ifname(nic_.get()));
         }
     } else {
-        // Try to increase mtu
-        if (pg_nic_set_mtu(nic_.get(), 2000, &app::pg_error) < 0) {
-            PG_WARNING_(app::pg_error);
-        }
+        set_config_mtu();
         pg_nic_get_mac(nic_.get(), &mac);
     }
     pg_nic_capabilities(nic_.get(), &useless, &nic_capa_tx);
@@ -173,6 +170,57 @@ bool Graph::start(std::string dpdk_args) {
 
     started = true;
     return true;
+}
+
+void Graph::set_config_mtu() {
+    if (app::config.nic_mtu.length() == 0)
+        goto exit;
+
+    if (app::config.nic_mtu == "max") {
+        app::log.info("try to find maximal MTU");
+        int min = 1400;
+        int max = 65536;
+        while (min != max - 1) {
+            int m = (min + max) / 2;
+            if (!pg_nic_set_mtu(nic_.get(), m , &app::pg_error)) {
+                PG_ERROR_SILENT_(app::pg_error);
+                min = m;
+            } else {
+                max = m;
+            }
+        }
+        if (pg_nic_set_mtu(nic_.get(), min, &app::pg_error) < 0) {
+            PG_ERROR_(app::pg_error);
+            app::log.error("failed to find minimal supported MTU");
+        } else {
+            app::log.info("found maximal MTU of " + std::to_string(min));
+        }
+    } else {
+        try {
+            int mtu = std::stoi(app::config.nic_mtu);
+            if (mtu > 0) {
+                if (pg_nic_set_mtu(nic_.get(), mtu, &app::pg_error) < 0) {
+                    PG_ERROR_(app::pg_error);
+                } else {
+                    app::log.info("MTU successfully set to " +
+                                  app::config.nic_mtu);
+                }
+            } else {
+                LOG_ERROR_("bad MTU, must be > 0");
+            }
+        } catch(...) {
+            app::log.error("bad nic-mtu argument");
+        }
+    }
+
+exit:
+        uint16_t mtu;
+        if (pg_nic_get_mtu(nic_.get(), &mtu, &app::pg_error) < 0) {
+            PG_ERROR_SILENT_(app::pg_error);
+            app::log.debug("cannot get physical nic mtu");
+        } else {
+            app::log.debug("physical nic mtu is " + std::to_string(mtu));
+        }
 }
 
 #define POLLER_CHECK(c) ((c) & 1023)
