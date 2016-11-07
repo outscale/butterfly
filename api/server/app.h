@@ -41,6 +41,10 @@ extern "C" {
         pg_error_free((error));                                         \
         (error) = NULL;                                                 \
     } while (0)
+#define PG_ERROR_SILENT_(error) do {                                    \
+        pg_error_free((error));                                         \
+        (error) = NULL;                                                 \
+    } while (0)
 
 #define PG_WARNING_(error) do {                                         \
         LOG_WARNING_("%s",                                              \
@@ -66,6 +70,7 @@ struct Config {
     int graph_core_id;
     bool packet_trace;
     int tid;
+    std::string nic_mtu;
 };
 
 struct Stats {

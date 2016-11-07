@@ -183,6 +183,8 @@ class Graph {
     static inline int set_cpu(int core_id);
     static inline int set_sched();
 
+    /* Set physical nic MTU from config. */
+    inline void set_config_mtu();
 
     /**
      * Called by the poller, run all pending actions in the queue
