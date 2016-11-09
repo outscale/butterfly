@@ -3,7 +3,7 @@ Description=Butterfly server daemon
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/butterfly-server -c /etc/butterfly/butterfly-server.ini
+ExecStart=/usr/bin/butterflyd -c /etc/butterfly/butterflyd.ini
 ExecStop=/bin/kill -2 $MAINPID
 KillMode=process
 Restart=on-failure

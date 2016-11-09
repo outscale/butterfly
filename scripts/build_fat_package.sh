@@ -61,13 +61,13 @@ mkdir -p etc/butterfly/
 mkdir -p usr/bin/
 cp -rv ../fat* opt/
 echo '#!/bin/bash' > usr/bin/butterfly-client
-echo '#!/bin/bash' > usr/bin/butterfly-server
+echo '#!/bin/bash' > usr/bin/butterflyd
 chmod +x usr/bin/butterfly-client
-chmod +x usr/bin/butterfly-server
+chmod +x usr/bin/butterflyd
 echo '/opt/fat-butterfly-client/butterfly-client.sh $@' >> usr/bin/butterfly-client
-echo '/opt/fat-butterfly-server/butterfly-server.sh $@' >> usr/bin/butterfly-server
+echo '/opt/fat-butterflyd/butterflyd.sh $@' >> usr/bin/butterflyd
 
-cp $BUTTERFLY_ROOT/api/server/butterfly-server.ini etc/butterfly/
+cp $BUTTERFLY_ROOT/api/server/butterflyd.ini etc/butterfly/
 # Path to systemd units distributed with installed RPM packages
 mkdir -p usr/lib/systemd/system
 cp $BUTTERFLY_ROOT/scripts/butterfly.service usr/lib/systemd/system/

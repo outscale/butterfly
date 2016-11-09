@@ -21,7 +21,7 @@ sudo rm out.txt
 
 run=$BUTTERFLY_ROOT/api/tests/run_scenario.sh
 client=$BUTTERFLY_BUILD_ROOT/api/client/butterfly-client
-server=$BUTTERFLY_BUILD_ROOT/api/server/butterfly-server
+server=$BUTTERFLY_BUILD_ROOT/api/server/butterflyd
 err=false
 for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
     tput setaf 2

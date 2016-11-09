@@ -14,10 +14,10 @@ add_executable(api_server ${SOURCES_P})
 
 add_dependencies(api_server api_protocol libzmq zmqpp butterfly-genere-version)
 
-set_target_properties(api_server PROPERTIES OUTPUT_NAME butterfly-server)
+set_target_properties(api_server PROPERTIES OUTPUT_NAME butterflyd)
 
 install(TARGETS api_server DESTINATION bin)
-install(FILES butterfly-server.ini DESTINATION etc/butterfly/ COMPONENT config)
+install(FILES butterflyd.ini DESTINATION etc/butterfly/ COMPONENT config)
 
 include_directories(${GLIB2_INCLUDE_DIR} ${GLIB2_INTERNAL_INCLUDE_DIR}
                     ${PROJECT_SOURCE_DIR}

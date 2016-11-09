@@ -95,12 +95,12 @@ Additionally, you may also want to isolate a specific core for Butterfly, check 
 
 # Running Butterfly server
 
-To get help, see: `butterfly-server --help`
+To get help, see: `butterflyd --help`
 
 For example, if you have a DPDK compatible NIC, Butterfly will use the first
 available DPDK port. If no port is found, a (slow) tap interface is created.
 ```
-$ sudo butterfly-server -i 192.168.0.1 -s /tmp
+$ sudo butterflyd -i 192.168.0.1 -s /tmp
 ```
 
 If you don't have a DPDK compatible card, you can also init a DPDK virtual
@@ -108,14 +108,14 @@ device (which is _much_ slower than a DPDK compatible hardware).
 
 For example, we can ask Butterfly to listen to existing `eth0` interface:
 ```
-$ sudo butterfly-server -i 192.168.0.1 -s /tmp --dpdk-args "-c1 -n1 --socket-mem 64 --vdev=eth_pcap0,iface=eth0"
+$ sudo butterflyd -i 192.168.0.1 -s /tmp --dpdk-args "-c1 -n1 --socket-mem 64 --vdev=eth_pcap0,iface=eth0"
 ```
 
 Alternatively, you can ask Butterfly to read a [configuration file]
-(https://github.com/outscale/butterfly/blob/master/api/server/butterfly-server.ini)
+(https://github.com/outscale/butterfly/blob/master/api/server/butterflyd.ini)
 at init:
 ```
-$ sudo butterfly-server -c /etc/butterfly/butterfly.conf
+$ sudo butterflyd -c /etc/butterfly/butterfly.conf
 ```
 
 # F.A.Q.
