@@ -31,7 +31,7 @@ function clean_hard {
     local tmp=$3
     ssh_run $ip_a $port_a pkill -h &> /dev/null
     ssh_run $ip $port pkill --signal 9 -f butterflyd || true
-    ssh_run $ip $port pkill --signal 9 -f butterfly-client || true
+    ssh_run $ip $port pkill --signal 9 -f butterfly || true
     ssh_run $ip $port pkill --signal 9 -f qemu-system-x86_64 || true
     ssh_run $ip $port rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/* $tmp || true
     ssh_run $ip $port yum remove -y butterfly &> /dev/null || true
@@ -53,7 +53,7 @@ function nic_add {
     local port=$2
     local id=$3
     local vni=$4
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -89,7 +89,7 @@ messages {
   }
 }" > $f
     remote_cp $ip $port $f $f
-    ssh_run $ip $port butterfly-client -e tcp://$ip:9999 -i $f
+    ssh_run $ip $port butterfly -e tcp://$ip:9999 -i $f
 }
 
 function ssh_vm {
