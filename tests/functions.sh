@@ -292,7 +292,7 @@ function server_start {
     id=$1
     echo "[butterfly-$id] starting"
 
-    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t &> /dev/null &
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t &> /dev/null &
     pid=$!
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
@@ -806,7 +806,7 @@ function clean_pcaps {
     sudo rm -rf /tmp/butterfly-*.pcap
 }
 function clean_all {
-    sudo killall -9 butterfly-server butterfly-client qemu-system-x86_64 socat &> /dev/null || true
+    sudo killall -9 butterflyd butterfly-client qemu-system-x86_64 socat &> /dev/null || true
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
 }
@@ -817,7 +817,7 @@ if [ ! -f $BUTTERFLY_SRC_ROOT/LICENSE ]; then
     exit 1
 fi
 
-if [ ! -f $BUTTERFLY_BUILD_ROOT/api/server/butterfly-server ]; then
+if [ ! -f $BUTTERFLY_BUILD_ROOT/api/server/butterflyd ]; then
     echo "Butterfly's build root not found (is butterfly built ?)"
     usage
     exit 1

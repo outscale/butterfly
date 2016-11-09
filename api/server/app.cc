@@ -73,7 +73,7 @@ bool Config::parse_cmd(int argc, char **argv) {
          "Log level to use. LOG_LEVEL can be 'none', 'error' (default), " \
          "'warning', 'info' or 'debug'", "LOG_LEVEL"},
         {"version", 'V', 0, G_OPTION_ARG_NONE, &show_version,
-         "Show butterfly-server version and exit", nullptr},
+         "Show butterflyd version and exit", nullptr},
         {"socket-dir", 's', 0, G_OPTION_ARG_FILENAME, &socket_folder_cmd,
          "Create network sockets in specified directory", "DIR"},
         {"graph-cpu-core", 'u', 0, G_OPTION_ARG_STRING, &graph_core_id_cmd,
@@ -91,9 +91,9 @@ bool Config::parse_cmd(int argc, char **argv) {
                                             g_option_context_free);
 
     g_option_context_set_summary(context.get(),
-            "butterfly-server [OPTIONS]");
+            "butterflyd [OPTIONS]");
     g_option_context_set_description(context.get(), "example:\n"
-            "butterfly-server --dpdk-args \"-c0xF -n1 --socket-mem 64\" "
+            "butterflyd --dpdk-args \"-c0xF -n1 --socket-mem 64\" "
             "-i 43.0.0.1 -e tcp://127.0.0.1:8765 -s /tmp");
     g_option_context_add_main_entries(context.get(), entries, nullptr);
 
@@ -142,7 +142,7 @@ bool Config::parse_cmd(int argc, char **argv) {
     }
 
     if (!ret) {
-        std::cerr << "wrong usage, butterfly-server use -h" << std::endl;
+        std::cerr << "wrong usage, butterflyd use -h" << std::endl;
     }
     return ret;
 }

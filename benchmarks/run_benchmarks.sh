@@ -162,8 +162,8 @@ ssh_run $ip_b $port_b rpm -i $tmp/butterfly.rpm || \
 ssh_run $ip_b $port_b dpkg -i $tmp/butterfly.deb
 
 # check that remote machines has needed binaries
-ssh_run $ip_a $port_a butterfly-server -h &> /dev/null
-ssh_run $ip_b $port_b butterfly-server -h &> /dev/null
+ssh_run $ip_a $port_a butterflyd -h &> /dev/null
+ssh_run $ip_b $port_b butterflyd -h &> /dev/null
 
 ssh_run $ip_a $port_a qemu-system-x86_64 -h &> /dev/null
 ssh_run $ip_b $port_b qemu-system-x86_64 -h &> /dev/null

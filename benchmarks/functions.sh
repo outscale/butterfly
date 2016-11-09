@@ -30,7 +30,7 @@ function clean_hard {
     local port=$2
     local tmp=$3
     ssh_run $ip_a $port_a pkill -h &> /dev/null
-    ssh_run $ip $port pkill --signal 9 -f butterfly-server || true
+    ssh_run $ip $port pkill --signal 9 -f butterflyd || true
     ssh_run $ip $port pkill --signal 9 -f butterfly-client || true
     ssh_run $ip $port pkill --signal 9 -f qemu-system-x86_64 || true
     ssh_run $ip $port rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/* $tmp || true
@@ -43,9 +43,9 @@ function butterfly_start {
     local ip=$2
     local port=$3
     ssh_run $ip $port "echo dpdk-args=--no-shconf -c1 -n2 --socket-mem 64 > /tmp/butt-config.ini"
-    ssh_run $ip $port tmux new -d -s $(date +%Y-%m-%d-%H.%M.%S) \'butterfly-server -c /tmp/butt-config.ini -l debug -i 43.0.0.$id -s /tmp \'
+    ssh_run $ip $port tmux new -d -s $(date +%Y-%m-%d-%H.%M.%S) \'butterflyd -c /tmp/butt-config.ini -l debug -i 43.0.0.$id -s /tmp \'
     sleep 5
-    ssh_run $ip $port pgrep -f butterfly-server
+    ssh_run $ip $port pgrep -f butterflyd
 }
 
 function nic_add {
