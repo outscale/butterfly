@@ -86,6 +86,32 @@ function ssh_no_ping {
     set -e
 }
 
+function ssh_ping6 {
+    id1=$1
+    id2=$2
+    ssh_run $id1 ping6 2001:db8:2000:aff0::$id2 -c 1 &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ping6 VM $id1 ---> VM $id2 FAIL"
+        RETURN_CODE=1
+    else
+        echo "ping6 VM $id1 ---> VM $id2 OK"
+    fi
+}
+
+function ssh_no_ping6 {
+    id1=$1
+    id2=$2
+    set +e
+    ssh_run $id1 ping6 2001:db8:2000:aff0::$id2 -c 1 &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ping6 VM $id1 -/-> VM $id2 OK"
+    else
+        echo "ping6 VM $id1 -/-> VM $id2 FAIL"
+        RETURN_CODE=1
+    fi
+    set -e
+}
+
 function ssh_iperf_tcp {
     id1=$1
     id2=$2
@@ -164,7 +190,7 @@ function ssh_iperf3_udp {
     set -e
 }
 
-function ssd_connection_tests_internal {
+function ssh_connection_tests_internal {
     protocol=$1
     id1=$2
     id2=$3
@@ -172,18 +198,27 @@ function ssd_connection_tests_internal {
     proto_cmd=""
 
     if [ "$protocol" == "udp" ]; then
-	proto_cmd="-u"
+	proto_cmd="-4 -u"
     elif [ "$protocol" == "tcp" ]; then
-	proto_cmd=""
+	proto_cmd="-4"
+    elif [ "$protocol" == "udp6" ]; then
+	proto_cmd="-6 -u"
+    elif [ "$protocol" == "tcp6" ]; then
+	proto_cmd="-6"
     else
 	echo -e "protocol $protocol not supported by nic_add_port_open"
 	RETURN_CODE=1
 	return $RETURN_CODE
     fi
 
-    ssh_run_background $id2 "nc $proto_cmd -lp  $port > /tmp/test"
+    ssh_run_background $id2 "nc $proto_cmd -lp $port > /tmp/test"
     sleep 0.4
-    ssh_run_background $id1 "echo 'this message is from vm $id1' | nc $proto_cmd 42.0.0.$id2 $port"
+    if [ "$protocol" == "udp6" ] || [ "$protocol" == "tcp6" ]; then
+	ssh_run_background $id1 "echo 'this message is from vm $id1' | nc $proto_cmd 2001:db8:2000:aff0::$id2 $port"
+    else
+	ssh_run_background $id1 "echo 'this message is from vm $id1' | nc $proto_cmd 42.0.0.$id2 $port"
+    fi
+
     return 0
 }
 
@@ -217,7 +252,7 @@ function ssh_connection_test {
     port=$4
 
     set +e
-    if [ $( ssd_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
+    if [ $( ssh_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
 	return
     fi
 
@@ -240,7 +275,7 @@ function ssh_no_connection_test {
     port=$4
 
     set +e
-    if [  $( ssd_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
+    if [  $( ssh_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
 	return
     fi
     ssh_run $id2 [ -s "/tmp/test" ]
@@ -325,6 +360,11 @@ function qemu_start {
     else
         ssh_run $id ip addr add 42.0.0.$id/24 dev ens4
     fi
+
+    ssh_run $id ip -6 addr add 2001:db8:2000:aff0::$id/64 dev ens4	
+    #install openbsd-netcat
+    ssh_run $id pacman -Rs gnu-netcat --noconfirm &>/dev/null
+    ssh_run $id pacman -Syy community/openbsd-netcat --noconfirm &>/dev/null
 }
 
 function qemu_stop {
@@ -476,6 +516,45 @@ function nic_add {
     fi
 }
 
+function nic_add6 {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    sg_list=${@:4}
+
+    f=/tmp/butterfly-client.req
+    echo "[butterfly-$but_id] add nic(6) $nic_id with vni $vni"
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: \"nic-$nic_id\"
+        mac: \"52:54:00:12:34:0$nic_id\"
+        vni: $vni
+        ip: \"2001:db8:2000:aff0::$nic_id\"
+        ip_anti_spoof: true" > $f
+    for i in $sg_list; do
+	echo "        security_group: \"$i\"" >> $f
+    done
+    echo "
+      }
+    }
+  }
+}
+" >> $f
+
+    request $but_id $f
+    sleep 0.3
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+        clean_all
+        exit 1
+    fi
+}
+
 function nic_del {
     but_id=$1
     nic_id=$2
@@ -518,6 +597,24 @@ function sg_rule_add_all_open {
     }
   }
 }
+messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: -1
+          cidr {
+            address: \"0::\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
 " > $f
     request $but_id $f
 }
@@ -552,6 +649,172 @@ function sg_rule_add_port_open {
           cidr {
             address: \"0.0.0.0\"
             mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          cidr {
+            address: \"0::\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function sg_rule_add_ip_and_port {
+    protocol=$1
+    but_id=$2
+    ip=$3
+    mask_size=$4
+    port=$5
+    sg=$6
+    echo "[butterfly-$but_id] add rule $protocol port $port ip $ip/$mask_size in $sg"
+    if [ "$protocol" == "tcp" ]; then
+	protocol=6
+    elif [ "$protocol" == "udp" ]; then
+	protocol=17
+    else
+	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
+	RETURN_CODE=1
+    fi
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          cidr {
+            address: \"$ip\"
+            mask_size: $mask_size
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function sg_rule_del_ip_and_port {
+    protocol=$1
+    but_id=$2
+    ip=$3
+    mask_size=$4
+    port=$5
+    sg=$6
+    echo "[butterfly-$but_id] del rule $protocol port $port ip $ip/$mask_size in $sg"
+    if [ "$protocol" == "tcp" ]; then
+	protocol=6
+    elif [ "$protocol" == "udp" ]; then
+	protocol=17
+    else
+	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
+	RETURN_CODE=1
+    fi
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_del {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          cidr {
+            address: \"$ip\"
+            mask_size: $mask_size
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function sg_rule_add_ip {
+    but_id=$1
+    ip=$2
+    mask_size=$3
+    sg=$4
+    
+    echo "[butterfly-$but_id] add rule to $sg: allow $ip/$mask_size on all protocols"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: -1
+          cidr {
+            address: \"$ip\"
+            mask_size: $mask_size
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function sg_rule_del_ip {
+    but_id=$1
+    ip=$2
+    mask_size=$3
+    sg=$4
+    
+    echo "[butterfly-$but_id] delete rule on $sg: allow $ip/$mask_size on all protocols"
+    f=/tmp/butterfly-client.req
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_del {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: -1
+          cidr {
+            address: \"$ip\"
+            mask_size: $mask_size
           }
         }
       }
@@ -805,6 +1068,24 @@ function sg_rule_del_all_open {
     }
   }
 }
+messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: -1
+          cidr {
+            address: \"0::\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
 " > $f
     request $but_id $f
 }
@@ -839,6 +1120,26 @@ function sg_rule_del_port_open {
           port_end: $port
           cidr {
             address: \"0.0.0.0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_del {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: $protocol
+          port_start: $port
+          port_end: $port
+          cidr {
+            address: \"0::\"
             mask_size: 0
           }
         }
@@ -902,7 +1203,60 @@ function sg_rule_del_icmp {
 }
 " > $f
     request $but_id $f
+}
 
+function sg_rule_add_icmp6 {
+    but_id=$1
+    sg=$2
+    echo "[butterfly-$but_id] add rule allowing icmp6 from $sg"
+    f=/tmp/butterfly-client.req
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_add {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: 58
+          cidr {
+            address: \"::0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
+}
+
+function sg_rule_del_icmp6 {
+    but_id=$1
+    sg=$2
+    echo "[butterfly-$but_id] delete rule allowing icmp6 from $sg"
+    f=/tmp/butterfly-client.req
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      sg_rule_del {
+        sg_id: \"$sg\"
+        rule {
+          direction: INBOUND
+          protocol: 58
+          cidr {
+            address: \"0::0\"
+            mask_size: 0
+          }
+        }
+      }
+    }
+  }
+}
+" > $f
+    request $but_id $f
 }
 
 function sg_member_del {
