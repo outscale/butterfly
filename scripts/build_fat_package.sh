@@ -60,11 +60,11 @@ mkdir opt/
 mkdir -p etc/butterfly/
 mkdir -p usr/bin/
 cp -rv ../fat* opt/
-echo '#!/bin/bash' > usr/bin/butterfly-client
+echo '#!/bin/bash' > usr/bin/butterfly
 echo '#!/bin/bash' > usr/bin/butterflyd
-chmod +x usr/bin/butterfly-client
+chmod +x usr/bin/butterfly
 chmod +x usr/bin/butterflyd
-echo '/opt/fat-butterfly-client/butterfly-client.sh $@' >> usr/bin/butterfly-client
+echo '/opt/fat-butterfly/butterfly.sh $@' >> usr/bin/butterfly
 echo '/opt/fat-butterflyd/butterflyd.sh $@' >> usr/bin/butterflyd
 
 cp $BUTTERFLY_ROOT/api/server/butterflyd.ini etc/butterfly/

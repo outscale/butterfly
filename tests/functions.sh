@@ -362,7 +362,7 @@ function request {
     but_id=$1
     f=$2
 
-    $BUTTERFLY_BUILD_ROOT/api/client/butterfly-client -e tcp://127.0.0.1:876$but_id -i $f
+    $BUTTERFLY_BUILD_ROOT/api/client/butterfly -e tcp://127.0.0.1:876$but_id -i $f
     ret=$?
     rm $f
     if [ ! "$ret" == "0" ]; then
@@ -378,7 +378,7 @@ function nic_add {
     vni=$3
     sg_list=${@:4}
 
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
     echo "[butterfly-$but_id] add nic $nic_id with vni $vni"
 
     echo -e "messages {
@@ -414,7 +414,7 @@ function nic_add {
 function nic_del {
     but_id=$1
     nic_id=$2
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
     echo "[butterfly-$but_id] delete nic $nic_id"
 
     echo -e "messages {
@@ -433,7 +433,7 @@ function sg_rule_add_all_open {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] add rule all open in $sg"
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -471,7 +471,7 @@ function sg_rule_add_port_open {
 	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
 	RETURN_CODE=1
     fi
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -512,7 +512,7 @@ function sg_rule_add_with_sg_member {
 	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
 	RETURN_CODE=1
     fi
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -550,7 +550,7 @@ function sg_rule_del_with_sg_member {
 	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
 	RETURN_CODE=1
     fi
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -578,7 +578,7 @@ function sg_member_add {
     sg=$2
     ip_member=$3
     echo "[butterfly-$but_id] add member $ip_member in $sg"
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -600,7 +600,7 @@ function nic_set_sg {
     nic_id=$2
     sg_list=${@:3}
     echo "[butterfly-$but_id] update nic's security groups of $nic_id to: $sg_list"
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -631,7 +631,7 @@ function remove_sg_from_nic {
     but_id=$1
     nic_id=$2
     echo "[butterfly-$but_id] remove sg from nic $nic_id"
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -653,7 +653,7 @@ function sg_add {
     sg=$1
     but_id=$2
     echo "[butterfly-$but_id] add $sg"
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -673,7 +673,7 @@ function sg_del {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete $sg"
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -706,7 +706,7 @@ function sg_rule_del_all_open {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete rule all open from $sg"
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -745,7 +745,7 @@ function sg_rule_del_port_open {
 	echo -e "protocol $protocol not supported by sg_rule_del_port_open"
 	RETURN_CODE=1
     fi
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -776,7 +776,7 @@ function sg_member_del {
     sg=$2
     ip_member=$3
     echo "[butterfly-$but_id] delete member $ip_member from $sg"
-    f=/tmp/butterfly-client.req
+    f=/tmp/butterfly.req
 
     echo -e "messages {
   revision: 0
@@ -806,7 +806,7 @@ function clean_pcaps {
     sudo rm -rf /tmp/butterfly-*.pcap
 }
 function clean_all {
-    sudo killall -9 butterflyd butterfly-client qemu-system-x86_64 socat &> /dev/null || true
+    sudo killall -9 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null || true
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
 }

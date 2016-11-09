@@ -52,7 +52,7 @@ bool Options::parse(int argc, char **argv) {
         {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
          "show details of on each operations", NULL},
         {"version", 'V', 0, G_OPTION_ARG_NONE, &version,
-         "Show butterfly-client version and exit",
+         "Show butterfly version and exit",
          NULL},
         { NULL }
     };
