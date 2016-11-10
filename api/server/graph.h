@@ -88,7 +88,7 @@ class Graph {
     bool started;
 
     /* Define a smart pointer for bricks. */
-    typedef std::shared_ptr<struct pg_brick> Brick;
+    typedef std::shared_ptr<struct pg_brick> BrickShrPtr;
 
     /* All possible structure to pass through the queue.
      * This should ONLY concern actions who needs the graph to be stopped.
@@ -160,17 +160,17 @@ class Graph {
     void exit();
     void vhost_start();
     void vhost_stop();
-    void link(Brick w, Brick e);
-    void unlink(Brick b);
-    void add_vni(Brick vtep, Brick neighbor, uint32_t vni);
+    void link(BrickShrPtr w, BrickShrPtr e);
+    void unlink(BrickShrPtr b);
+    void add_vni(BrickShrPtr vtep, BrickShrPtr neighbor, uint32_t vni);
     void update_poll();
-    void fw_reload(Brick b);
+    void fw_reload(BrickShrPtr b);
     void fw_new(const char *name,
                 uint32_t west_max,
                 uint32_t east_max,
                 uint64_t flags,
                 struct pg_brick **result);
-    void brick_destroy(Brick b);
+    void brick_destroy(BrickShrPtr b);
     void wait_empty_queue();
 
     /** Threaded function to poll graph. */
@@ -218,16 +218,16 @@ class Graph {
      * Try to link @eastBrick to @westBrick, and add @sniffer betwin those
      * bricks
      */
-    bool linkAndStalk(Graph::Brick eastBrick, Graph::Brick westBrick,
-            Graph::Brick sniffer);
+    bool linkAndStalk(BrickShrPtr eastBrick, BrickShrPtr westBrick,
+                      BrickShrPtr sniffer);
 
     /* VM branch. */
     struct GraphNic {
        std::string id;
-       Brick firewall;
-       Brick antispoof;
-       Brick vhost;
-       Brick sniffer;
+       BrickShrPtr firewall;
+       BrickShrPtr antispoof;
+       BrickShrPtr vhost;
+       BrickShrPtr sniffer;
        FILE *pcap_file;
        // If we should add this branch or not to our poll updates
        bool enable;
@@ -237,15 +237,15 @@ class Graph {
     struct GraphVni {
        uint32_t vni;
        /* Switch brick */
-       Brick sw;
+       BrickShrPtr sw;
        /* nic id -> nic branch */
        std::map<std::string, struct GraphNic> nics;
     };
 
     /* Global branch. */
-    Brick nic_;
-    Brick vtep_;
-    Brick sniffer_;
+    BrickShrPtr nic_;
+    BrickShrPtr vtep_;
+    BrickShrPtr sniffer_;
     FILE *pcap_file_;
     /* vni -> vni branch */
     std::map<uint32_t, struct GraphVni> vnis_;
