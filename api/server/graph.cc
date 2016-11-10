@@ -99,6 +99,7 @@ void Graph::stop() {
 
 bool Graph::start(std::string dpdk_args) {
     struct ether_addr mac;
+    uint32_t useless, nic_capa_tx;
 
     // Start packetgraph
     if (!app::pg_start(dpdk_args)) {
@@ -135,6 +136,12 @@ bool Graph::start(std::string dpdk_args) {
         }
         pg_nic_get_mac(nic_.get(), &mac);
     }
+    pg_nic_capabilities(nic_.get(), &useless, &nic_capa_tx);
+    if (!(nic_capa_tx & PG_NIC_TX_OFFLOAD_TCP_TSO)) {
+	    pg_vhost_disable(VIRTIO_NET_F_HOST_TSO4);
+	    pg_vhost_disable(VIRTIO_NET_F_HOST_TSO6);
+    }
+	    
 
     // Create sniffer brick
     pcap_file_ = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
