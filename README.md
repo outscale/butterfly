@@ -150,21 +150,19 @@ Machines:
 - CPU: AMD Opteron(tm) Processor 3350 HE
 - All details for [host 1](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_1.txt) and [host 2](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_2.txt) (same)
 
-Results (aug 25 2016):
+Results (nov 10 2016):
 ```
                      |  VMs on same host  | VMs on remote host |
  --------------------+--------------------+--------------------|
-| Ping (min/average) |  0.082ms / 0.107ms |  0.167ms / 0.191ms |
-| TCP                |     4.3 Gbits/s    |     3.5 Gbits/s    |
-| UDP                |     1.5 Gbits/s    |     1.7 Gbits/s    |
+| Ping (min/average) |  0.067ms / 0.110ms |  0.157ms / 0.169ms |
+| TCP                |    15.9 Gbits/s    |     3.0 Gbits/s    |
+| UDP                |     1.4 Gbits/s    |     1.7 Gbits/s    |
 ```
 
 Notes:
-- We can already make more than 10GB/s between two VM on the same host by
-enabling virtio-net offloading.
+- We are working on accelerating inter-host performances.
+- UDP is really _bad_ at the moment, working on it.
 - We can get even faster with zero copy in vhost-user (in future DPDK versions).
-- We are working on hardware offloading, we should be able to run at line rate
-(10Gbits/s) between two butterfly on different hosts.
 - We can get faster by embedding a more recent libc (`make package-fat`).
 - If you try to run some benchmarks, you may want to configure your [CPU throttling](https://en.wikipedia.org/wiki/Dynamic_frequency_scaling). On Centos7, check [cpufreq governors page](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Power_Management_Guide/cpufreq_governors.html).
 
