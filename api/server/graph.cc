@@ -43,8 +43,9 @@ Graph::~Graph(void) {
     stop();
 }
 
-bool Graph::linkAndStalk(Graph::Brick eastBrick, Graph::Brick westBrick,
-        Graph::Brick sniffer) {
+bool Graph::linkAndStalk(Graph::BrickShrPtr eastBrick,
+                         Graph::BrickShrPtr westBrick,
+                         Graph::BrickShrPtr sniffer) {
     if (app::config.packet_trace) {
         if (pg_brick_chained_links(&app::pg_error, eastBrick.get(),
                                    sniffer.get(), westBrick.get()) < 0) {
@@ -118,13 +119,13 @@ bool Graph::start(std::string dpdk_args) {
                        std::to_string(app::config.dpdk_port));
         return false;
     }
-    nic_ = Brick(pg_nic_new_by_id(
+    nic_ = BrickShrPtr(pg_nic_new_by_id(
         ("port-" + std::to_string(app::config.dpdk_port)).c_str(),
         app::config.dpdk_port, &app::pg_error), pg_brick_destroy);
     if (nic_.get() == NULL) {
         PG_WARNING_(app::pg_error);
         // Try to create a pcap interface instead
-        nic_ = Brick(pg_tap_new("tap", NULL, &app::pg_error),
+        nic_ = BrickShrPtr(pg_tap_new("tap", NULL, &app::pg_error),
                      pg_brick_destroy);
         if (nic_.get() == NULL) {
             LOG_ERROR_("cannot create tap interface");
@@ -152,7 +153,7 @@ bool Graph::start(std::string dpdk_args) {
     pcap_file_ = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
                         "-main.pcap").c_str(), "w");
     std::string sniffer_name = "main-sniffer-" + std::to_string(getpid());
-    sniffer_ = Brick(pg_print_new(sniffer_name.c_str(), pcap_file_,
+    sniffer_ = BrickShrPtr(pg_print_new(sniffer_name.c_str(), pcap_file_,
                                   PG_PRINT_FLAG_PCAP | PG_PRINT_FLAG_CLOSE_FILE,
                                   NULL, &app::pg_error),
                     pg_brick_destroy);
@@ -164,7 +165,7 @@ bool Graph::start(std::string dpdk_args) {
     // Create vtep brick
     uint32_t ipp;
     inet_pton(AF_INET, app::config.external_ip.c_str(), &ipp);
-    vtep_ = Brick(pg_vtep_new("vxlan", 1, 50, WEST_SIDE, ipp, mac,
+    vtep_ = BrickShrPtr(pg_vtep_new("vxlan", 1, 50, WEST_SIDE, ipp, mac,
                               PG_VTEP_DST_PORT, ALL_OPTI, &app::pg_error),
                   pg_brick_destroy);
     if (vtep_.get() == NULL) {
@@ -419,11 +420,11 @@ std::string Graph::nic_add(const app::Nic &nic) {
         LOG_ERROR_("Firewall creation failed");
         return "";
     }
-    gn.firewall = Brick(tmp_fw, pg_fake_destroy);
+    gn.firewall = BrickShrPtr(tmp_fw, pg_fake_destroy);
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.ether_addr_octet);
-    gn.antispoof = Brick(pg_antispoof_new(name.c_str(), WEST_SIDE, &mac,
+    gn.antispoof = BrickShrPtr(pg_antispoof_new(name.c_str(), WEST_SIDE, &mac,
                                           &app::pg_error),
                          pg_brick_destroy);
     if (!gn.antispoof) {
@@ -442,7 +443,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     }
 
     name = "vhost-" + gn.id;
-    gn.vhost = Brick(pg_vhost_new(name.c_str(), 1, 1, EAST_SIDE,
+    gn.vhost = BrickShrPtr(pg_vhost_new(name.c_str(), 1, 1, EAST_SIDE,
                                   &app::pg_error),
                      pg_brick_destroy);
     if (!gn.vhost) {
@@ -452,7 +453,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "sniffer-" + gn.id;
     gn.pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) + "-" +
                           gn.id + ".pcap").c_str(), "w");
-    gn.sniffer = Brick(pg_print_new(name.c_str(), gn.pcap_file,
+    gn.sniffer = BrickShrPtr(pg_print_new(name.c_str(), gn.pcap_file,
                                     PG_PRINT_FLAG_PCAP |
                                     PG_PRINT_FLAG_CLOSE_FILE,
                                     NULL, &app::pg_error),
@@ -483,15 +484,15 @@ std::string Graph::nic_add(const app::Nic &nic) {
         // - re-link the first firewall to it's antispoof
         // - link the second firewall to the switch
         name = "switch-" + std::to_string(nic.vni);
-        vni.sw = Brick(pg_switch_new(name.c_str(), 1, 30, EAST_SIDE,
+        vni.sw = BrickShrPtr(pg_switch_new(name.c_str(), 1, 30, EAST_SIDE,
                                      &app::pg_error), pg_brick_destroy);
         if (!vni.sw) {
             PG_ERROR_(app::pg_error);
             return "";
         }
 
-        Brick fw1 = vni.nics.begin()->second.firewall;
-        Brick as1 = vni.nics.begin()->second.antispoof;
+        BrickShrPtr fw1 = vni.nics.begin()->second.firewall;
+        BrickShrPtr as1 = vni.nics.begin()->second.antispoof;
         unlink(fw1);
         link(vtep_, vni.sw);
         add_vni(vtep_, vni.sw, vni.vni);
@@ -639,7 +640,7 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
         return;
     }
 
-    Brick &antispoof = nic_it->second.antispoof;
+    BrickShrPtr &antispoof = nic_it->second.antispoof;
     if (enable) {
         if (nic.ip_list.size() == 0) {
             LOG_ERROR_("cannot enable ARP antispoof with no given ip for nic " +
@@ -766,7 +767,7 @@ void Graph::fw_update(const app::Nic &nic) {
     auto itnic = itvni->second.nics.find(nic.id);
     if (itnic == itvni->second.nics.end())
         return;
-    Brick &fw = itnic->second.firewall;
+    BrickShrPtr &fw = itnic->second.firewall;
 
     // For each security groups, build rules inside a BIG one
     std::string in_rules;
@@ -867,7 +868,7 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
         app::log.error(m);
         return;
     }
-    Brick &fw = itnic->second.firewall;
+    BrickShrPtr &fw = itnic->second.firewall;
 
     // Add rule & reload firewall
     if (pg_firewall_rule_add(fw.get(), r.c_str(), WEST_SIDE,
@@ -903,7 +904,7 @@ void Graph::vhost_stop() {
     g_async_queue_push(queue_, a);
 }
 
-void Graph::link(Brick w, Brick e) {
+void Graph::link(BrickShrPtr w, BrickShrPtr e) {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = LINK;
     a->link.w = w.get();
@@ -911,14 +912,14 @@ void Graph::link(Brick w, Brick e) {
     g_async_queue_push(queue_, a);
 }
 
-void Graph::unlink(Brick b) {
+void Graph::unlink(BrickShrPtr b) {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = UNLINK;
     a->unlink.b = b.get();
     g_async_queue_push(queue_, a);
 }
 
-void Graph::fw_reload(Brick b) {
+void Graph::fw_reload(BrickShrPtr b) {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = FW_RELOAD;
     a->fw_reload.firewall = b.get();
@@ -940,14 +941,14 @@ void Graph::fw_new(const char *name,
     g_async_queue_push(queue_, a);
 }
 
-void Graph::brick_destroy(Brick b) {
+void Graph::brick_destroy(BrickShrPtr b) {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = BRICK_DESTROY;
     a->brick_destroy.b = b.get();
     g_async_queue_push(queue_, a);
 }
 
-void Graph::add_vni(Brick vtep, Brick neighbor, uint32_t vni) {
+void Graph::add_vni(BrickShrPtr vtep, BrickShrPtr neighbor, uint32_t vni) {
     uint32_t multicast_ip = build_multicast_ip(vni);
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = ADD_VNI;
