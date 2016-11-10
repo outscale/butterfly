@@ -118,7 +118,7 @@ bool Graph::start(std::string dpdk_args) {
     if (nic_.get() == NULL) {
         LOG_WARNING_("cannot use DPDK port 0");
         // Try to create a pcap interface instead
-        nic_ = Brick(pg_tap_new("port-0", NULL, &app::pg_error),
+        nic_ = Brick(pg_tap_new("tap", NULL, &app::pg_error),
                      pg_brick_destroy);
         if (nic_.get() == NULL) {
             LOG_ERROR_("cannot create tap interface");
