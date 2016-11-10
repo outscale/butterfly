@@ -27,74 +27,88 @@
 #include "api/protocol/message.pb.h"
 #include "api/version.h"
 
-Options::Options() {
-    endpoint = NULL;
-    input = NULL;
-    output = NULL;
-    std_out = false;
-    all_infos = false;
-    version = false;
+GlobalOptions::GlobalOptions() {
+    endpoint = DEFAULT_ENDPOINT;
     verbose = false;
+    version = false;
+    help = false;
 }
 
-bool Options::parse(int argc, char **argv) {
-    static GOptionEntry entries[] = {
-        {"endpoint", 'e', 0, G_OPTION_ARG_STRING, &endpoint,
-         "ZeroMQ endpoint to use (e.g. tcp://myhost:42)", "URL"},
-        {"input", 'i', 0, G_OPTION_ARG_FILENAME, &input,
-         "JSON description of message to send", "FILE"},
-        {"output", 'o', 0, G_OPTION_ARG_FILENAME, &output,
-         "JSON description of response message in a file", "FILE"},
-        {"stdout", 's', 0, G_OPTION_ARG_NONE, &std_out,
-         "JSON description of response message on stdout", NULL},
-        {"all-infos", 'a', 0, G_OPTION_ARG_NONE, &all_infos,
-         "Ask a summarized view of butterfly server", NULL},
-        {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
-         "show details of on each operations", NULL},
-        {"version", 'V', 0, G_OPTION_ARG_NONE, &version,
-         "Show butterfly version and exit",
-         NULL},
-        { NULL }
-    };
-    GOptionContext *context = g_option_context_new("");
-    g_option_context_add_main_entries(context, entries, NULL);
-
-    GError *error = NULL;
-    if (!g_option_context_parse(context, &argc, &argv, &error)) {
-        std::cout << error->message << std::endl;
-        return false;
+void GlobalOptions::parse(int argc, char **argv) {
+    for (int i = 1; i < argc; i++) {
+        if (i + 1 < argc &&
+            (string(argv[i]) == "--endpoint" ||
+             string(argv[i]) == "-e"))
+            endpoint = string(argv[i + 1]);
+        else if (string(argv[i]) == "-v" ||
+                 string(argv[i]) == "--verbose")
+            verbose = true;
+        else if (string(argv[i]) == "-V" ||
+                 string(argv[i]) == "--version")
+            version = true;
+        else if (string(argv[i]) == "-h" ||
+                 string(argv[i]) == "--help")
+            help = true;
     }
-    return true;
 }
 
-bool Options::missing() {
-    if (endpoint == NULL)
-        return true;
-    return all_infos == false && input == NULL;
+void global_parameter_help(void) {
+        cout << endl <<
+        "global options:" << endl <<
+        "    --endpoint, -e  endpoint to use (default: " <<
+        DEFAULT_ENDPOINT << ")" << endl <<
+        "    --verbose, -v   show details of each operation" << endl;
+}
+
+static void help(void) {
+    cout <<
+        "usage: butterfly [subcommands] [options...]" << endl << endl <<
+        "butterfly subcommands:" << endl <<
+        "    nic       manage virtual interfaces" << endl <<
+        "    sg        manage security groups" << endl <<
+        "    status    show informations about butterfly" << endl <<
+        "    shutdown  ask butterflyd to stop" << endl <<
+        "    request   send a protobuf request to butterfly" << endl <<
+        endl <<
+        "options:" << endl <<
+        "    --version, -V   show butterfly version" << endl <<
+        "    --help, -h      show this help" << endl;
+        global_parameter_help();
 }
 
 int main(int argc, char **argv) {
-    Options options;
-    if (!options.parse(argc, argv))
-        return 0;
+    GlobalOptions options;
+    options.parse(argc, argv);
 
-    // Does user asked for version ?
     if (options.version) {
-        std::cout << VERSION_INFO <<
-        std::endl;
+        cout << VERSION_INFO << endl;
         return 0;
     }
 
-    // Check missing arguments
-    if (options.missing()) {
-        std::cerr << "Some arguments are missing, use -h or --help for " \
-        "more informations" << std::endl;
+    if (options.help) {
+        help();
+        return 0;
+    }
+
+    if (argc < 2) {
+        help();
         return 1;
     }
 
-    if (options.all_infos)
-        return all_infos(options);
-    else
-        return request_from_human(options);
+    string cmd = string(argv[1]);
+    if (cmd == "nic") {
+        return sub_nic(argc, argv, options);
+    } else if (cmd == "sg") {
+        return sub_sg(argc, argv, options);
+    } else if (cmd == "status") {
+        return sub_status(argc, argv, options);
+    } else if (cmd == "shutdown") {
+        return sub_shutdown(argc, argv, options);
+    } else if (cmd == "request") {
+        return sub_request(argc, argv, options);
+    } else {
+        cerr << "invalid subcommand " << cmd << endl;
+        help();
+        return 1;
+    }
 }
-

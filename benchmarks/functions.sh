@@ -89,7 +89,7 @@ messages {
   }
 }" > $f
     remote_cp $ip $port $f $f
-    ssh_run $ip $port butterfly -e tcp://$ip:9999 -i $f
+    ssh_run $ip $port butterfly request $f -e tcp://$ip:9999
 }
 
 function ssh_vm {
