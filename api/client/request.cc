@@ -15,36 +15,68 @@
  * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <glib.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/stubs/common.h>
-#include <zmqpp/zmqpp.hpp>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <iostream>
 #include "api/client/client.h"
-#include "api/protocol/message.pb.h"
-#include "api/version.h"
+
+RequestOptions::RequestOptions() {
+    to_stdout = false;
+}
+
+void RequestOptions::parse(int argc, char **argv) {
+    for (int i = 1; i < argc; i++) {
+        if (string(argv[i]) == "--stdout")
+            to_stdout = true;
+    }
+}
+
+static void help(void) {
+    cout <<
+        "usage: butterfly request REQUEST_FILE [options...]" << endl << endl <<
+        "options:" << endl <<
+        "    --stdout   prints protobuf response to stdout" << endl;
+        global_parameter_help();
+}
+
+int sub_request(int argc, char **argv, const GlobalOptions &options) {
+    if (argc <= 2) {
+        help();
+        return 1;
+    }
+    string request_file_path = string(argv[2]);
+    RequestOptions r_options;
+    r_options.parse(argc, argv);
+
+    ifstream input_file(request_file_path);
+    stringstream ss;
+    ss << input_file.rdbuf();
+    string input_text = ss.str();
+
+    if (input_text.length() == 0) {
+        cerr << "failed to open " << request_file_path << endl;
+        return 1;
+    }
+    proto::Messages res;
+    return request(input_text, &res, options, r_options.to_stdout);
+}
 
 int request(const proto::Messages &req,
             proto::Messages *res,
-            const Options &options) {
+            const GlobalOptions &options,
+            bool response_to_stdout) {
     // Print protobuf message
     if (options.verbose) {
-        std::string human_message;
+        string human_message;
         google::protobuf::TextFormat::PrintToString(req, &human_message);
-        std::cout << "#########################" << std::endl;
-        std::cout << "# Message to be sent:" << std::endl;
-        std::cout << human_message << std::endl;
-        std::cout << "#########################" << std::endl;
+        cout << "#########################" << endl;
+        cout << "# Message to be sent:" << endl;
+        cout << human_message << endl;
+        cout << "#########################" << endl;
     }
 
     // Convert protobuf to string (data)
-    std::string str_request;
+    string str_request;
     if (!req.SerializeToString(&str_request)) {
-        std::cerr << "Error, cannot convert protobuf to string before sending"
-        << std::endl;
+        cerr << "Error, cannot convert protobuf to string before sending"
+        << endl;
         return 1;
     }
 
@@ -53,65 +85,102 @@ int request(const proto::Messages &req,
     zmqpp::socket socket(context, zmqpp::socket_type::request);
     socket.connect(options.endpoint);
     if (!socket.send(str_request)) {
-        std::cerr <<  "Error, cannot send message to endpoint" << std::endl;
+        cerr <<  "Error, cannot send message to endpoint" << endl;
         return 1;
     }
 
     // Get ZeroMQ response
-    std::string str_response;
+    string str_response;
     if (!socket.receive(str_response)) {
-        std::cerr <<  "Error, cannot receive message from endpoint" <<
-        std::endl;
+        cerr <<  "Error, cannot receive message from endpoint" <<
+        endl;
         return 1;
     }
 
     // Convert response to protobuf
     if (!res->ParseFromString(str_response)) {
-        std::cerr << "Error while decoding response" << std::endl;
+        cerr << "Error while decoding response" << endl;
         return 1;
     }
 
     // Convert protobuf to human readable string
-    std::string human_message;
+    string human_message;
     google::protobuf::TextFormat::PrintToString(*res, &human_message);
 
     // Print response
     if (options.verbose) {
-        std::cout << "#########################" << std::endl;
-        std::cout << "# Received message:" << std::endl;
-        std::cout << human_message << std::endl;
-        std::cout << "#########################" << std::endl;
-    }
-
-    // Write json data to stdout if no output has been defined
-    if (options.std_out) {
-        std::cout << human_message;
-        return 0;
-    }
-
-    // Write json data to file
-    if (options.output) {
-        std::ofstream out(options.output);
-        out << human_message;
-        out.close();
+        cout << "#########################" << endl;
+        cout << "# Received message:" << endl;
+        cout << human_message << endl;
+        cout << "#########################" << endl;
+    } else if (response_to_stdout) {
+        cout << human_message;
     }
     return 0;
 }
 
-int request_from_human(const Options &options) {
-    // Read input data
-    std::ifstream input_file(options.input);
-    std::stringstream ss;
-    ss << input_file.rdbuf();
-    std::string input_text = ss.str();
+int request(const string &req,
+            proto::Messages *res,
+            const GlobalOptions &options,
+            bool response_to_stdout) {
+    // Convert input string to protobuf
+    proto::Messages proto_req;
+    if (!google::protobuf::TextFormat::ParseFromString(req, &proto_req)) {
+        cerr <<  "Error while encoding input to protobuf" << endl;
+        return 1;
+    }
+    return request(proto_req, res, options, response_to_stdout);
+}
 
-    // Convert input strinf to protobuf
-    proto::Messages req;
-    if (!google::protobuf::TextFormat::ParseFromString(input_text, &req)) {
-        std::cerr <<  "Error while decoding input";
+int check_request_result(const proto::Messages &res) {
+    if (res.messages_size() == 0) {
+        cerr << "error: no message in response" << endl;
         return 1;
     }
 
-    proto::Messages res;
-    return request(req, &res, options);
+    if (res.messages(0).has_error()) {
+        cerr << "error in response: ";
+        if (!res.messages(0).error().has_code())
+            cerr << "no error code";
+        else
+            cerr << Error_Code_Name(res.messages(0).error().code());
+        cerr << endl;
+        return 1;
+    }
+
+    if (res.messages(0).has_message_0()) {
+        MessageV0 res_0 = res.messages(0).message_0();
+        if (!res_0.has_response()) {
+            cerr << "error: no response in MessageV0" << endl;
+            return 1;
+        } else if (!res_0.response().status().status()) {
+            cerr << "error in response";
+            if (res_0.response().status().has_error()) {
+                MessageV0_Error e = res_0.response().status().error();
+                if (e.has_description()) {
+                    cerr << endl << "description: " << e.description() << endl;
+                } else if (e.has_err_no()) {
+                    cerr << endl << "errno: " << to_string(e.err_no()) <<
+                        endl;
+                } else if (e.has_file()) {
+                    cerr << endl << "file: " << e.file() << endl;
+                } else if (e.has_line()) {
+                    cerr << endl << "errno: " << to_string(e.line()) <<
+                        endl;
+                } else if (e.has_curs_pos()) {
+                    cerr << endl << "curs_pos: " <<
+                        to_string(e.curs_pos()) << endl;
+                } else if (e.has_function()) {
+                    cerr << endl << "function: " << e.function() << endl;
+                } else {
+                    cerr << " no details provided" << endl;
+                }
+            }
+            return 1;
+        }
+    } else {
+        cerr << "error: no message recognized in response" << endl;
+        return 1;
+    }
+    return 0;
 }

@@ -58,14 +58,13 @@ fi
 set -e
 # Prepare client to run
 output=/tmp/butterfly_test_api
-client_cmd="$client --endpoint=tcp://127.0.0.1:8765 -i $request_file -o $output -v"
 if [ -n "$learn_mode" ]; then
     output=$expected_response
-    client_cmd="$client --endpoint=tcp://127.0.0.1:8765 -i $request_file -o $output -v"
 fi
+client_cmd="$client request $request_file --stdout --endpoint tcp://127.0.0.1:8765"
 
 # Run client
-$client_cmd  &> client_out.txt &
+$client_cmd  > $output &
 client_pid=$!
 set +e
 kill -s 0 $client_pid &> /dev/null

@@ -18,28 +18,102 @@
 #ifndef API_CLIENT_CLIENT_H_
 #define API_CLIENT_CLIENT_H_
 
-#include <glib.h>
+#include <google/protobuf/text_format.h>
+#include <google/protobuf/stubs/common.h>
+#include <zmqpp/zmqpp.hpp>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <algorithm>
+#include <iomanip>
+#include <vector>
+#include "api/version.h"
 #include "api/protocol/message.pb.h"
 
-struct Options {
-    Options();
-    bool parse(int argc, char **argv);
-    bool missing();
-    gchar *endpoint;
-    gchar *input;
-    gchar *output;
-    gboolean std_out;
-    gchar *proto;
-    gboolean all_infos;
-    gboolean version;
-    gboolean verbose;
+#define DEFAULT_ENDPOINT "tcp://127.0.0.1:9999"
+
+using std::string;
+using std::vector;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::to_string;
+using std::exception;
+using std::ifstream;
+using std::stringstream;
+using std::setfill;
+using std::setw;
+using std::hex;
+using std::ostringstream;
+using std::hash;
+
+#define BUT_XSTR(s) BUT_STR(s)
+#define BUT_STR(s) #s
+#define PROTO_REV BUT_XSTR(PROTOS_REVISION)
+
+struct GlobalOptions {
+    GlobalOptions();
+    void parse(int argc, char **argv);
+    string endpoint;
+    bool version;
+    bool verbose;
+    bool help;
 };
 
-int request_from_human(const Options &options);
+struct RequestOptions {
+    RequestOptions();
+    void parse(int argc, char **argv);
+    bool to_stdout;
+};
 
+struct StatusOptions {
+    StatusOptions();
+    void parse(int argc, char **argv);
+    bool all;
+};
+
+struct NicAddOptions {
+    NicAddOptions();
+    int parse(int argc, char **argv);
+    vector<string> ips;
+    vector<string> sgs;
+    string mac;
+    string enable_antispoof;
+    string id;
+    string vni;
+};
+
+struct RuleAddOptions {
+    RuleAddOptions();
+    int parse(int argc, char **argv);
+    string sg;
+    string direction;
+    bool has_proto;
+    int proto;
+    bool has_port_start;
+    uint16_t port_start;
+    bool has_port_end;
+    uint16_t port_end;
+    string cidr;
+    string sg_members;
+};
+
+void global_parameter_help(void);
+int sub_sg(int argc, char **argv, const GlobalOptions &options);
+int sub_nic(int argc, char **argv, const GlobalOptions &options);
+int sub_status(int argc, char **argv, const GlobalOptions &options);
+int sub_shutdown(int argc, char **argv, const GlobalOptions &options);
+int sub_request(int argc, char **argv, const GlobalOptions &options);
+int sub_status(int argc, char **argv, const GlobalOptions &options);
 int request(const proto::Messages &request,
             proto::Messages *response,
-            const Options &options);
+            const GlobalOptions &options,
+            bool response_to_stdout);
+int request(const string &req,
+            proto::Messages *res,
+            const GlobalOptions &options,
+            bool response_to_stdout);
+int check_request_result(const proto::Messages &res);
 
-int all_infos(const Options &options);
 #endif  // API_CLIENT_CLIENT_H_

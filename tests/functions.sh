@@ -404,7 +404,7 @@ function request {
     but_id=$1
     f=$2
 
-    $BUTTERFLY_BUILD_ROOT/api/client/butterfly -e tcp://127.0.0.1:876$but_id -i $f
+    $BUTTERFLY_BUILD_ROOT/api/client/butterfly request $f -e tcp://127.0.0.1:876$but_id
     ret=$?
     rm $f
     if [ ! "$ret" == "0" ]; then
@@ -412,6 +412,22 @@ function request {
         clean_all
         exit 1
     fi
+}
+
+function cli {
+    but_id=$1
+    excepted_result=$2
+    opts=${@:3}
+    echo "[butterfly-$but_id] cli run $opts"
+    set +e
+    $BUTTERFLY_BUILD_ROOT/api/client/butterfly $opts -e tcp://127.0.0.1:876$but_id &> $BUTTERFLY_BUILD_ROOT/cli_output
+    if [ ! "$?" == "$excepted_result" ]; then
+        cat $BUTTERFLY_BUILD_ROOT/cli_output
+        echo "cli run failed"
+        clean_all
+        exit 1
+    fi
+    set -e
 }
 
 function nic_add {
