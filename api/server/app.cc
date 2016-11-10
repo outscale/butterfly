@@ -44,6 +44,7 @@ Config::Config() {
     graph_core_id = 0;
     packet_trace = false;
     dpdk_args = DPDK_DEFAULT_ARGS;
+    tid = 0;
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
@@ -289,7 +290,6 @@ bool load_config_file(std::string config_path) {
             config.graph_core_id;
         log.debug(m);
     }
-    config.tid = 0;
 
     v = ini.GetValue("general", "dpdk-args", "_");
     if (std::string(v) != "_") {
