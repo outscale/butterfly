@@ -117,11 +117,13 @@ bool Graph::start(std::string dpdk_args) {
                  pg_brick_destroy);
     if (nic_.get() == NULL) {
         LOG_WARNING_("cannot use DPDK port 0");
+        PG_ERROR_(app::pg_error);
         // Try to create a pcap interface instead
         nic_ = Brick(pg_tap_new("tap", NULL, &app::pg_error),
                      pg_brick_destroy);
         if (nic_.get() == NULL) {
             LOG_ERROR_("cannot create tap interface");
+            PG_ERROR_(app::pg_error);
             return false;
         } else if (pg_tap_get_mac(nic_.get(), &mac) < 0) {
              LOG_ERROR_("cannot get mac of tap interface");
@@ -276,10 +278,14 @@ bool Graph::poller_update(struct RpcQueue **list) {
                 pg_vhost_stop();
                 break;
             case LINK:
-                pg_brick_link(a->link.w, a->link.e, &app::pg_error);
+                if (pg_brick_link(a->link.w, a->link.e, &app::pg_error) < 0) {
+                    PG_ERROR_(app::pg_error);
+                }
                 break;
             case UNLINK:
                 pg_brick_unlink(a->unlink.b, &app::pg_error);
+                if (pg_error_is_set(&app::pg_error))
+                    PG_ERROR_(app::pg_error);
                 break;
             case ADD_VNI:
                 pg_vtep_add_vni(a->add_vni.vtep,
@@ -287,6 +293,8 @@ bool Graph::poller_update(struct RpcQueue **list) {
                                 a->add_vni.vni,
                                 a->add_vni.multicast_ip,
                                 &app::pg_error);
+                if (pg_error_is_set(&app::pg_error))
+                    PG_ERROR_(app::pg_error);
                 break;
             case UPDATE_POLL:
                 // Swap with the old list
@@ -295,7 +303,10 @@ bool Graph::poller_update(struct RpcQueue **list) {
                 *list = tmp;
                 break;
             case FW_RELOAD:
-                pg_firewall_reload(a->fw_reload.firewall, &app::pg_error);
+                if (pg_firewall_reload(a->fw_reload.firewall,
+                                       &app::pg_error) < 0) {
+                    PG_ERROR_(app::pg_error);
+                }
                 break;
             case FW_NEW:
                 *(a->fw_new.result) = pg_firewall_new(a->fw_new.name,
@@ -303,6 +314,8 @@ bool Graph::poller_update(struct RpcQueue **list) {
                                                       a->fw_new.east_max,
                                                       a->fw_new.flags,
                                                       &app::pg_error);
+                if (pg_error_is_set(&app::pg_error))
+                    PG_ERROR_(app::pg_error);
                 break;
             case BRICK_DESTROY:
                 pg_brick_destroy(a->brick_destroy.b);
@@ -361,6 +374,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
                                           &app::pg_error),
                          pg_brick_destroy);
     if (!gn.antispoof) {
+        PG_ERROR_(app::pg_error);
         LOG_ERROR_("%s creation failed", name.c_str());
         return "";
     }
@@ -380,6 +394,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
                                   &app::pg_error),
                      pg_brick_destroy);
     if (!gn.vhost) {
+        PG_ERROR_(app::pg_error);
         LOG_ERROR_("%s creation failed", name.c_str());
         return "";
     }
@@ -392,12 +407,16 @@ std::string Graph::nic_add(const app::Nic &nic) {
                                     NULL, &app::pg_error),
                        pg_brick_destroy);
     if (!gn.sniffer) {
+        PG_ERROR_(app::pg_error);
         LOG_ERROR_("%s creation failed", name.c_str());
         return "";
     }
 
     // Link branch (inside)
-    pg_brick_link(gn.firewall.get(), gn.antispoof.get(), &app::pg_error);
+    if (pg_brick_link(gn.firewall.get(),
+                      gn.antispoof.get(), &app::pg_error) < 0) {
+        PG_ERROR_(app::pg_error);
+    }
     linkAndStalk(gn.antispoof, gn.vhost, gn.sniffer);
     // Link branch to the vtep
     if (vni.nics.size() == 0) {
@@ -416,6 +435,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
         vni.sw = Brick(pg_switch_new(name.c_str(), 1, 30, EAST_SIDE,
                                      &app::pg_error), pg_brick_destroy);
         if (!vni.sw) {
+            PG_ERROR_(app::pg_error);
             LOG_ERROR_("%s creation failed", name.c_str());
             return "";
         }
@@ -444,7 +464,11 @@ std::string Graph::nic_add(const app::Nic &nic) {
     fw_update(nic);
     app::set_cgroup();
 
-    return std::string(pg_vhost_socket_path(gn.vhost.get(), &app::pg_error));
+    auto r = std::string(pg_vhost_socket_path(gn.vhost.get(), &app::pg_error));
+    if (pg_error_is_set(&app::pg_error)) {
+        PG_ERROR_(app::pg_error);
+    }
+    return r;
 }
 
 void Graph::nic_del(const app::Nic &nic) {
@@ -739,6 +763,7 @@ void Graph::fw_update(const app::Nic &nic) {
                               0, &app::pg_error) < 0)) {
         std::string m = "cannot build rules (in) for nic " + nic.id;
         app::log.error(m);
+        PG_ERROR_(app::pg_error);
         return;
     }
     if (out_rules.length() > 0 &&
@@ -746,6 +771,7 @@ void Graph::fw_update(const app::Nic &nic) {
                              1,  &app::pg_error) < 0) {
         std::string m = "cannot build rules (out) for nic " + nic.id;
         app::log.error(m);
+        PG_ERROR_(app::pg_error);
         return;
     }
 
@@ -790,6 +816,7 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
         m = "cannot load rule (add) for nic " + nic.id;
         app::log.error(m);
         app::log.debug(r);
+        PG_ERROR_(app::pg_error);
         return;
     }
     fw_reload(fw);
