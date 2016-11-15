@@ -6,7 +6,11 @@ KEY_MD5=eb3d700f2ee166e0dbe00f4e0aa2cef9
 
 function usage {
     echo "Usage: test.sh BUTTERFLY_SRC_ROOT BUTTERFLY_BUILD_ROOT" 1>&2
+    echo "Usage: test.sh option" 1>&2
+    echo "option:" 1>&2
+    echo "   -h, --help : print this help" 1>&2
 }
+
 
 declare -A qemu_pids
 declare -A server_pids
@@ -922,6 +926,11 @@ function clean_all {
     sleep 0.5
 }
 
+if [ "$BUTTERFLY_BUILD_ROOT" = "-h" ] || [ "$BUTTERFLY_BUILD_ROOT" = "--help" ] ||
+       [ "$BUTTERFLY_SRC_ROOT" = "-h" ] || [ "$BUTTERFLY_SRC_ROOT" = "--help" ] ; then
+    usage
+    exit 0
+fi
 
 if [ ! -f $BUTTERFLY_SRC_ROOT/LICENSE ]; then
     echo "Butterfly's source root not found"
