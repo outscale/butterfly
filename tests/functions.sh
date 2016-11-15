@@ -938,6 +938,7 @@ function clean_all {
     sleep 0.5
 }
 
+
 if [ ! -f $BUTTERFLY_SRC_ROOT/LICENSE ]; then
     echo "Butterfly's source root not found"
     usage

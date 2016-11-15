@@ -3,7 +3,7 @@
 BUTTERFLY_SRC_ROOT=$1
 BUTTERFLY_BUILD_ROOT=$2
 
-source $BUTTERFLY_SRC_ROOT/tests/functions.sh
+source $(dirname $0)/../functions.sh
 
 network_connect 0 1
 server_start 0
@@ -30,4 +30,3 @@ qemu_stop 2
 server_stop 0
 network_disconnect 0 1
 return_result
-
