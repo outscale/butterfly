@@ -690,6 +690,8 @@ bool API_0::convert(const app::Nic &nic_model, MessageV0_Nic *nic_message) {
     // Sniff target
     if (nic_model.sniff_target_nic_id.length() > 0)
         nic_message->set_sniff_target_nic_id(nic_model.sniff_target_nic_id);
+    // Bypass filterfing
+    nic_message->set_bypass_filtering(nic_model.bypass_filtering);
     return true;
 }
 
@@ -732,6 +734,10 @@ bool API_0::convert(const MessageV0_Nic &nic_message, app::Nic *nic_model) {
     // Sniff target
     if (nic_message.has_sniff_target_nic_id())
         nic_model->sniff_target_nic_id = nic_message.sniff_target_nic_id();
+    // Bypass filtering
+    nic_model->bypass_filtering = false;
+    if (nic_message.has_bypass_filtering())
+        nic_model->bypass_filtering = nic_message.bypass_filtering();
     return true;
 }
 

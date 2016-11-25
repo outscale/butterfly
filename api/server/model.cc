@@ -28,6 +28,7 @@ namespace app {
 Nic::Nic() {
     vni = 0;
     ip_anti_spoof = false;
+    bypass_filtering = false;
 }
 
 Error::Error() {
