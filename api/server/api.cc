@@ -135,7 +135,7 @@ bool API::action_nic_add(const app::Nic &nic, std::string *path,
     // Add NIC in model
     std::pair<std::string, app::Nic> p(nic.id, nic);
     app::model.nics.insert(p);
-    return true;
+    return !!path->size();
 }
 
 bool API::action_nic_update(const API::NicUpdate &update,
