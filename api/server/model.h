@@ -79,6 +79,7 @@ struct Nic {
     std::vector<std::string> security_groups;
     bool ip_anti_spoof;
     std::string sniff_target_nic_id;
+    bool bypass_filtering;
 };
 
 struct Rule {

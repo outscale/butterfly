@@ -224,6 +224,8 @@ class Graph {
     /* VM branch. */
     struct GraphNic {
        std::string id;
+       // head is a pointer to the first brick in the branch
+       BrickShrPtr head;
        BrickShrPtr firewall;
        BrickShrPtr antispoof;
        BrickShrPtr vhost;

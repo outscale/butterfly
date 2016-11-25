@@ -160,6 +160,11 @@ message MessageV0 {
     // The option corresponds to the targeted NIC id.
     // Warning: not implemented
     optional string sniff_target_nic_id = 7;
+    // Bypass all filtering (off by default):
+    // - security groups won't affect this nic
+    // - antispoof protection won't operate
+    // - VM can send any packet, any mac, any ip
+    optional bool bypass_filtering = 8 [default = false];
   }
 
   // NIC statistics
