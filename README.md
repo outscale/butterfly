@@ -1,4 +1,4 @@
-Butterfly
+Butterfly test
 =========
 Butterfly connects Virtual Machines and controls their traffic flow.
 
