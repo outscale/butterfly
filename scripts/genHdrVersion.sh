@@ -28,8 +28,8 @@ OUTPUT=$1
 DATE=`git log -1 | grep Date | awk -F "   " '{ print $2 }' | awk -F '+' '{ print $1 }'`
 NAME=`git log --oneline -1 | awk -F ' ' '{print $1}'`
 
-PROTO_REVISION=0
-BUTTERFLY_VERSION=0.3
+PROJECT_ROOT=$(git rev-parse --show-toplevel)
+source $PROJECT_ROOT/api/protocol/version
 
 tmp=version_tmp.h
 echo "" > $tmp

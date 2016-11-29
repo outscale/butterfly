@@ -1,5 +1,5 @@
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -12,7 +12,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -25,7 +25,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -37,7 +37,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -58,7 +58,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -90,7 +90,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -100,7 +100,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -112,7 +112,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -126,7 +126,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
