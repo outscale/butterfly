@@ -1,5 +1,5 @@
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -9,28 +9,7 @@ messages {
   }
 }
 messages {
-  revision: 0
-  message_0 {
-    response {
-      status {
-        status: true
-      }
-      sg_list: "sg-1"
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    response {
-      status {
-        status: true
-      }
-    }
-  }
-}
-messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -41,7 +20,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -51,47 +30,7 @@ messages {
   }
 }
 messages {
-  revision: 0
-  message_0 {
-    response {
-      status {
-        status: true
-      }
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    response {
-      status {
-        status: true
-      }
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    response {
-      status {
-        status: true
-      }
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    response {
-      status {
-        status: true
-      }
-    }
-  }
-}
-messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -102,7 +41,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -112,7 +51,68 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: PROTO_REVISION
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: PROTO_REVISION
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: PROTO_REVISION
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: PROTO_REVISION
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      sg_list: "sg-1"
+    }
+  }
+}
+messages {
+  revision: PROTO_REVISION
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {

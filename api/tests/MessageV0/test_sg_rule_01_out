@@ -1,5 +1,5 @@
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -9,7 +9,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -19,35 +19,7 @@ messages {
   }
 }
 messages {
-  revision: 0
-  message_0 {
-    response {
-      status {
-        status: true
-      }
-      sg_rule_list {
-        direction: INBOUND
-        protocol: -1
-        cidr {
-          address: "2001:db8:0:85a3::ac1f:8001"
-          mask_size: 8
-        }
-      }
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    response {
-      status {
-        status: true
-      }
-    }
-  }
-}
-messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -65,7 +37,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -75,7 +47,25 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      sg_rule_list {
+        direction: INBOUND
+        protocol: -1
+        cidr {
+          address: "2001:db8:0:85a3::ac1f:8001"
+          mask_size: 8
+        }
+      }
+    }
+  }
+}
+messages {
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -85,7 +75,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -95,7 +85,17 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
+messages {
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
