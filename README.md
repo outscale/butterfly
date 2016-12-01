@@ -29,6 +29,28 @@ Butterfly binds a dedicated NIC to send/receive VXLAN packets and binds a socket
 (default: tcp) to listen to queries on its API. If you use a DPDK compatible
 card, you won't be able to access the API through it.
 
+You can build this configuration in few lines of client calls:
+```
+butterfly nic add --ip 42.0.0.1 --mac 52:54:00:12:34:01 --vni 42 --id vnic_1
+butterfly nic add --ip 42.0.0.1 --mac 52:54:00:12:34:01 --vni 51 --id vnic_2
+butterfly nic add --ip 42.0.0.2 --mac 52:54:00:12:34:02 --vni 51 --id vnic_3
+butterfly nic add --ip 42.0.0.3 --mac 52:54:00:12:34:03 --vni 51 --id vnic_4
+butterfly nic add --ip 42.0.0.1 --mac 52:54:00:12:34:01 --vni 1337 --id vnic_5
+butterfly nic add --ip 42.0.0.2 --mac 52:54:00:12:34:02 --vni 1337 --id vnic_6
+```
+
+You can edit security groups whenever you want, virtual nics filtering will be
+updated. Here, we just create a new rule opening http port for the whole world
+and ask some vnics to use this security group.
+```
+butterfly sg add sg-web
+butterfly sg rule add sg-web --ip-proto tcp --port 80 --cidr 0.0.0.0/0
+butterfly nic sg add vnic_1 sg-web
+butterfly nic sg add vnic_2 sg-web
+```
+Note: Butterfly API use idempotence, meaning that two calls should produce the
+same result.
+
 # Installing Butterfly
 
 The easiest way to install Butterfly is to download and install a package from [github releases](https://github.com/outscale/butterfly/releases).
