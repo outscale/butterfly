@@ -302,12 +302,16 @@ message MessageV0 {
     // Representation of connected network bricks inside application
     // This graphic is represented in DOT language.
     optional string graph_dot = 4;
+    // Current physical NIC MTU in bytes
+    optional uint32 nic_mtu = 5;
   }
 
   message AppConfigReq {
-    // If set, permet to change log level of application
+    // Change log level of application
     // Valid values are 'none', 'error', 'warning', 'info' or 'debug'
     optional string log_level = 1;
+    // Set MTU of physical NIC in bytes
+    optional uint32 nic_mtu = 2;
   }
 }
 
