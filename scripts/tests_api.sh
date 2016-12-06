@@ -2,6 +2,7 @@
 
 # Butterfly root
 BUTTERFLY_ROOT=$1
+VERBOSE=$2
 BUTTERFLY_BUILD_ROOT=.
 
 # Test Butterfly build root
@@ -28,7 +29,12 @@ for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
     echo -n "$(basename $request) scenario: "
     tput setaf 7
     expected=$(echo $request | sed -e 's/_in$/_out/')
-    sudo $run $client $server $request $expected
+    if [ $VERBOSE == 1 ]; then
+	echo verbose mode: $VERBOSE
+	sudo bash -x $run $client $server $request $expected
+    else
+	sudo $run $client $server $request $expected
+    fi
     if [ $? -ne 0 ]; then
 	tput setaf 1
         echo FAILED !

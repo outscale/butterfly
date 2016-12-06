@@ -2,6 +2,7 @@
 
 # Butterfly root
 BUTTERFLY_ROOT=$1
+VERBOSE=$2
 BUTTERFLY_BUILD_ROOT=.
 
 # Test Butterfly build root
@@ -18,8 +19,9 @@ fi
 
 # Launch the tests suites of all the subprojects
 
+echo $VERBOSE
 # API tests
-$BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_ROOT
+$BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_ROOT $VERBOSE
 if [ $? != 0 ]; then
     tput setaf 1
     echo "API test failed"
@@ -34,7 +36,7 @@ fi
 sleep 5
 
 # API style test
-$BUTTERFLY_ROOT/scripts/tests_api_style.sh $BUTTERFLY_ROOT
+$BUTTERFLY_ROOT/scripts/tests_api_style.sh $BUTTERFLY_ROOT $VERBOSE
 if [ $? != 0 ]; then
     tput setaf 1
     echo "API style test failed"
@@ -49,7 +51,7 @@ fi
 sleep 5
 
 # Scenario test
-$BUTTERFLY_ROOT/scripts/tests_scenario.sh $BUTTERFLY_ROOT
+$BUTTERFLY_ROOT/scripts/tests_scenario.sh $BUTTERFLY_ROOT $VERBOSE
 if [ $? != 0 ]; then
     tput setaf 1
     echo "API scenario test failed"
