@@ -2,6 +2,7 @@
 
 # Butterfly root
 BUTTERFLY_ROOT=$1
+VERBOSE=$2
 BUTTERFLY_BUILD_ROOT=.
 
 # Test Butterfly build root
@@ -16,7 +17,13 @@ if [ ! -d $BUTTERFLY_ROOT/api ]; then
     exit 1
 fi
 
+echo verbose mode $VERBOSE
 for s in $BUTTERFLY_ROOT/tests/scenario_*; do
     echo "=== running $(basename $s) ==="
-    $s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT || exit 1
+    if [ $VERBOSE == 1 ]; then
+	echo verbose mode
+	bash -x $s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT || exit 1
+    else
+	$s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT || exit 1
+    fi
 done
