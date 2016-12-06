@@ -83,7 +83,8 @@ cli 0 0 nic del nic_1
 cli 0 0 nic add --ip 42.0.0.1 --mac 42:42:42:42:42:01 --vni 1337 --id nic_1
 cli 0 0 nic del nic_1 nic_2 nic_not_here
 cli 0 0 nic add --ip 42.0.0.1 --mac 42:42:42:42:42:01 --vni 1337 --id nic_1
-cli 0 0 nic add --ip 42.0.0.2 --mac 42:42:42:42:42:01 --vni 1337 --id nic_2
+cli 0 0 nic add --ip 42.0.0.2 --mac 42:42:42:42:42:01 --vni 1337 --id nic_2 --enable-antispoof
+cli 0 0 nic add --ip 42.0.0.2 --mac 42:42:42:42:42:01 --vni 1337 --id nic_22 --bypass-filtering
 
 cli 0 1 sg
 cli 0 0 sg help
