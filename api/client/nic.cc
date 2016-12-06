@@ -352,6 +352,7 @@ static int sub_nic_sg(int argc, char **argv, const GlobalOptions &options) {
 
 NicAddOptions::NicAddOptions() {
     enable_antispoof = "false";
+    bypass_filtering = "false";
 }
 
 int NicAddOptions::parse(int argc, char **argv) {
@@ -368,6 +369,8 @@ int NicAddOptions::parse(int argc, char **argv) {
             id = string(argv[i + 1]);
         else if (i + 1 < argc && (string(argv[i]) == "--vni"))
             vni = string(argv[i + 1]);
+        else if (string(argv[i]) == "--bypass-filtering")
+            bypass_filtering = "true";
     }
     return !ips.size() || !mac.length() || !id.length() || !vni.length();
 }
@@ -383,7 +386,8 @@ static void sub_nic_add_help(void) {
         "    --vni VNI           virtual network id < 2^26 (mandatory)"
             << endl <<
         "    --enable-antispoof  enable antispoof protection (default: off)"
-            << endl;
+            << endl <<
+        "    --bypass-filtering  remove all filters and protection" << endl;
     global_parameter_help();
 }
 
@@ -414,6 +418,7 @@ static int sub_nic_add(int argc, char **argv, const GlobalOptions &options) {
         req += " security_group: \"" + sg + "\"";
     req +=
         "        ip_anti_spoof: " + o.enable_antispoof +
+        "        bypass_filtering: " + o.bypass_filtering +
         "      }"
         "    }"
         "  }"

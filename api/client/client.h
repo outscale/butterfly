@@ -82,6 +82,7 @@ struct NicAddOptions {
     string enable_antispoof;
     string id;
     string vni;
+    string bypass_filtering;
 };
 
 struct RuleAddOptions {
