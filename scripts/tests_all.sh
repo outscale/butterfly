@@ -11,7 +11,10 @@ if [ ! -f $BUTTERFLY_BUILD_ROOT/CMakeCache.txt ]; then
     exit 1
 fi
 
-# Launch the tests suites of all the subprojects
+echo "############################################################"
+echo "Butterfly tests start"
+echo $($BUTTERFLY_BUILD_ROOT/api/server/butterflyd --version)
+echo "############################################################"
 
 # API tests
 $BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
