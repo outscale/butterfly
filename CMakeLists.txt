@@ -64,35 +64,35 @@ add_subdirectory(api)
 # Add custom targets for tests
 
 add_custom_target(tests-all
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_all.sh ${PROJECT_SOURCE_DIR} ${VERBOSE}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_all.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(style
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api_style.sh ${PROJECT_SOURCE_DIR}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api_style.sh
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(tests-api
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api.sh ${PROJECT_SOURCE_DIR} ${VERBOSE}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(tests-scenario
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_SOURCE_DIR} ${VERBOSE}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-rpm
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} rpm
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_BINARY_DIR} rpm
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-deb
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} deb
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_BINARY_DIR} deb
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-fat-rpm
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} rpm
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_BINARY_DIR} rpm
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-fat-deb
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} deb
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_BINARY_DIR} deb
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-fat
