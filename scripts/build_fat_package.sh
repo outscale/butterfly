@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Butterfly root
-BUTTERFLY_ROOT=$1
-BUTTERFLY_BUILD_ROOT=$2
-TARGET=$3
+BUTTERFLY_BUILD_ROOT="$( cd "$1" && pwd )"
+TARGET=$2
+BUTTERFLY_ROOT=$(cd "$(dirname $0)/.." && pwd)
+
 
 function usage {
-    echo "build_fat_package.sh BUTTERFLY_ROOT BUTTERFLY_BUILD_ROOT TARGET"
-    echo "BUTTERFLY_ROOT: absolute path to Butterfly sources root"
+    echo "build_fat_package.sh BUTTERFLY_BUILD_ROOT TARGET"
     echo "BUTTERFLY_BUILD_ROOT: absolute path to Bitterfly build root"
     echo "TARGET: deb, rpm, etc.. depending on fpm"
 }
