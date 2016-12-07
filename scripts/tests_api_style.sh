@@ -1,13 +1,7 @@
 #!/bin/sh
 
 # Butterfly root
-BUTTERFLY_ROOT=$1
-
-# Test Butterfly root
-if [ ! -d $BUTTERFLY_ROOT/api ]; then
-    echo "Please set butterfly's source root as parameter"
-    exit 1
-fi
+BUTTERFLY_ROOT=$(cd "$(dirname $0)/.." && pwd)
 
 sources="$BUTTERFLY_ROOT/api/client/client.cc \
 $BUTTERFLY_ROOT/api/client/client.h \

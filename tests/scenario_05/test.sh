@@ -1,9 +1,8 @@
 #!/bin/bash
 
-BUTTERFLY_SRC_ROOT=$1
-BUTTERFLY_BUILD_ROOT=$2
-
-source $(dirname $0)/../functions.sh
+BUTTERFLY_BUILD_ROOT=$1
+BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
+source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 
 for i in {1..10}; do
     network_connect 0 1

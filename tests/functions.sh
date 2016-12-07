@@ -5,7 +5,7 @@ KEY_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a
 KEY_MD5=eb3d700f2ee166e0dbe00f4e0aa2cef9
 
 function usage {
-    echo "Usage: test.sh BUTTERFLY_SRC_ROOT BUTTERFLY_BUILD_ROOT" 1>&2
+    echo "Usage: test.sh BUTTERFLY_BUILD_ROOT" 1>&2
     echo "Usage: test.sh option" 1>&2
     echo "option:" 1>&2
     echo "   -h, --help : print this help" 1>&2

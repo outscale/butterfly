@@ -65,19 +65,19 @@ add_subdirectory(api)
 # Add custom targets for tests
 
 add_custom_target(tests-all
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_all.sh ${PROJECT_SOURCE_DIR} ${VERBOSE}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_all.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(style
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api_style.sh ${PROJECT_SOURCE_DIR}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api_style.sh
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(tests-api
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api.sh ${PROJECT_SOURCE_DIR} ${VERBOSE}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(tests-scenario
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_SOURCE_DIR} ${VERBOSE}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-rpm
