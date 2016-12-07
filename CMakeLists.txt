@@ -81,19 +81,19 @@ add_custom_target(tests-scenario
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-rpm
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} rpm
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_BINARY_DIR} rpm
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-deb
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} deb
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_BINARY_DIR} deb
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-fat-rpm
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} rpm
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_BINARY_DIR} rpm
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-fat-deb
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR} deb
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_fat_package.sh ${PROJECT_BINARY_DIR} deb
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-fat
