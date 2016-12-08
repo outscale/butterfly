@@ -389,7 +389,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     std::string name;
 
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return "";
     }
 
@@ -537,7 +537,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
 
 void Graph::nic_del(const app::Nic &nic) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return;
     }
 
@@ -599,7 +599,7 @@ void Graph::nic_del(const app::Nic &nic) {
 
 std::string Graph::nic_export(const app::Nic &nic) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return "";
     }
 
@@ -610,7 +610,7 @@ std::string Graph::nic_export(const app::Nic &nic) {
 
 void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return;
     }
     *in = *out = 0;
@@ -636,7 +636,7 @@ void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
 
 void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return;
     }
 
@@ -771,7 +771,7 @@ std::string Graph::fw_build_sg(const app::Sg &sg) {
 
 void Graph::fw_update(const app::Nic &nic) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return;
     }
 
@@ -862,7 +862,7 @@ void Graph::fw_update(const app::Nic &nic) {
 void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
     std::string m;
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return;
     }
 
