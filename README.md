@@ -39,6 +39,8 @@ butterfly nic add --ip 42.0.0.1 --mac 52:54:00:12:34:01 --vni 1337 --id vnic_5
 butterfly nic add --ip 42.0.0.2 --mac 52:54:00:12:34:02 --vni 1337 --id vnic_6
 ```
 
+Tip: if you want to see what the graph looks like: run `butterfly status` and copy past the dot diagram in [webgraphviz.com](http://www.webgraphviz.com/)
+
 You can edit security groups whenever you want, and virtual nics filtering will be
 updated. Here, we simply create a new rule to open the http port for the whole world
 and ask some vnics to use this security group.
