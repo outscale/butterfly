@@ -700,6 +700,9 @@ std::string Graph::fw_build_rule(const app::Rule &rule) {
     case IPPROTO_ICMP:
         r += " and icmp";
         break;
+    case IPPROTO_ICMPV6:
+        r += " and icmp6";
+        break;
     case IPPROTO_TCP:
         r += " and tcp";
         break;
