@@ -26,16 +26,16 @@
 namespace app {
 
 class Ip {
+ public:
     typedef enum {
         V4,
         V6,
         NONE
     } type_t;
 
- public:
     Ip();
     explicit Ip(std::string ip_string);
-    type_t type();
+    type_t type() const;
     std::string str() const;
     bool bytes(uint8_t *data) const;
     bool operator== (const Ip& a) const;

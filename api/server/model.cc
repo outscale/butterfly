@@ -86,7 +86,7 @@ Ip::Ip(std::string ip_string) {
     set(ip_string);
 }
 
-Ip::type_t Ip::type() {
+Ip::type_t Ip::type() const {
     return type_;
 }
 

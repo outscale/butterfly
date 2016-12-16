@@ -669,8 +669,14 @@ std::string Graph::fw_build_rule(const app::Rule &rule) {
 
     // Build source
     if (rule.security_group.length() == 0) {
-        r += "src net " + rule.cidr.address.str() +
-             "/" +  std::to_string(rule.cidr.mask_size);
+        if (rule.cidr.mask_size != 0) {
+            r += "src net " + rule.cidr.address.str() +
+                 "/" +  std::to_string(rule.cidr.mask_size);
+        } else if (rule.cidr.address.type() == app::Ip::V4) {
+            r += "ip";
+        } else {
+            r += "ip6";
+        }
     } else {
         auto sg = app::model.security_groups.find(rule.security_group);
         if (sg == app::model.security_groups.end()) {
