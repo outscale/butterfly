@@ -165,8 +165,9 @@ bool Graph::start(std::string dpdk_args) {
     // Create vtep brick
     uint32_t ipp;
     inet_pton(AF_INET, app::config.external_ip.c_str(), &ipp);
-    vtep_ = BrickShrPtr(pg_vtep_new("vxlan", 1, 50, WEST_SIDE, ipp, mac,
-                              PG_VTEP_DST_PORT, ALL_OPTI, &app::pg_error),
+    vtep_ = BrickShrPtr(pg_vtep_new("vxlan", 50, PG_WEST_SIDE, ipp, mac,
+                              PG_VTEP_DST_PORT, PG_VTEP_ALL_OPTI,
+                              &app::pg_error),
                   pg_brick_destroy);
     if (vtep_.get() == NULL) {
         PG_ERROR_(app::pg_error);
@@ -364,8 +365,6 @@ bool Graph::poller_update(struct RpcQueue **list) {
                 break;
             case FW_NEW:
                 *(a->fw_new.result) = pg_firewall_new(a->fw_new.name,
-                                                      a->fw_new.west_max,
-                                                      a->fw_new.east_max,
                                                       a->fw_new.flags,
                                                       &app::pg_error);
                 if (pg_error_is_set(&app::pg_error))
@@ -390,7 +389,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     std::string name;
 
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return "";
     }
 
@@ -424,9 +423,9 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.ether_addr_octet);
-    gn.antispoof = BrickShrPtr(pg_antispoof_new(name.c_str(), WEST_SIDE, &mac,
-                                          &app::pg_error),
-                         pg_brick_destroy);
+    gn.antispoof = BrickShrPtr(pg_antispoof_new(name.c_str(), PG_WEST_SIDE,
+                                                &mac, &app::pg_error),
+                                                pg_brick_destroy);
     if (!gn.antispoof) {
         PG_ERROR_(app::pg_error);
         return "";
@@ -443,8 +442,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
     }
 
     name = "vhost-" + gn.id;
-    gn.vhost = BrickShrPtr(pg_vhost_new(name.c_str(), 1, 1, EAST_SIDE,
-                                  &app::pg_error),
+    gn.vhost = BrickShrPtr(pg_vhost_new(name.c_str(), &app::pg_error),
                      pg_brick_destroy);
     if (!gn.vhost) {
         PG_ERROR_(app::pg_error);
@@ -463,45 +461,61 @@ std::string Graph::nic_add(const app::Nic &nic) {
         return "";
     }
 
-    // Link branch (inside)
-    if (pg_brick_link(gn.firewall.get(),
-                      gn.antispoof.get(), &app::pg_error) < 0) {
-        PG_ERROR_(app::pg_error);
+    // Build branch and set head
+    if (nic.bypass_filtering) {
+        if (app::config.packet_trace) {
+            gn.head = gn.sniffer;
+            if (pg_brick_link(gn.sniffer.get(), gn.vhost.get(),
+                              &app::pg_error) < 0) {
+                PG_ERROR_(app::pg_error);
+                return false;
+            }
+        } else {
+            gn.head = gn.vhost;
+        }
+    } else {
+        gn.head = gn.firewall;
+        if (pg_brick_link(gn.firewall.get(),
+                          gn.antispoof.get(), &app::pg_error) < 0) {
+            PG_ERROR_(app::pg_error);
+            return false;
+        }
+        linkAndStalk(gn.antispoof, gn.vhost, gn.sniffer);
     }
 
-    linkAndStalk(gn.antispoof, gn.vhost, gn.sniffer);
     // Link branch to the vtep
     if (vni.nics.size() == 0) {
-        // Link directly the firewall to the vtep
-        link(vtep_, gn.firewall);
-        add_vni(vtep_, gn.firewall, nic.vni);
+        // Link directly vtep to branch's head
+        link(vtep_, gn.head);
+        add_vni(vtep_, gn.head, nic.vni);
     } else if (vni.nics.size() == 1) {
         // We have to insert a switch
-        // - unlink the first firewall from the graph
+        // - unlink the first branch head from the graph
         // - link a new switch to the vtep
         // - add the vni on the vtep with the switch
-        // - link the first firewall to the switch
-        // - re-link the first firewall to it's antispoof
-        // - link the second firewall to the switch
+        // - link the first branch head to the switch
+        // - link the second branch head to the switch
         name = "switch-" + std::to_string(nic.vni);
-        vni.sw = BrickShrPtr(pg_switch_new(name.c_str(), 1, 30, EAST_SIDE,
+        vni.sw = BrickShrPtr(pg_switch_new(name.c_str(), 1, 30, PG_EAST_SIDE,
                                      &app::pg_error), pg_brick_destroy);
         if (!vni.sw) {
             PG_ERROR_(app::pg_error);
             return "";
         }
 
-        BrickShrPtr fw1 = vni.nics.begin()->second.firewall;
-        BrickShrPtr as1 = vni.nics.begin()->second.antispoof;
-        unlink(fw1);
+        BrickShrPtr head1 = vni.nics.begin()->second.head;
+        if (pg_brick_unlink_edge(vtep_.get(), head1.get(),
+                                 &app::pg_error) < 0) {
+            PG_ERROR_(app::pg_error);
+            return "";
+        }
         link(vtep_, vni.sw);
-        add_vni(vtep_, vni.sw, vni.vni);
-        link(vni.sw, fw1);
-        link(fw1, as1);
-        link(vni.sw, gn.firewall);
+        add_vni(vtep_, vni.sw, nic.vni);
+        link(vni.sw, head1);
+        link(vni.sw, gn.head);
     } else {
-        // Switch already exist, just link the firewall to the switch
-        link(vni.sw, gn.firewall);
+        // Switch already exist, just link branch to the switch
+        link(vni.sw, gn.head);
     }
 
     // Add branch to the list of NICs
@@ -523,7 +537,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
 
 void Graph::nic_del(const app::Nic &nic) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return;
     }
 
@@ -549,25 +563,26 @@ void Graph::nic_del(const app::Nic &nic) {
 
     // Disconnect branch from vtep or switch
     if (vni.nics.size() == 1) {
-        // We should only have the firewall directly connected to the vtep
-        unlink(n.firewall);
+        // We should only have a branch head directly connected to vtep
+        unlink(n.head);
     } else if (vni.nics.size() == 2) {
         // We have do:
-        // - unlink the switch (which unlink all firewalls).
-        // - connect the other firewall to the vtep
+        // - unlink the switch (which unlink all branch heads).
+        // - connect the other head to vtep
+        // - re-add other head to vni
         // - destroy the switch
-
         auto it = vni.nics.begin();
         if (it->second.id == nic.id)
             it++;
         struct GraphNic &other = it->second;
         unlink(vni.sw);
-        link(app::graph.vtep_, other.firewall);
+        link(app::graph.vtep_, other.head);
+        add_vni(vtep_, other.head, nic.vni);
         wait_empty_queue();
         vni.sw.reset();
     } else {
-        // We just have to unlink the firewall from the switch
-        unlink(n.firewall);
+        // We just have to unlink branch head from the switch
+        unlink(n.head);
     }
 
     // Delete firewall in the processing thread
@@ -584,7 +599,7 @@ void Graph::nic_del(const app::Nic &nic) {
 
 std::string Graph::nic_export(const app::Nic &nic) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return "";
     }
 
@@ -595,7 +610,7 @@ std::string Graph::nic_export(const app::Nic &nic) {
 
 void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return;
     }
     *in = *out = 0;
@@ -621,7 +636,7 @@ void Graph::nic_get_stats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
 
 void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
         return;
     }
 
@@ -756,7 +771,13 @@ std::string Graph::fw_build_sg(const app::Sg &sg) {
 
 void Graph::fw_update(const app::Nic &nic) {
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
+        return;
+    }
+
+    if (nic.bypass_filtering) {
+        LOG_WARNING_("%s: skip firewall update when bypass filtering is on",
+                     nic.id.c_str());
         return;
     }
 
@@ -818,7 +839,7 @@ void Graph::fw_update(const app::Nic &nic) {
     m = "rules (out) for nic " + nic.id + ": " + out_rules;
     app::log.debug(m);
     if (in_rules.length() > 0 &&
-        (pg_firewall_rule_add(fw.get(), in_rules.c_str(), WEST_SIDE,
+        (pg_firewall_rule_add(fw.get(), in_rules.c_str(), PG_WEST_SIDE,
                               0, &app::pg_error) < 0)) {
         std::string m = "cannot build rules (in) for nic " + nic.id;
         app::log.error(m);
@@ -826,7 +847,7 @@ void Graph::fw_update(const app::Nic &nic) {
         return;
     }
     if (out_rules.length() > 0 &&
-        pg_firewall_rule_add(fw.get(), out_rules.c_str(), EAST_SIDE,
+        pg_firewall_rule_add(fw.get(), out_rules.c_str(), PG_EAST_SIDE,
                              1,  &app::pg_error) < 0) {
         std::string m = "cannot build rules (out) for nic " + nic.id;
         app::log.error(m);
@@ -841,7 +862,13 @@ void Graph::fw_update(const app::Nic &nic) {
 void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
     std::string m;
     if (!started) {
-        LOG_ERROR_("Graph has not been stared");
+        LOG_ERROR_("Graph has not been started");
+        return;
+    }
+
+    if (nic.bypass_filtering) {
+        LOG_WARNING_("%s: add rule skipped, bypass filtering is on",
+                     nic.id.c_str());
         return;
     }
 
@@ -871,7 +898,7 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
     BrickShrPtr &fw = itnic->second.firewall;
 
     // Add rule & reload firewall
-    if (pg_firewall_rule_add(fw.get(), r.c_str(), WEST_SIDE,
+    if (pg_firewall_rule_add(fw.get(), r.c_str(), PG_WEST_SIDE,
                              0, &app::pg_error) < 0) {
         m = "cannot load rule (add) for nic " + nic.id;
         app::log.error(m);

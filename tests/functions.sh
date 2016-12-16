@@ -336,9 +336,15 @@ function qemu_stop {
 
 function server_start {
     id=$1
+    server_start_options $id -t
+}
+
+function server_start_options {
+    id=$1
+    options=${@:2}
     echo "[butterfly-$id] starting"
 
-    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t &> /dev/null &
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id $options &> /dev/null &
     pid=$!
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
@@ -469,6 +475,40 @@ function nic_add {
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
 	sleep 1
     fi
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+        clean_all
+        exit 1
+    fi
+}
+
+function nic_add_bypass {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+
+    f=/tmp/butterfly.req
+    echo "[butterfly-$but_id] add nic $nic_id with vni $vni (filtering bypass)"
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_add {
+        id: \"nic-$nic_id\"
+        mac: \"52:54:00:12:34:0$nic_id\"
+        vni: $vni
+        ip: \"42.0.0.$nic_id\"
+        bypass_filtering: true
+      }
+    }
+  }
+}
+" >> $f
+
+    request $but_id $f
+    sleep 0.3
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
         echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"

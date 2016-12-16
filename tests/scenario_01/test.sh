@@ -8,12 +8,14 @@ source $(dirname $0)/../functions.sh
 network_connect 0 1
 server_start 0
 server_start 1
-nic_add 0 1 42 sg-1
-nic_add 1 2 42 sg-1
+nic_add_bypass 0 1 42 sg-1
+nic_add_bypass 1 2 42 sg-1
 sg_rule_add_all_open 0 sg-1
 sg_rule_add_all_open 1 sg-1
 qemu_start 1
 qemu_start 2
+echo "---- go"
+read
 ssh_ping 1 2
 ssh_ping 2 1
 qemu_stop 1

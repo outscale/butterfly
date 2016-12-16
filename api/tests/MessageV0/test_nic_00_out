@@ -1,5 +1,5 @@
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -12,7 +12,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -25,7 +25,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -37,7 +37,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -53,12 +53,13 @@ messages {
         security_group: "sg-1"
         security_group: "sg-4"
         ip_anti_spoof: false
+        bypass_filtering: false
       }
     }
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -74,6 +75,7 @@ messages {
         security_group: "sg-1"
         security_group: "sg-2"
         ip_anti_spoof: true
+        bypass_filtering: false
       }
       nic_details {
         id: "nic-2"
@@ -85,12 +87,13 @@ messages {
         security_group: "sg-1"
         security_group: "sg-4"
         ip_anti_spoof: false
+        bypass_filtering: false
       }
     }
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -100,7 +103,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -112,7 +115,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
@@ -126,7 +129,7 @@ messages {
   }
 }
 messages {
-  revision: 0
+  revision: PROTO_REVISION
   message_0 {
     response {
       status {
