@@ -100,7 +100,7 @@ function ssh_iperf_tcp {
     else
         echo "iperf tcp VM $id1 ---> VM $id2 OK"
     fi
-    kill $server_pid &> /dev/null
+    kill -9 $server_pid &> /dev/null
     set -e
 }
 
@@ -120,7 +120,7 @@ function ssh_iperf_udp {
     else
         echo "iperf udp VM $id1 ---> VM $id2 OK"
     fi
-    kill server_pid &> /dev/null
+    kill -9 server_pid &> /dev/null
     rm /tmp/iperf_tmp_results
     set -e
 }
@@ -139,7 +139,7 @@ function ssh_iperf3_tcp {
     else
         echo "iperf3 tcp VM $id1 ---> VM $id2 OK"
     fi
-    kill $server_pid &> /dev/null
+    kill -9 $server_pid &> /dev/null
     set -e
 }
 
