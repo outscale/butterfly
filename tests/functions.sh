@@ -298,7 +298,6 @@ function qemu_start {
         echo -e "
             option domain-name-servers 8.8.8.8, 8.8.4.4;
             option subnet-mask 255.255.255.0;
-            option routers 42.0.0.$id;
             subnet 42.0.0.0 netmask 255.255.255.0 {
               range 42.0.0.20 42.0.0.50;
               host vm1{
