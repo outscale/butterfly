@@ -375,6 +375,7 @@ bool pg_start(std::string dpdk_args) {
         PG_ERROR_(pg_error);
         return false;
     }
+    pg_npf_nworkers = 0;
     return true;
 }
 
