@@ -30,7 +30,8 @@ set(LIBZMQ_INCLUDE_DIR ${3RDPARTY_DIR}/libzmq/include)
 set(ZMQPP_LIBRARIES ${ZMQPP_INSTALL_DIR}/libzmqpp-static.a)
 set(ZMQPP_INCLUDE_DIR ${3RDPARTY_DIR}/zmqpp/src)
 set(PG_LIBRARIES
-    -L${DPDK_INSTALL_DIR}/build/lib -Wl,--start-group -lrte_pmd_vhost -lrte_hash -lrte_mbuf -lrte_mempool -lrte_table -lrte_ring -lethdev -lrte_pmd_pcap -lrte_pmd_ring -lrte_pmd_e1000 -lrte_pmd_ixgbe -lrte_kvargs -lrte_eal -lrte_vhost
+    -L${DPDK_INSTALL_DIR}/build/lib -Wl,--start-group
+    -Wl,--whole-archive,${DPDK_INSTALL_DIR}/build/lib/libdpdk.a,--no-whole-archive
     ${PG_INSTALL_DIR}/.libs/libbpfjit.a
     ${PG_INSTALL_DIR}/.libs/libcdb.a
     ${PG_INSTALL_DIR}/.libs/libnpf.a
@@ -42,7 +43,7 @@ set(PG_LIBRARIES
     -lz)
 set(PG_INCLUDE_DIR ${3RDPARTY_DIR}/packetgraph/include)
 
-set(CMAKE_C_FLAGS "-g -O3 -march=core-avx-i -mtune=core-avx-i -fmessage-length=0  -Werror -Wall -Wextra -Wwrite-strings -Winit-self -Wcast-align -Wpointer-arith -Wstrict-aliasing -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wno-unused-parameter -Wuninitialized -Wold-style-definition -Wstrict-prototypes -Wmissing-prototypes")
+set(CMAKE_C_FLAGS "-g -O3 -march=core-avx-i -mtune=core-avx-i -fmessage-length=0  -Werror -Wall -Wextra -Wwrite-strings -Winit-self -Wcast-align -Wpointer-arith -Wstrict-aliasing -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wno-unused-parameter -Wuninitialized -Wold-style-definition -Wstrict-prototypes -Wmissing-prototypes -L${DPDK_INSTALL_DIR}/build/lib -Wl,--whole-archive,${DPDK_INSTALL_DIR}/build/lib/libdpdk.a,--no-whole-archive")
 
 # uninstall target
 configure_file(

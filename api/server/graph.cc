@@ -165,8 +165,9 @@ bool Graph::start(std::string dpdk_args) {
     // Create vtep brick
     uint32_t ipp;
     inet_pton(AF_INET, app::config.external_ip.c_str(), &ipp);
-    vtep_ = BrickShrPtr(pg_vtep_new("vxlan", 1, 50, WEST_SIDE, ipp, mac,
-                              PG_VTEP_DST_PORT, ALL_OPTI, &app::pg_error),
+    vtep_ = BrickShrPtr(pg_vtep_new("vxlan", 50, PG_WEST_SIDE, ipp, mac,
+                                    PG_VTEP_DST_PORT, PG_VTEP_ALL_OPTI,
+                                    &app::pg_error),
                   pg_brick_destroy);
     if (vtep_.get() == NULL) {
         PG_ERROR_(app::pg_error);
@@ -364,8 +365,6 @@ bool Graph::poller_update(struct RpcQueue **list) {
                 break;
             case FW_NEW:
                 *(a->fw_new.result) = pg_firewall_new(a->fw_new.name,
-                                                      a->fw_new.west_max,
-                                                      a->fw_new.east_max,
                                                       a->fw_new.flags,
                                                       &app::pg_error);
                 if (pg_error_is_set(&app::pg_error))
@@ -424,8 +423,8 @@ std::string Graph::nic_add(const app::Nic &nic) {
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
     nic.mac.bytes(mac.ether_addr_octet);
-    gn.antispoof = BrickShrPtr(pg_antispoof_new(name.c_str(), WEST_SIDE, &mac,
-                                          &app::pg_error),
+    gn.antispoof = BrickShrPtr(pg_antispoof_new(name.c_str(), PG_WEST_SIDE,
+                                                &mac, &app::pg_error),
                          pg_brick_destroy);
     if (!gn.antispoof) {
         PG_ERROR_(app::pg_error);
@@ -443,9 +442,9 @@ std::string Graph::nic_add(const app::Nic &nic) {
     }
 
     name = "vhost-" + gn.id;
-    gn.vhost = BrickShrPtr(pg_vhost_new(name.c_str(), 1, 1, EAST_SIDE,
-                                  &app::pg_error),
-                     pg_brick_destroy);
+    gn.vhost = BrickShrPtr(pg_vhost_new(name.c_str(), 0,
+                                        &app::pg_error),
+                           pg_brick_destroy);
     if (!gn.vhost) {
         PG_ERROR_(app::pg_error);
         return "";
@@ -484,8 +483,8 @@ std::string Graph::nic_add(const app::Nic &nic) {
         // - re-link the first firewall to it's antispoof
         // - link the second firewall to the switch
         name = "switch-" + std::to_string(nic.vni);
-        vni.sw = BrickShrPtr(pg_switch_new(name.c_str(), 1, 30, EAST_SIDE,
-                                     &app::pg_error), pg_brick_destroy);
+        vni.sw = BrickShrPtr(pg_switch_new(name.c_str(), 1, 30, PG_EAST_SIDE,
+                                           &app::pg_error), pg_brick_destroy);
         if (!vni.sw) {
             PG_ERROR_(app::pg_error);
             return "";
@@ -827,7 +826,7 @@ void Graph::fw_update(const app::Nic &nic) {
     m = "rules (out) for nic " + nic.id + ": " + out_rules;
     app::log.debug(m);
     if (in_rules.length() > 0 &&
-        (pg_firewall_rule_add(fw.get(), in_rules.c_str(), WEST_SIDE,
+        (pg_firewall_rule_add(fw.get(), in_rules.c_str(), PG_WEST_SIDE,
                               0, &app::pg_error) < 0)) {
         std::string m = "cannot build rules (in) for nic " + nic.id;
         app::log.error(m);
@@ -835,7 +834,7 @@ void Graph::fw_update(const app::Nic &nic) {
         return;
     }
     if (out_rules.length() > 0 &&
-        pg_firewall_rule_add(fw.get(), out_rules.c_str(), EAST_SIDE,
+        pg_firewall_rule_add(fw.get(), out_rules.c_str(), PG_EAST_SIDE,
                              1,  &app::pg_error) < 0) {
         std::string m = "cannot build rules (out) for nic " + nic.id;
         app::log.error(m);
@@ -880,7 +879,7 @@ void Graph::fw_add_rule(const app::Nic &nic, const app::Rule &rule) {
     BrickShrPtr &fw = itnic->second.firewall;
 
     // Add rule & reload firewall
-    if (pg_firewall_rule_add(fw.get(), r.c_str(), WEST_SIDE,
+    if (pg_firewall_rule_add(fw.get(), r.c_str(), PG_WEST_SIDE,
                              0, &app::pg_error) < 0) {
         m = "cannot load rule (add) for nic " + nic.id;
         app::log.error(m);
