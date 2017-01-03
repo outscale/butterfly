@@ -252,7 +252,9 @@ function ssh_connection_test {
     port=$4
 
     set +e
-    if [ $( ssh_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
+    ssh_connection_tests_internal $protocol $id1 $id2 $port
+    if [ "$?" != "0" ]; then
+	echo -e "$protocol test VM $id1 ---> VM $id2 FAIL (1)"
 	return
     fi
 
@@ -275,7 +277,9 @@ function ssh_no_connection_test {
     port=$4
 
     set +e
-    if [  $( ssh_connection_tests_internal $protocol $id1 $id2 $port ) ]; then
+    ssh_connection_tests_internal $protocol $id1 $id2 $port
+    if [ "$?" != "0" ]; then
+	echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL (1)"
 	return
     fi
     ssh_run $id2 [ -s "/tmp/test" ]
