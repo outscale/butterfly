@@ -211,12 +211,12 @@ function ssh_connection_tests_internal {
 	return $RETURN_CODE
     fi
 
-    ssh_run_background $id2 "nc $proto_cmd -lp $port > /tmp/test"
+    ssh_run_background $id2 "ncat $proto_cmd -lp $port > /tmp/test"
     sleep 0.4
     if [ "$protocol" == "udp6" ] || [ "$protocol" == "tcp6" ]; then
-	ssh_run_background $id1 "echo 'this message is from vm $id1' | nc $proto_cmd 2001:db8:2000:aff0::$id2 $port"
+	ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 2001:db8:2000:aff0::$id2 $port"
     else
-	ssh_run_background $id1 "echo 'this message is from vm $id1' | nc $proto_cmd 42.0.0.$id2 $port"
+	ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 42.0.0.$id2 $port"
     fi
 
     return 0
@@ -227,8 +227,8 @@ function ssh_clean_connection {
     id2=$2
     
     ssh_run $id2 "rm /tmp/test" &> /dev/null || true
-    ssh_run $id1 "killall nc" &> /dev/null || true
-    ssh_run $id2 "killall nc" &> /dev/null || true
+    ssh_run $id1 "killall ncat" &> /dev/null || true
+    ssh_run $id2 "killall ncat" &> /dev/null || true
 }
 
 function ssh_connection_test_file {
@@ -366,9 +366,7 @@ function qemu_start {
     fi
 
     ssh_run $id ip -6 addr add 2001:db8:2000:aff0::$id/64 dev ens4	
-    #install openbsd-netcat
-    ssh_run $id pacman -Rs gnu-netcat --noconfirm &>/dev/null
-    ssh_run $id pacman -Syy community/openbsd-netcat --noconfirm &>/dev/null
+    ssh_run $id pacman -Syy nmap --noconfirm &>/dev/null
 }
 
 function qemu_stop {
