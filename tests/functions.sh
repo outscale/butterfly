@@ -363,6 +363,7 @@ function qemu_start {
     if [ "$ip" == "dhcp-server" ]; then
         ssh_run $id pacman --noconfirm -Sy dhcp &> /dev/null
         ssh_run $id ip addr add 42.0.0.$id/24 dev ens4
+        ssh_run $id ip -6 addr add 2001:db8:2000:aff0::$id/64 dev ens4
         echo -e "
             option domain-name-servers 8.8.8.8, 8.8.4.4;
             option subnet-mask 255.255.255.0;
