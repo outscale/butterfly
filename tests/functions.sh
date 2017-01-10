@@ -205,20 +205,27 @@ function ssh_connection_tests_internal {
         proto_cmd="-6 -u"
     elif [ "$protocol" == "tcp6" ]; then
         proto_cmd="-6"
+    elif [ "$protocol" == "sctp" ]; then
+        proto_cmd="sctp"
     else
         echo -e "protocol $protocol not supported by nic_add_port_open"
         RETURN_CODE=1
         return $RETURN_CODE
     fi
 
-    ssh_run_background $id2 "ncat $proto_cmd -lp $port > /tmp/test"
-    sleep 0.4
-    if [ "$protocol" == "udp6" ] || [ "$protocol" == "tcp6" ]; then
-        ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 2001:db8:2000:aff0::$id2 $port"
+    if [ "$proto_cmd" == "sctp" ]; then
+        ssh_run_background $id2 "sctp_test -H 0 -P $port -l > /tmp/test"
+        sleep 0.4
+        ssh_run_background $id1 "sctp_test -H 0 -P 8142 -h 42.0.0.$id2 -p $port -s"
     else
-        ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 42.0.0.$id2 $port"
+        ssh_run_background $id2 "ncat $proto_cmd -lp $port > /tmp/test"
+        sleep 0.4
+        if [ "$protocol" == "udp6" ] || [ "$protocol" == "tcp6" ]; then
+            ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 2001:db8:2000:aff0::$id2 $port"
+        else
+            ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 42.0.0.$id2 $port"
+        fi
     fi
-
     return 0
 }
 
@@ -229,19 +236,34 @@ function ssh_clean_connection {
     ssh_run $id2 "rm /tmp/test" &> /dev/null || true
     ssh_run $id1 "killall ncat" &> /dev/null || true
     ssh_run $id2 "killall ncat" &> /dev/null || true
+    ssh_run $id2 "killall sctp_test" &> /dev/null || true
 }
 
 function ssh_connection_test_file {
-    timeout=50
+    id=$1
+    protocol=$2
+    timeout=20
     it=0
-    while [ $it -ne $timeout ]; do
-        ssh_run $1 [ -s "/tmp/test" ]
-    if [ "$?" == "0" ]; then
-        return 0
+
+    if [ "$protocol" != "sctp" ]; then
+        while [ $it -ne $timeout ]; do
+            ssh_run $id [ -s "/tmp/test" ]
+            if [ "$?" == "0" ]; then
+                return 0
+            fi
+            sleep 0.1
+            it=$(( $it + 1 ))
+        done
+    else
+        while [ $it -ne $timeout ]; do
+            ret=$(ssh_run $id "cat /tmp/test | wc -l")
+            if [ "$ret" -gt "20" ]; then
+                return 0
+            fi
+            sleep 0.1
+            it=$(( $it + 1 ))
+        done
     fi
-    sleep 0.1
-    it=$( expr $it + 1 )
-    done
     return 1
 }
 
@@ -258,7 +280,7 @@ function ssh_connection_test {
         return
     fi
 
-    ssh_connection_test_file $id2
+    ssh_connection_test_file $id2 $protocol
     if [ "$?" == "0" ]; then
         echo -e "$protocol test VM $id1 ---> VM $id2 OK"
     else
@@ -282,12 +304,22 @@ function ssh_no_connection_test {
         echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL (1)"
         return
     fi
-    ssh_run $id2 [ -s "/tmp/test" ]
-    if [ "$?" == "0" ]; then
-        echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL"
-        RETURN_CODE=1
+    if [ "$protocol" == "sctp" ]; then
+        ssh_connection_test_file $id2 $protocol
+        if [ "$?" == "0" ]; then
+            echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL"
+            RETURN_CODE=1
+        else
+            echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
+        fi
     else
-        echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
+        ssh_run $id2 [ -s "/tmp/test" ]
+        if [ "$?" == "0" ]; then
+            echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL"
+            RETURN_CODE=1
+        else
+            echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
+        fi
     fi
     set -e
     ssh_clean_connection $id1 $id2
@@ -363,7 +395,8 @@ function qemu_start {
         ssh_run $id ip -6 addr add 2001:db8:2000:aff0::$id/64 dev ens4
     fi
 
-    ssh_run $id pacman -Syy nmap --noconfirm &>/dev/null
+    ssh_run $id pacman -Sy nmap --noconfirm &>/dev/null
+    ssh_run $id pacman -Sy lksctp-tools --noconfirm &>/dev/null
 }
 
 function qemu_stop {
@@ -627,6 +660,8 @@ function sg_rule_add_port_open {
         protocol=6
     elif [ "$protocol" == "udp" ]; then
         protocol=17
+    elif [ "$protocol" == "sctp" ]; then
+        protocol=132
     else
         echo -e "protocol $protocol not supported by sg_rule_add_port_open"
         RETURN_CODE=1
@@ -689,6 +724,8 @@ function sg_rule_add_ip_and_port {
         protocol=6
     elif [ "$protocol" == "udp" ]; then
         protocol=17
+    elif [ "$protocol" == "sctp" ]; then
+        protocol=132
     else
         echo -e "protocol $protocol not supported by sg_rule_add_port_open"
         RETURN_CODE=1
@@ -731,6 +768,8 @@ function sg_rule_del_ip_and_port {
         protocol=6
     elif [ "$protocol" == "udp" ]; then
         protocol=17
+    elif [ "$protocol" == "sctp" ]; then
+        protocol=132
     else
         echo -e "protocol $protocol not supported by sg_rule_add_port_open"
         RETURN_CODE=1
@@ -834,6 +873,8 @@ function sg_rule_add_with_sg_member {
         protocol=6
     elif [ "$protocol" == "udp" ]; then
         protocol=17
+    elif [ "$protocol" == "sctp" ]; then
+        protocol=132
     else
         echo -e "protocol $protocol not supported by sg_rule_add_port_open"
         RETURN_CODE=1
@@ -872,6 +913,8 @@ function sg_rule_del_with_sg_member {
         protocol=6
     elif [ "$protocol" == "udp" ]; then
         protocol=17
+    elif [ "$protocol" == "sctp" ]; then
+        protocol=132
     else
         echo -e "protocol $protocol not supported by sg_rule_add_port_open"
         RETURN_CODE=1
@@ -1099,6 +1142,8 @@ function sg_rule_del_port_open {
         protocol=6
     elif [ "$protocol" == "udp" ]; then
         protocol=17
+    elif [ "$protocol" == "sctp" ]; then
+        protocol=132
     else
         echo -e "protocol $protocol not supported by sg_rule_del_port_open"
         RETURN_CODE=1
