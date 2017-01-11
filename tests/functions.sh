@@ -481,31 +481,15 @@ function nic_add {
     vni=$3
     sg_list=${@:4}
 
-    f=/tmp/butterfly.req
     echo "[butterfly-$but_id] add nic $nic_id with vni $vni"
+ 
+    cli $but_id 0 nic add --id "nic-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "42.0.0.$nic_id" --enable-antispoof
+    sleep 1
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      nic_add {
-        id: \"nic-$nic_id\"
-        mac: \"52:54:00:12:34:0$nic_id\"
-        vni: $vni
-        ip: \"42.0.0.$nic_id\"
-        ip_anti_spoof: true" > $f
     for i in $sg_list; do
-    echo "        security_group: \"$i\"" >> $f
+               cli $but_id 0 nic sg add "nic-$nic_id" $i
     done
-    echo "
-      }
-    }
-  }
-}
-" >> $f
-
-    request $but_id $f
-    sleep 0.3
+    sleep 1
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
         sleep 1
