@@ -547,6 +547,9 @@ bool API_0::validate_nic(const MessageV0_Nic &nic) {
 
 bool API_0::validate_nic_update(const MessageV0_NicUpdateReq &nic_update) {
     // Check IP list
+    if (nic_update.ip_size() == 1 && nic_update.ip(0).length() == 0) {
+        return true;
+    }
     for (int a = 0; a < nic_update.ip_size(); a++) {
         auto ip = nic_update.ip(a);
         if (!validate_ip(ip))
@@ -746,8 +749,12 @@ bool API_0::convert(const MessageV0_NicUpdateReq &nic_update_message,
         nic_update_model->has_ip_anti_spoof = false;
     }
     // IP list of NIC
+    nic_update_model->ip_overwrite =
+        nic_update_message.ip_size() ? true : false;
     for (int a = 0; a < nic_update_message.ip_size(); a++) {
         app::Ip ip;
+        if (nic_update_message.ip(a).length() == 0)
+            continue;
         if (!convert(nic_update_message.ip(a), &ip))
             return false;
 
@@ -759,9 +766,13 @@ bool API_0::convert(const MessageV0_NicUpdateReq &nic_update_message,
         nic_update_model->ip.push_back(ip);
     }
     // List Security groups
+    nic_update_model->security_groups_overwrite =
+        nic_update_message.security_group_size() ? true : false;
     for (int a = 0; a < nic_update_message.security_group_size(); a++) {
         // Don't add security group if we already have it
         std::string sg_id = nic_update_message.security_group(a);
+        if (sg_id.length() == 0)
+            continue;
         auto res = std::find(nic_update_model->security_groups.begin(),
                              nic_update_model->security_groups.end(), sg_id);
         if (res != nic_update_model->security_groups.end())
