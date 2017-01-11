@@ -1026,6 +1026,7 @@ function remove_sg_from_nic {
       nic_update {
         id: \"nic-$nic_id\"
         ip: \"42.0.0.$nic_id\"
+        security_group: \"\"
         ip_anti_spoof: true
       }
     }
