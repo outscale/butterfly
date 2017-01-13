@@ -145,8 +145,11 @@ bool Graph::start(std::string dpdk_args) {
     }
     pg_nic_capabilities(nic_.get(), &useless, &nic_capa_tx);
     if (!(nic_capa_tx & PG_NIC_TX_OFFLOAD_TCP_TSO)) {
+        app::log.info("no offloading available");
         pg_vhost_disable(VIRTIO_NET_F_HOST_TSO4);
         pg_vhost_disable(VIRTIO_NET_F_HOST_TSO6);
+    } else {
+        app::log.info("some offloading is available");
     }
 
     // Create sniffer brick
