@@ -544,19 +544,10 @@ function nic_add6 {
 function nic_del {
     but_id=$1
     nic_id=$2
-    f=/tmp/butterfly.req
     echo "[butterfly-$but_id] delete nic $nic_id"
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      nic_del: \"nic-$nic_id\"
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 nic del "nic-$nic_id"
+    sleep 0.3
 }
 
 function sg_rule_add_all_open {
