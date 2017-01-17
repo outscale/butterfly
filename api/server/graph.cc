@@ -199,11 +199,11 @@ void Graph::set_config_mtu() {
 
         while (min != max - 1) {
             int m = (min + max) / 2;
-            if (!pg_nic_set_mtu(nic_.get(), m , &app::pg_error)) {
+            if (pg_nic_set_mtu(nic_.get(), m , &app::pg_error) < 0) {
                 PG_ERROR_SILENT_(app::pg_error);
-                min = m;
-            } else {
                 max = m;
+            } else {
+                min = m;
             }
         }
         if (pg_nic_set_mtu(nic_.get(), min, &app::pg_error) < 0) {
