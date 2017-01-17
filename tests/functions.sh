@@ -647,38 +647,8 @@ function sg_rule_add_ip_and_port {
     port=$5
     sg=$6
     echo "[butterfly-$but_id] add rule $protocol port $port ip $ip/$mask_size in $sg"
-    if [ "$protocol" == "tcp" ]; then
-        protocol=6
-    elif [ "$protocol" == "udp" ]; then
-        protocol=17
-    else
-        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-        RETURN_CODE=1
-    fi
-    f=/tmp/butterfly-client.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          cidr {
-            address: \"$ip\"
-            mask_size: $mask_size
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr $ip/$mask_size 
 }
 
 function sg_rule_del_ip_and_port {
