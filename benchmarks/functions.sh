@@ -44,6 +44,7 @@ function butterfly_start {
     local port=$3
     ssh_run $ip $port "echo [general] > /tmp/butt-config.ini"
     ssh_run $ip $port "echo dpdk-args=--no-shconf -c1 -n2 --socket-mem 64 --huge-unlink >> /tmp/butt-config.ini"
+    ssh_run $ip $port "echo nic-mtu=max >> /tmp/butt-config.ini"
     ssh_run $ip $port tmux new -d -s $(date +%Y-%m-%d-%H.%M.%S) \'butterflyd -c /tmp/butt-config.ini -l debug -i 43.0.0.$id -s /tmp \'
     sleep 5
     ssh_run $ip $port pgrep -f butterflyd
