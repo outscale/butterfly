@@ -30,21 +30,21 @@ for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
     tput setaf 7
     expected=$(echo $request | sed -e 's/_in$/_out/')
     if [ ".$VERBOSE" == ".1" ]; then
-	echo verbose mode
-	sudo bash -x $run $client $server $request $expected
+        echo verbose mode
+        sudo bash -x $run $client $server $request $expected
     else
-	sudo $run $client $server $request $expected
+        sudo $run $client $server $request $expected
     fi
     if [ $? -ne 0 ]; then
-	tput setaf 1
+        tput setaf 1
         echo FAILED !
         err=true
-	tput setaf 7
-	exit 1
+        tput setaf 7
+        exit 1
     else
-	tput setaf 2
+        tput setaf 2
         echo OK
-	tput setaf 7
+        tput setaf 7
     fi
 done
 

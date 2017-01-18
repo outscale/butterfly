@@ -21,9 +21,9 @@ echo verbose mode $VERBOSE
 for s in $BUTTERFLY_ROOT/tests/scenario_*; do
     echo "=== running $(basename $s) ==="
     if [ ".$VERBOSE" == ".1" ]; then
-	echo verbose mode
-	bash -x $s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT || exit 1
+        echo verbose mode
+        bash -x $s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT || exit 1
     else
-	$s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT || exit 1
+        $s/test.sh $BUTTERFLY_ROOT $BUTTERFLY_BUILD_ROOT || exit 1
     fi
 done

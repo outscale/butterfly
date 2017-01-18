@@ -49,4 +49,21 @@ else
 fi
 rm /tmp/cppcheck.log
 
+rm /tmp/has_tabs &> /dev/null || true
+for f in api benchmarks doc scripts tests; do
+    find $BUTTERFLY_ROOT/$f -name *.sh | while read a; do
+        if [ "-$(cat $a | grep -P '\t')" != "-" ]; then
+            echo found tab in $a
+            touch /tmp/has_tabs
+        fi
+    done
+done
+if test -f /tmp/has_tabs; then
+    rm /tmp/has_tabs &> /dev/null || true
+    echo "-- tabs found in scripts"
+    exit 1
+else
+    echo "-- no tab found in scripts"
+fi
+
 exit 0

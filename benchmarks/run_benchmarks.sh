@@ -23,7 +23,7 @@ function usage {
     echo "    --ip-b         : IP address of second machine (mandatory)"
     echo "    --port-b       : SSH port of second machine (optional, default: 22)"
     echo "    --package      : 'rpm' or 'deb' (optional, default: rpm)"
-    echo "    --fat	     : use fat package instead of clasique one"
+    echo "    --fat          : use fat package instead of clasique one"
     echo "    -t | --time    : duration (seconds) of each benchmark"
     echo "                     (optional, default: 100)"
     echo "    --keep-running : launch endless TCP iperf before leaving"
@@ -69,7 +69,7 @@ while true ; do
             bench_duration=$2 ; shift 2 ;;
         --keep-running)
             keep_running=1 ; shift 1 ;;
-	--fat)
+        --fat)
             fat="fat-" ; shift 1 ;;
         -h|--help)
             usage; exit 0 ;;

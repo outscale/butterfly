@@ -198,25 +198,25 @@ function ssh_connection_tests_internal {
     proto_cmd=""
 
     if [ "$protocol" == "udp" ]; then
-	proto_cmd="-4 -u"
+        proto_cmd="-4 -u"
     elif [ "$protocol" == "tcp" ]; then
-	proto_cmd="-4"
+        proto_cmd="-4"
     elif [ "$protocol" == "udp6" ]; then
-	proto_cmd="-6 -u"
+        proto_cmd="-6 -u"
     elif [ "$protocol" == "tcp6" ]; then
-	proto_cmd="-6"
+        proto_cmd="-6"
     else
-	echo -e "protocol $protocol not supported by nic_add_port_open"
-	RETURN_CODE=1
-	return $RETURN_CODE
+        echo -e "protocol $protocol not supported by nic_add_port_open"
+        RETURN_CODE=1
+        return $RETURN_CODE
     fi
 
     ssh_run_background $id2 "ncat $proto_cmd -lp $port > /tmp/test"
     sleep 0.4
     if [ "$protocol" == "udp6" ] || [ "$protocol" == "tcp6" ]; then
-	ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 2001:db8:2000:aff0::$id2 $port"
+        ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 2001:db8:2000:aff0::$id2 $port"
     else
-	ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 42.0.0.$id2 $port"
+        ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 42.0.0.$id2 $port"
     fi
 
     return 0
@@ -235,12 +235,12 @@ function ssh_connection_test_file {
     timeout=50
     it=0
     while [ $it -ne $timeout ]; do
-	ssh_run $1 [ -s "/tmp/test" ]
-	if [ "$?" == "0" ]; then
-	    return 0
-	fi
-	sleep 0.1
-	it=$( expr $it + 1 )
+        ssh_run $1 [ -s "/tmp/test" ]
+    if [ "$?" == "0" ]; then
+        return 0
+    fi
+    sleep 0.1
+    it=$( expr $it + 1 )
     done
     return 1
 }
@@ -254,16 +254,16 @@ function ssh_connection_test {
     set +e
     ssh_connection_tests_internal $protocol $id1 $id2 $port
     if [ "$?" != "0" ]; then
-	echo -e "$protocol test VM $id1 ---> VM $id2 FAIL (1)"
-	return
+        echo -e "$protocol test VM $id1 ---> VM $id2 FAIL (1)"
+        return
     fi
 
     ssh_connection_test_file $id2
     if [ "$?" == "0" ]; then
-	echo -e "$protocol test VM $id1 ---> VM $id2 OK"
+        echo -e "$protocol test VM $id1 ---> VM $id2 OK"
     else
-	echo -e "$protocol test VM $id1 ---> VM $id2 FAIL"
-	RETURN_CODE=1
+        echo -e "$protocol test VM $id1 ---> VM $id2 FAIL"
+        RETURN_CODE=1
     fi
     set -e
     ssh_clean_connection $id1 $id2
@@ -279,15 +279,15 @@ function ssh_no_connection_test {
     set +e
     ssh_connection_tests_internal $protocol $id1 $id2 $port
     if [ "$?" != "0" ]; then
-	echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL (1)"
-	return
+        echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL (1)"
+        return
     fi
     ssh_run $id2 [ -s "/tmp/test" ]
     if [ "$?" == "0" ]; then
-	echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL"
-	RETURN_CODE=1
+        echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL"
+        RETURN_CODE=1
     else
-	echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
+        echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
     fi
     set -e
     ssh_clean_connection $id1 $id2
@@ -310,9 +310,9 @@ function qemu_start {
     TEST=$?
     while  [ $TEST -ne 0 ]
     do
-	echo "joe" | nc -w 1  127.0.0.1 500$id &> /dev/null
-	TEST=$?
-	sleep 0.2
+        echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
+        TEST=$?
+        sleep 0.2
     done
     set -e
     sudo kill -s 0 $pid &> /dev/null
@@ -495,7 +495,7 @@ function nic_add {
         ip: \"42.0.0.$nic_id\"
         ip_anti_spoof: true" > $f
     for i in $sg_list; do
-	echo "        security_group: \"$i\"" >> $f
+    echo "        security_group: \"$i\"" >> $f
     done
     echo "
       }
@@ -508,7 +508,7 @@ function nic_add {
     sleep 0.3
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
-	sleep 1
+        sleep 1
     fi
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
@@ -538,7 +538,7 @@ function nic_add6 {
         ip: \"2001:db8:2000:aff0::$nic_id\"
         ip_anti_spoof: true" > $f
     for i in $sg_list; do
-	echo "        security_group: \"$i\"" >> $f
+        echo "        security_group: \"$i\"" >> $f
     done
     echo "
       }
@@ -628,12 +628,12 @@ function sg_rule_add_port_open {
     sg=$4
     echo "[butterfly-$but_id] add rule $protocol port $port open in $sg"
     if [ "$protocol" == "tcp" ]; then
-	protocol=6
+        protocol=6
     elif [ "$protocol" == "udp" ]; then
-	protocol=17
+        protocol=17
     else
-	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-	RETURN_CODE=1
+        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
+        RETURN_CODE=1
     fi
     f=/tmp/butterfly.req
 
@@ -690,12 +690,12 @@ function sg_rule_add_ip_and_port {
     sg=$6
     echo "[butterfly-$but_id] add rule $protocol port $port ip $ip/$mask_size in $sg"
     if [ "$protocol" == "tcp" ]; then
-	protocol=6
+        protocol=6
     elif [ "$protocol" == "udp" ]; then
-	protocol=17
+        protocol=17
     else
-	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-	RETURN_CODE=1
+        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
+        RETURN_CODE=1
     fi
     f=/tmp/butterfly-client.req
 
@@ -732,12 +732,12 @@ function sg_rule_del_ip_and_port {
     sg=$6
     echo "[butterfly-$but_id] del rule $protocol port $port ip $ip/$mask_size in $sg"
     if [ "$protocol" == "tcp" ]; then
-	protocol=6
+        protocol=6
     elif [ "$protocol" == "udp" ]; then
-	protocol=17
+        protocol=17
     else
-	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-	RETURN_CODE=1
+        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
+        RETURN_CODE=1
     fi
     f=/tmp/butterfly-client.req
 
@@ -835,12 +835,12 @@ function sg_rule_add_with_sg_member {
     sg_member=$5
     echo "[butterfly-$but_id] add rule to $sg: allow sg members of $sg_member on $protocol:$port"
     if [ "$protocol" == "tcp" ]; then
-	protocol=6
+        protocol=6
     elif [ "$protocol" == "udp" ]; then
-	protocol=17
+        protocol=17
     else
-	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-	RETURN_CODE=1
+        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
+        RETURN_CODE=1
     fi
     f=/tmp/butterfly.req
 
@@ -873,12 +873,12 @@ function sg_rule_del_with_sg_member {
     sg_member=$5
     echo "[butterfly-$but_id] delete rule from $sg: allow sg members of $sg_member on $protocol:$port"
     if [ "$protocol" == "tcp" ]; then
-	protocol=6
+        protocol=6
     elif [ "$protocol" == "udp" ]; then
-	protocol=17
+        protocol=17
     else
-	echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-	RETURN_CODE=1
+        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
+        RETURN_CODE=1
     fi
     f=/tmp/butterfly.req
 
@@ -957,7 +957,7 @@ function nic_set_sg {
         " > $f
 
     for i in $sg_list; do
-	echo "        security_group: \"$i\"
+        echo "        security_group: \"$i\"
     " >> $f
     done
 
@@ -1038,11 +1038,11 @@ function sg_rule_del {
     port=$4
 
     if [ "$#" -eq "2" ]; then
-	sg_rule_del_all_open $but_id $sg
+        sg_rule_del_all_open $but_id $sg
     fi
 
     if [ "$#" -eq "4" ]; then
-	sg_rule_del_port_open $but_id $sg $protocol $port
+        sg_rule_del_port_open $but_id $sg $protocol $port
     fi
 }
 
@@ -1100,12 +1100,12 @@ function sg_rule_del_port_open {
     echo "[butterfly-$but_id] delete rule $protocol port $port open from $sg"
 
     if [ "$protocol" == "tcp" ]; then
-	protocol=6
+        protocol=6
     elif [ "$protocol" == "udp" ]; then
-	protocol=17
+        protocol=17
     else
-	echo -e "protocol $protocol not supported by sg_rule_del_port_open"
-	RETURN_CODE=1
+        echo -e "protocol $protocol not supported by sg_rule_del_port_open"
+        RETURN_CODE=1
     fi
     f=/tmp/butterfly.req
 
