@@ -617,60 +617,7 @@ function sg_rule_add_port_open {
     port=$3
     sg=$4
     echo "[butterfly-$but_id] add rule $protocol port $port open in $sg"
-    if [ "$protocol" == "tcp" ]; then
-        protocol=6
-    elif [ "$protocol" == "udp" ]; then
-        protocol=17
-    elif [ "$protocol" == "sctp" ]; then
-        protocol=132
-    else
-        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-        RETURN_CODE=1
-    fi
-    f=/tmp/butterfly.req
-
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          cidr {
-            address: \"0.0.0.0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          cidr {
-            address: \"0::\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0.0.0.0/0
 }
 
 function sg_rule_add_ip_and_port {
