@@ -363,9 +363,9 @@ function qemu_start {
         ssh_run $id dhcpcd ens4 &> /dev/null || ( echo "DHCP failed !" && false )
     else
         ssh_run $id ip addr add 42.0.0.$id/24 dev ens4
+        ssh_run $id ip -6 addr add 2001:db8:2000:aff0::$id/64 dev ens4
     fi
 
-    ssh_run $id ip -6 addr add 2001:db8:2000:aff0::$id/64 dev ens4	
     ssh_run $id pacman -Syy nmap --noconfirm &>/dev/null
 }
 
