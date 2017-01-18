@@ -372,14 +372,14 @@ int NicAddOptions::parse(int argc, char **argv) {
         else if (string(argv[i]) == "--bypass-filtering")
             bypass_filtering = "true";
     }
-    return !ips.size() || !mac.length() || !id.length() || !vni.length();
+    return !mac.length() || !id.length() || !vni.length();
 }
 
 static void sub_nic_add_help(void) {
     cout << "usage: butterfly nic add [options...]" << endl;
     cout  << endl <<
         "options:" << endl <<
-        "    --ip IP             virtual interface's ip (v4 or v6) (mandatory)"
+        "    --ip IP             virtual interface's ip (v4 or v6)"
             << endl <<
         "    --mac MAC           virtual interface's mac (mandatory)" << endl <<
         "    --id ID             interface's id (mandatory)" << endl <<

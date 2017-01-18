@@ -21,7 +21,7 @@ cli 0 0 nic add help
 cli 0 0 nic add --ip 42.0.0.1 --mac 42:42:42:42:42:01 --vni 1337 --id nic_1
 cli 0 0 nic add --ip 42.0.0.1 --mac 42:42:42:42:42:01 --vni 1337 --id nic_1
 cli 0 0 nic add --ip 42.0.0.2 --mac 42:42:42:42:42:01 --vni 1337 --id nic_2 --enable-antispoof
-cli 0 1 nic add --mac 42:42:42:42:42:01 --vni 1337 --id nic_not_created
+cli 0 0 nic add --mac 42:42:42:42:42:01 --vni 1337 --id nic_not_created
 cli 0 1 nic add --ip 42.0.0.1 --vni 1337 --id nic_not_created
 cli 0 1 nic add --ip 42.0.0.1 --mac 42:42:42:42:42:01 --id nic_not_created
 cli 0 1 nic add --ip 42.0.0.1 --mac 42:42:42:42:42:01 --vni 1337
