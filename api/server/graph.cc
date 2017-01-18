@@ -438,17 +438,14 @@ std::string Graph::nic_add(const app::Nic &nic) {
     }
 
     if (nic.ip_anti_spoof) {
-        // TODO(jerome.jutteau) patch this when antispoof brick will support
-        // several IP for arp antispoofing.
-        // Get the first IP of the VM
-        std::string ip = nic.ip_list.front().str();
-        uint32_t ipp;
-        inet_pton(AF_INET, ip.c_str(), &ipp);
-        pg_antispoof_arp_enable(gn.antispoof.get());
-        if (pg_antispoof_arp_add(gn.antispoof.get(), ipp, &app::pg_error) < 0) {
-            PG_ERROR_(app::pg_error);
-            return "";
+        for (auto it = nic.ip_list.begin(); it != nic.ip_list.end(); it++) {
+            uint32_t ip;
+            inet_pton(AF_INET, it->str().c_str(), &ip);
+            if (pg_antispoof_arp_add(gn.antispoof.get(),
+                                     ip, &app::pg_error) < 0)
+                PG_ERROR_(app::pg_error);
         }
+        pg_antispoof_arp_enable(gn.antispoof.get());
     }
 
     name = "vhost-" + gn.id;
@@ -670,25 +667,17 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
 
     BrickShrPtr &antispoof = nic_it->second.antispoof;
     if (enable) {
-        if (nic.ip_list.size() == 0) {
-            LOG_ERROR_("cannot enable ARP antispoof with no given ip for nic " +
-                       nic.id);
-            return;
+        pg_antispoof_arp_del_all(antispoof.get());
+        for (auto it = nic.ip_list.begin(); it != nic.ip_list.end(); it++) {
+            uint32_t ip;
+            inet_pton(AF_INET, it->str().c_str(), &ip);
+            if (pg_antispoof_arp_add(antispoof.get(),
+                                     ip, &app::pg_error) < 0)
+                PG_ERROR_(app::pg_error);
         }
-        // TODO(jerome.jutteau) patch this when antispoof brick will support
-        // several IP for arp antispoofing.
-        // Get the first IP of the VM
-        std::string ip = nic.ip_list.front().str();
-        uint32_t ipp;
-        inet_pton(AF_INET, ip.c_str(), &ipp);
         pg_antispoof_arp_enable(antispoof.get());
-        if (pg_antispoof_arp_add(antispoof.get(), ipp, &app::pg_error) < 0) {
-            PG_ERROR_(app::pg_error);
-            return;
-        }
     } else {
         pg_antispoof_arp_disable(antispoof.get());
-        pg_antispoof_arp_del_all(antispoof.get());
     }
 }
 

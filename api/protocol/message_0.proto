@@ -143,8 +143,6 @@ message MessageV0 {
     // 24 bits Virtual Network Id, must be < 2^24
     required uint32 vni = 3;
     // NIC can have several IP (v4 or/and v6)
-    // Note that NIC IP(s) are only used for the IP anti-spoof if activated
-    // Warning: not implemented for more that 1 IP and you MUST set one.
     repeated string ip = 4;
     // List of Security Group identifier
     repeated string security_group = 5;
