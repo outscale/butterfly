@@ -63,7 +63,7 @@ function ssh_bash {
 function ssh_ping {
     id1=$1
     id2=$2
-    ssh_run $id1 ping 42.0.0.$id2 -c 1 &> /dev/null
+    ssh_run $id1 ping 42.0.0.$id2 -c 1 -W 1 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping VM $id1 ---> VM $id2 FAIL"
         RETURN_CODE=1
@@ -76,7 +76,7 @@ function ssh_no_ping {
     id1=$1
     id2=$2
     set +e
-    ssh_run $id1 ping 42.0.0.$id2 -c 1 &> /dev/null
+    ssh_run $id1 ping 42.0.0.$id2 -c 1 -W 1 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping VM $id1 -/-> VM $id2 OK"
     else
@@ -89,7 +89,7 @@ function ssh_no_ping {
 function ssh_ping6 {
     id1=$1
     id2=$2
-    ssh_run $id1 ping6 2001:db8:2000:aff0::$id2 -c 1 &> /dev/null
+    ssh_run $id1 ping6 2001:db8:2000:aff0::$id2 -c 1 -W 1 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping6 VM $id1 ---> VM $id2 FAIL"
         RETURN_CODE=1
@@ -102,7 +102,7 @@ function ssh_no_ping6 {
     id1=$1
     id2=$2
     set +e
-    ssh_run $id1 ping6 2001:db8:2000:aff0::$id2 -c 1 &> /dev/null
+    ssh_run $id1 ping6 2001:db8:2000:aff0::$id2 -c 1 -W 1 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping6 VM $id1 -/-> VM $id2 OK"
     else
