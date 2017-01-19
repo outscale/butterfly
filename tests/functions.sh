@@ -303,7 +303,7 @@ function qemu_start {
     MAC=52:54:00:12:34:0$id
 
     CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
-    exec $CMD &> /tmp/qemu_log_$id &
+    exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
     pid=$!
     set +e
     echo "joe" | nc -w 1  127.0.0.1 500$id &> /dev/null
@@ -317,13 +317,10 @@ function qemu_start {
     set -e
     sudo kill -s 0 $pid &> /dev/null
     if [ $? -ne 0 ]; then
-        cat /tmp/qemu_log_$id
-        rm /tmp/qemu_log_$id
-        echo "failed to start qemu"
+        echo "failed to start qemu, check qemu_${id}_output file"
         clean_all
         exit 1
     fi
-    rm /tmp/qemu_log_$id
     qemu_pids["$id"]=$pid
 
     # Wait for ssh to be ready
@@ -379,11 +376,11 @@ function server_start {
     id=$1
     echo "[butterfly-$id] starting"
 
-    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t &> /dev/null &
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id -t &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
     pid=$!
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
-        echo "failed to start butterfly"
+        echo "failed to start butterfly, check butterflyd_${id}_output file"
         clean_all
         exit 1
     fi
@@ -467,8 +464,7 @@ function cli {
     set +e
     $BUTTERFLY_BUILD_ROOT/api/client/butterfly $opts -e tcp://127.0.0.1:876$but_id &> $BUTTERFLY_BUILD_ROOT/cli_output
     if [ ! "$?" == "$excepted_result" ]; then
-        cat $BUTTERFLY_BUILD_ROOT/cli_output
-        echo "cli run failed"
+        echo "cli run failed, check cli_output file"
         clean_all
         exit 1
     fi
