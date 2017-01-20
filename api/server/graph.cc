@@ -145,21 +145,26 @@ bool Graph::start(std::string dpdk_args) {
     }
     pg_nic_capabilities(nic_.get(), &useless, &nic_capa_tx);
     if (!(nic_capa_tx & PG_NIC_TX_OFFLOAD_TCP_TSO)) {
+        app::log.info("no offloading available");
         pg_vhost_disable(VIRTIO_NET_F_HOST_TSO4);
         pg_vhost_disable(VIRTIO_NET_F_HOST_TSO6);
+    } else {
+        app::log.info("some offloading is available");
     }
 
     // Create sniffer brick
-    pcap_file_ = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
-                        "-main.pcap").c_str(), "w");
-    std::string sniffer_name = "main-sniffer-" + std::to_string(getpid());
-    sniffer_ = BrickShrPtr(pg_print_new(sniffer_name.c_str(), pcap_file_,
-                                  PG_PRINT_FLAG_PCAP | PG_PRINT_FLAG_CLOSE_FILE,
-                                  NULL, &app::pg_error),
+    if (app::config.packet_trace) {
+        pcap_file_ = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
+                            "-main.pcap").c_str(), "w");
+        std::string sniffer_name = "main-sniffer-" + std::to_string(getpid());
+        sniffer_ = BrickShrPtr(pg_print_new(sniffer_name.c_str(), pcap_file_,
+                               PG_PRINT_FLAG_PCAP | PG_PRINT_FLAG_CLOSE_FILE,
+                               NULL, &app::pg_error),
                     pg_brick_destroy);
-    if (sniffer_.get() == NULL) {
-        PG_ERROR_(app::pg_error);
-        return false;
+        if (sniffer_.get() == NULL) {
+            PG_ERROR_(app::pg_error);
+            return false;
+        }
     }
 
     // Create vtep brick
@@ -194,11 +199,11 @@ void Graph::set_config_mtu() {
 
         while (min != max - 1) {
             int m = (min + max) / 2;
-            if (!pg_nic_set_mtu(nic_.get(), m , &app::pg_error)) {
+            if (pg_nic_set_mtu(nic_.get(), m , &app::pg_error) < 0) {
                 PG_ERROR_SILENT_(app::pg_error);
-                min = m;
-            } else {
                 max = m;
+            } else {
+                min = m;
             }
         }
         if (pg_nic_set_mtu(nic_.get(), min, &app::pg_error) < 0) {
@@ -449,19 +454,20 @@ std::string Graph::nic_add(const app::Nic &nic) {
         PG_ERROR_(app::pg_error);
         return "";
     }
-    name = "sniffer-" + gn.id;
-    gn.pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) + "-" +
-                          gn.id + ".pcap").c_str(), "w");
-    gn.sniffer = BrickShrPtr(pg_print_new(name.c_str(), gn.pcap_file,
-                                    PG_PRINT_FLAG_PCAP |
-                                    PG_PRINT_FLAG_CLOSE_FILE,
-                                    NULL, &app::pg_error),
+    if (app::config.packet_trace) {
+        name = "sniffer-" + gn.id;
+        gn.pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
+                              "-" + gn.id + ".pcap").c_str(), "w");
+        gn.sniffer = BrickShrPtr(pg_print_new(name.c_str(), gn.pcap_file,
+                                 PG_PRINT_FLAG_PCAP |
+                                 PG_PRINT_FLAG_CLOSE_FILE,
+                                 NULL, &app::pg_error),
                        pg_brick_destroy);
-    if (!gn.sniffer) {
-        PG_ERROR_(app::pg_error);
-        return "";
+        if (!gn.sniffer) {
+            PG_ERROR_(app::pg_error);
+            return "";
+        }
     }
-
     // Link branch (inside)
     if (pg_brick_link(gn.firewall.get(),
                       gn.antispoof.get(), &app::pg_error) < 0) {

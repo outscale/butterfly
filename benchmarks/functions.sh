@@ -1,6 +1,6 @@
-IMG_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-051115.qcow
-IMG_MD5=4b7b1a71ac47eb73d85cdbdc85533b07
-KEY_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-051115.rsa
+IMG_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-100816.qcow
+IMG_MD5=1ca000ddbc5ac271c77d1875fab71083
+KEY_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-100816.rsa
 KEY_MD5=eb3d700f2ee166e0dbe00f4e0aa2cef9
 
 function ssh_run {
@@ -42,7 +42,9 @@ function butterfly_start {
     local id=$1
     local ip=$2
     local port=$3
-    ssh_run $ip $port "echo dpdk-args=--no-shconf -c1 -n2 --socket-mem 64 > /tmp/butt-config.ini"
+    ssh_run $ip $port "echo [general] > /tmp/butt-config.ini"
+    ssh_run $ip $port "echo dpdk-args=--no-shconf -c1 -n2 --socket-mem 64 --huge-unlink >> /tmp/butt-config.ini"
+    ssh_run $ip $port "echo nic-mtu=max >> /tmp/butt-config.ini"
     ssh_run $ip $port tmux new -d -s $(date +%Y-%m-%d-%H.%M.%S) \'butterflyd -c /tmp/butt-config.ini -l debug -i 43.0.0.$id -s /tmp \'
     sleep 5
     ssh_run $ip $port pgrep -f butterflyd

@@ -178,7 +178,7 @@ Results (nov 10 2016):
 ```
                      |  VMs on same host  | VMs on remote host |
  --------------------+--------------------+--------------------|
-| Ping (min/average) |  0.067ms / 0.110ms |  0.157ms / 0.169ms |
+| Ping (min/average) |  0.067ms / 0.85ms  |  0.156ms / 0.177ms |
 | TCP                |    15.9 Gbits/s    |     3.0 Gbits/s    |
 | UDP                |     1.4 Gbits/s    |     1.7 Gbits/s    |
 ```
