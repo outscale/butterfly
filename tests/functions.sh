@@ -612,28 +612,8 @@ function sg_rule_add_ip {
     sg=$4
     
     echo "[butterfly-$but_id] add rule to $sg: allow $ip/$mask_size on all protocols"
-    f=/tmp/butterfly-client.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: -1
-          cidr {
-            address: \"$ip\"
-            mask_size: $mask_size
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto -1 --cidr $ip/$mask_size
 }
 
 function sg_rule_del_ip {
