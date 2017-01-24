@@ -8,6 +8,61 @@ network and traffic is filtered by (EC2/Openstack-like) security groups.
 Security groups can be applied to any VM interface, and contain a list of simple
 network rules (dropping traffic by default).
 
+
+# Virtual NICs
+
+A Virtual NIC (or vnic) in butterfly allows you to add a virtual network
+interface to your Qemu VM through vhost-user.
+Each nick have a 24 bits network id called VNI.
+If two vnics with the same VNI are located on different physical hosts,
+Butterfly will encapsulate VM packets over VXLAN and send them to the
+corresponding physical host.
+Once received, packets will be decapsulated and routed to their final
+destination.
+Each vnic created with the same VNI are located on the same network.
+If two vnic with the same VNI are on the same physical host, then packets do
+not exit to physical network.
+
+Butterfly is meant to be connected to the physical network using a dedicated
+[DPDK](http://dpdk.org/) port. It allows Butterfly to have a very low latency between VM while
+using physical NIC offload capabilities.
+
+For VM to VM communication, checksum and segmentation won't occure as packets
+won't transit on a physical network. This allow Butterfly to have a high speed
+and low latency communication between VM.
+
+e.g. create of a new vnic "vnic_1" on vni "1337":
+```
+butterfly nic add --ip 42.0.0.1 --mac 52:54:00:12:34:01 --vni 1337 --id vnic_1
+```
+
+# Filtering
+
+VMs traffic is filtered using an integrated firewall inside Butterfly
+([NetBSD's NPF](http://www.netbsd.org/~rmind/npf/)) for each vnic.
+Filtering rules are applied to each VM by expressing _Security Groups_ (SG).
+A vnic can use several SG and a SG can be used by several vnics.
+When a vnic use several SG, then rules are cumulated.
+A SG contains a list of rules to allow (default policy is to block) and a list
+of members (IP addresses).
+
+A Butterfly rule is mainly described by a protocol/port and source to allow.
+This source can be either a CIDR _or_ members of a security group.
+
+e.g. add a rule in security group "mysg" to allow 42.0.3.1 on TCP port 22:
+```
+butterfly sg rule add mysg --ip-proto tcp --port 22 --cidr 42.0.3.1/32
+```
+
+e.g. add rule in security group "mysg" to allow members of SG "users":
+on TCP port 80:
+```
+butterfly sg rule add mysg --ip-proto tcp --port 80 --sg-members users
+```
+
+Note that when a SG used by one or more vnic is modified, firewalling rules
+attached to each impacted virtual machines are reloaded.
+
 # Using Butterfly
 
 Butterfly is a daemon you can control over a network API.
@@ -42,7 +97,7 @@ butterfly nic add --ip 42.0.0.2 --mac 52:54:00:12:34:02 --vni 1337 --id vnic_6
 Tip: if you want to see what the graph looks like: run `butterfly status` and copy past the dot diagram in [webgraphviz.com](http://www.webgraphviz.com/)
 
 You can edit security groups whenever you want, and virtual nics filtering will be
-updated. Here, we simply create a new rule to open the http port for the whole world
+updated. Here, we simply create a new rule to allow the whole world on http
 and ask some vnics to use this security group.
 ```
 butterfly sg add sg-web
