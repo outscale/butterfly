@@ -686,37 +686,7 @@ function sg_rule_add_with_sg_member {
     port=$4
     sg_member=$5
     echo "[butterfly-$but_id] add rule to $sg: allow sg members of $sg_member on $protocol:$port"
-    if [ "$protocol" == "tcp" ]; then
-        protocol=6
-    elif [ "$protocol" == "udp" ]; then
-        protocol=17
-    elif [ "$protocol" == "sctp" ]; then
-        protocol=132
-    else
-        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-        RETURN_CODE=1
-    fi
-    f=/tmp/butterfly.req
-
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          security_group: \"$sg_member\"
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --sg-members $sg_member
 }
 
 function sg_rule_del_with_sg_member {
