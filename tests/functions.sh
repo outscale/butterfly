@@ -819,18 +819,8 @@ function sg_del {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete $sg"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_del: \"$sg\"
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg del $sg
 }
 
 function sg_rule_del {
