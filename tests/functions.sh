@@ -811,20 +811,8 @@ function sg_add {
     sg=$1
     but_id=$2
     echo "[butterfly-$but_id] add $sg"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_add {
-        id: \"$sg\"
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg add $sg
 }
 
 function sg_del {
