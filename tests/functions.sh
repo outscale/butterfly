@@ -1022,21 +1022,8 @@ function sg_member_del {
     sg=$2
     ip_member=$3
     echo "[butterfly-$but_id] delete member $ip_member from $sg"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_member_del {
-        sg_id: \"$sg\"
-          member: \"$ip_member\"
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg member del $sg $ip_member
 }
 
 function check_bin {
