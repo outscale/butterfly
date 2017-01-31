@@ -308,10 +308,12 @@ function qemu_start {
     set +e
     echo "joe" | nc -w 1  127.0.0.1 500$id &> /dev/null
     TEST=$?
-    while  [ $TEST -ne 0 ]
+    MAX_TEST=0
+    while  [ $TEST -ne 0 -a $MAX_TEST -ne 20 ]
     do
         echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
         TEST=$?
+        MAX_TEST=$(($MAX_TEST + 1))
         sleep 0.2
     done
     set -e
