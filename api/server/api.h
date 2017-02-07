@@ -46,7 +46,9 @@ class API {
         bool has_ip_anti_spoof;
         bool ip_anti_spoof;
         std::vector<app::Ip> ip;
+        bool ip_overwrite;
         std::vector<std::string> security_groups;
+        bool security_groups_overwrite;
     };
 
  protected:
