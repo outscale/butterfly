@@ -421,21 +421,31 @@ static void sub_sg_rule_del_help(void) {
     cout << "You can get RULE_HASH from sg rule list subcommand" << endl;
     global_parameter_help();
 }
+static bool is_hex(string param) {
+    bool isHex = false;
+    char hexValues[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
+                        'B', 'C', 'D', 'E', 'F', 'a', 'b', 'c', 'd', 'e', 'f'};
+    int hexLength = strlen(hexValues);
 
-static int sub_sg_rule_del(int argc, char **argv,
-                            const GlobalOptions &options) {
-    if (argc >= 5 && string(argv[4]) == "help") {
-        sub_sg_rule_add_help();
-        return 0;
+    for (int i = 0; i < param.length(); i++) {
+        isHex = false;
+
+        for (int j = 0; j < hexLength ; j++) {
+            if (param[i] == hexValues[j]) {
+                isHex = true;
+                break;
+            }
+        }
+        if (!isHex)
+            break;
     }
-
-    if (argc <= 5) {
-        sub_sg_rule_del_help();
-        return 1;
-    }
-
-    string sg = string(argv[4]);
-    string hash = string(argv[5]);
+    return isHex;
+}
+static bool is_hash(string param) {
+    return param.length() == 16 && is_hex(param) == true;
+}
+static int sub_sg_hashed_rule_del(string sg, string hash,
+                                  const GlobalOptions &options) {
     string req =
         "messages {"
         "  revision: " PROTO_REV
@@ -481,7 +491,63 @@ static int sub_sg_rule_del(int argc, char **argv,
 
     proto::Messages delete_res;
     return request(delete_req, &delete_res, options, false) ||
-        check_request_result(delete_res);
+            check_request_result(delete_res);
+}
+static int sub_sg_param_rule_del(int argc, char **argv,
+                                 const GlobalOptions &options) {
+    RuleAddOptions opts;
+    if (opts.parse(argc, argv)) {
+        sub_sg_rule_del_help();
+        return 1;
+    }
+
+    string req =
+        "messages {"
+        "  revision: " PROTO_REV
+        "  message_0 {"
+        "    request {"
+        "      sg_rule_del {"
+        "        sg_id: \"" + opts.sg + "\""
+        "        rule {"
+        "          direction: " + opts.direction +
+        "          protocol: " + to_string(opts.proto);
+    if (opts.has_port_start)
+        req += "   port_start: " + to_string(opts.port_start) +
+            "   port_end: " + to_string(opts.port_end);
+    if (opts.cidr.length())
+        req += "   cidr { " + opts.cidr + " }";
+    else if (opts.sg_members.length())
+            req += "   security_group: \"" + opts.sg_members + "\"";
+    req +=
+            "        }"
+            "      }"
+            "    }"
+            "  }"
+            "}";
+
+    proto::Messages res;
+    if (request(req, &res, options, false) || check_request_result(res))
+        return 1;
+    return 0;
+}
+static int sub_sg_rule_del(int argc, char **argv,
+                            const GlobalOptions &options) {
+    if (argc >= 5 && string(argv[4]) == "help") {
+        sub_sg_rule_add_help();
+        return 0;
+    }
+
+    if (argc <= 5) {
+        sub_sg_rule_del_help();
+        return 1;
+    }
+
+    string sg = string(argv[4]);
+    if (is_hash(string(argv[5])) == true) {
+        return sub_sg_hashed_rule_del(sg, string(argv[5]), options);
+    } else {
+        return sub_sg_param_rule_del(argc, argv, options);
+    }
 }
 
 static void sub_sg_rule_help(void) {
