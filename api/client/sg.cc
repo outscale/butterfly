@@ -416,26 +416,40 @@ static int sub_sg_rule_add(int argc, char **argv,
 }
 
 static void sub_sg_rule_del_help(void) {
-    cout << "usage: butterfly sg rule del SG RULE_HASH [options...]" << endl;
+    cout << "first usage: butterfly sg rule del SG RULE_HASH" << endl;
+    cout << "second usage: butterfly sg rule del SG [options...]" << endl;
     cout << endl << "Remove a firewalling rule from a security group" << endl;
     cout << "You can get RULE_HASH from sg rule list subcommand" << endl;
+    cout << "options:" << endl <<
+        "    --dir DIRECTION    rule direction (default: in)" << endl <<
+        "    --ip-proto PROTO   IP protocol to allow (mandatory)" << endl <<
+        "    --port PORT        open a single port" << endl <<
+        "    --port-start PORT  port range start" << endl <<
+        "    --port-end PORT    port range end" << endl <<
+        "    --cidr CIDR        adress mask to allow in CIDR format" << endl <<
+        "    --sg-members SG    security group members to allow" << endl <<
+        endl <<
+        "DIRECTION:" << endl << endl <<
+        "Can only be 'in' (for inbound) at the moment, 'out' (for outbound) "
+        "not supported yet" << endl << endl <<
+        "PROTO:" << endl << endl <<
+        "Must be 'tcp', 'udp', 'icmp', a number between 0 and 255 "
+        "or 'all' to allow all protocols" << endl << endl <<
+        "PORT:" << endl << endl <<
+        "if you set udp or tcp in protocol, you can set a port between"
+        " 0 and 65535" << endl << endl <<
+        "Notes: you MUST set either --cidr or --sg-members" << endl;
     global_parameter_help();
 }
 
-static int sub_sg_rule_del(int argc, char **argv,
-                            const GlobalOptions &options) {
-    if (argc >= 5 && string(argv[4]) == "help") {
-        sub_sg_rule_add_help();
-        return 0;
-    }
+static bool check_hash(const string &param) {
+    return param[0] == '-';
+}
 
-    if (argc <= 5) {
-        sub_sg_rule_del_help();
-        return 1;
-    }
-
-    string sg = string(argv[4]);
-    string hash = string(argv[5]);
+static int sub_sg_hashed_rule_del(int argc, char **argv,
+                                  const GlobalOptions &options) {
+    string sg(argv[4]);
+    string hash(argv[5]);
     string req =
         "messages {"
         "  revision: " PROTO_REV
@@ -481,7 +495,56 @@ static int sub_sg_rule_del(int argc, char **argv,
 
     proto::Messages delete_res;
     return request(delete_req, &delete_res, options, false) ||
-        check_request_result(delete_res);
+            check_request_result(delete_res);
+}
+static int sub_sg_param_rule_del(int argc, char **argv,
+                                 const GlobalOptions &options) {
+    RuleAddOptions opts;
+    if (opts.parse(argc, argv)) {
+        sub_sg_rule_del_help();
+        return 1;
+    }
+
+    string req =
+        "messages {"
+        "  revision: " PROTO_REV
+        "  message_0 {"
+        "    request {"
+        "      sg_rule_del {"
+        "        sg_id: \"" + opts.sg + "\""
+        "        rule {"
+        "          direction: " + opts.direction +
+        "          protocol: " + to_string(opts.proto);
+    if (opts.has_port_start) {
+        req += "   port_start: " + to_string(opts.port_start) +
+               "   port_end     : " + to_string(opts.port_end);
+    }
+    if (opts.cidr.length())
+        req += "   cidr { " + opts.cidr + " }";
+    else if (opts.sg_members.length())
+        req += "   security_group: \"" + opts.sg_members + "\"";
+    req +=
+        "        }"
+        "      }"
+        "    }"
+        "  }"
+        "}";
+
+    proto::Messages res;
+    return request(req, &res, options, false) || check_request_result(res);
+}
+static int sub_sg_rule_del(int argc, char **argv,
+                            const GlobalOptions &options) {
+    if ((argc >= 5 && strcmp(argv[4], "help") == 0) || (argc <= 5)) {
+        sub_sg_rule_del_help();
+        return 0;
+    }
+
+    string sg(argv[4]);
+    string param(argv[5]);
+    if (!check_hash(param))
+        return sub_sg_hashed_rule_del(argc, argv, options);
+    return sub_sg_param_rule_del(argc, argv, options);
 }
 
 static void sub_sg_rule_help(void) {
