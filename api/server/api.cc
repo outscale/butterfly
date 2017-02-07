@@ -152,32 +152,36 @@ bool API::action_nic_update(const API::NicUpdate &update,
     // Get the nic
     app::Nic &n = itn->second;
 
+    bool need_fw_reload = false;
+    bool need_anti_spoof_update = false;
+
     // Update IP if needed
-    if (n.ip_list != update.ip) {
+    if (update.ip_overwrite && n.ip_list != update.ip) {
         n.ip_list = update.ip;
+        need_fw_reload = true;
+	need_anti_spoof_update = true;
+    }
+
+    // Update security groups if needed
+    if (update.security_groups_overwrite &&
+        n.security_groups != update.security_groups) {
+        n.security_groups = update.security_groups;
+        need_fw_reload = true;
+        app::graph.fw_update(n);
     }
 
     // Update antispoof if needed
     if (update.has_ip_anti_spoof &&
-        n.ip_anti_spoof != update.ip_anti_spoof) {
+        old_ip_anti_spoof != n.ip_anti_spoof) {
         n.ip_anti_spoof = update.ip_anti_spoof;
-        app::graph.nic_config_anti_spoof(n, update.ip_anti_spoof);
-    }
-    // Still update antispoof if we ip changed
-    if (n.ip_list != update.ip && n.ip_anti_spoof) {
-        app::graph.nic_config_anti_spoof(n, true);
+        need_anti_spoof_update = true;
     }
 
-    // Update security groups if needed
-    if (n.security_groups != update.security_groups) {
-        n.security_groups = update.security_groups;
-        app::graph.fw_update(n);
+    if (need_anti_spoof_update)
+        app::graph.nic_config_anti_spoof(n, n.ip_anti_spoof);
 
-    } else if (n.ip_list != update.ip) {
-        // Still reload firewall if we don't upgraded security groups but
-        // changed the ip listing.
+    if (need_fw_reload)
         app::graph.fw_update(n);
-    }
 
     return true;
 }
