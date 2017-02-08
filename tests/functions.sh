@@ -60,9 +60,70 @@ function ssh_bash {
     ssh -p 500$id -l root -i $key -oStrictHostKeyChecking=no 127.0.0.1
 }
 
+function ssh_ping_ip {
+    id=$1
+    src=$2
+    dst=$3
+    set +e
+    ssh_run $id ping -c 1 -W 2 -I $src $dst &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ping on VM $id: $src ---> $dst FAIL"
+        RETURN_CODE=1
+    else
+        echo "ping on VM $id: $src ---> $dst OK"
+    fi
+    set -e
+}
+
+function ssh_no_ping_ip {
+    id=$1
+    src=$2
+    dst=$3
+    set +e
+    ssh_run $id ping -c 1 -W 2 -I $src $dst &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ping on VM $id: $src -/-> $dst OK"
+    else
+        echo "ping on VM $id: $src -/-> $dst FAIL"
+        RETURN_CODE=1
+    fi
+    set -e
+}
+
+function ssh_ping_ip6 {
+    id=$1
+    src=$2
+    dst=$3
+    set +e
+    ssh_run $id ping6 -c 1 -W 2 -I $src $dst &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ping6 on VM $id: $src ---> $dst FAIL"
+        RETURN_CODE=1
+    else
+        echo "ping6 on VM $id: $src ---> $dst OK"
+    fi
+    set -e
+}
+
+function ssh_no_ping_ip6 {
+    id=$1
+    src=$2
+    dst=$3
+    set +e
+    ssh_run $id ping6 -c 1 -W 2 -I $src $dst &> /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ping on VM $id: $src -/-> $dst OK"
+    else
+        echo "ping on VM $id: $src -/-> $dst FAIL"
+        RETURN_CODE=1
+    fi
+    set -e
+}
+
 function ssh_ping {
     id1=$1
     id2=$2
+    set +e
     ssh_run $id1 ping 42.0.0.$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping VM $id1 ---> VM $id2 FAIL"
@@ -70,6 +131,7 @@ function ssh_ping {
     else
         echo "ping VM $id1 ---> VM $id2 OK"
     fi
+    set -e
 }
 
 function ssh_no_ping {
@@ -326,6 +388,42 @@ function ssh_no_connection_test {
     return $RETURN_CODE
 }
 
+function qemu_add_ipv4 {
+    id=$1
+    ips="${@:2}"
+    for ip in $ips; do
+        echo "[VM $id] add ipv4 $ip"
+        ssh_run $id ip addr add $ip dev ens4
+    done
+}
+
+function qemu_del_ipv4 {
+    id=$1
+    ips="${@:2}"
+    for ip in $ips; do
+        echo "[VM $id] remove ipv4 $ip"
+        ssh_run $id ip addr del $ip dev ens4
+    done
+}
+
+function qemu_add_ipv6 {
+    id=$1
+    ips="${@:2}"
+    for ip in $ips; do
+        echo "[VM $id] add ipv6 $ip"
+        ssh_run $id ip -6 addr add $ip dev ens4
+    done
+}
+
+function qemu_del_ipv6 {
+    id=$1
+    ips="${@:2}"
+    for ip in $ips; do
+        echo "[VM $id] remove ipv6 $ip"
+        ssh_run $id ip -6 addr del $ip dev ens4
+    done
+}
+
 function qemu_start {
     id=$1
     ip=$2
@@ -338,7 +436,7 @@ function qemu_start {
     exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
     pid=$!
     set +e
-    echo "joe" | nc -w 1  127.0.0.1 500$id &> /dev/null
+    echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
     TEST=$?
     MAX_TEST=0
     while  [ $TEST -ne 0 -a $MAX_TEST -ne 20 ]
@@ -364,8 +462,8 @@ function qemu_start {
     ssh_run $id ip link set ens4 up
     if [ "$ip" == "dhcp-server" ]; then
         ssh_run $id pacman --noconfirm -Sy dhcp &> /dev/null
-        ssh_run $id ip addr add 42.0.0.$id/24 dev ens4
-        ssh_run $id ip -6 addr add 2001:db8:2000:aff0::$id/64 dev ens4
+        qemu_add_ipv4 $id 42.0.0.$id/24
+        qemu_add_ipv6 $id 2001:db8:2000:aff0::$id/64
         echo -e "
             option domain-name-servers 8.8.8.8, 8.8.4.4;
             option subnet-mask 255.255.255.0;
@@ -393,9 +491,11 @@ function qemu_start {
         ssh_run $id systemctl start dhcpd4 &> /dev/null
     elif [ "$ip" == "dhcp-client" ]; then
         ssh_run $id dhcpcd ens4 &> /dev/null || ( echo "DHCP failed !" && false )
+    elif [ "$ip" == "noip" ]; then
+        true
     else
-        ssh_run $id ip addr add 42.0.0.$id/24 dev ens4
-        ssh_run $id ip -6 addr add 2001:db8:2000:aff0::$id/64 dev ens4
+        qemu_add_ipv4 $id 42.0.0.$id/24
+        qemu_add_ipv6 $id 2001:db8:2000:aff0::$id/64
     fi
 
     ssh_run $id pacman -Sy nmap --noconfirm &>/dev/null
@@ -513,6 +613,45 @@ function cli {
     set -e
 }
 
+function nic_add_noip {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    sg_list=${@:4}
+    cli $but_id 0 nic add --id nic-$nic_id --mac 52:54:00:12:34:0$nic_id --vni $vni --enable-antispoof
+    cli $but_id 0 nic sg add nic-$nic_id $sg_list
+}
+
+function nic_update_ip {
+    but_id=$1
+    nic_id=$2
+    ip_list=${@:3}
+
+    f=/tmp/butterfly.req
+    echo "[butterfly-$but_id] new ip list for nic-$nic_id: $ip_list"
+
+    echo -e "messages {
+  revision: 0
+  message_0 {
+    request {
+      nic_update {
+        id: \"nic-$nic_id\"" > $f
+    if [ "-$ip_list" == "-" ]; then
+        echo "ip: \"\"" >> $f
+    else
+        for i in $ip_list; do
+            echo "ip: \"$i\"" >> $f
+        done
+    fi
+    echo "
+      }
+    }
+  }
+}
+" >> $f
+    request $but_id $f
+}
+
 function nic_add {
     but_id=$1
     nic_id=$2
@@ -525,13 +664,9 @@ function nic_add {
     sleep 1
 
     for i in $sg_list; do
-               cli $but_id 0 nic sg add "nic-$nic_id" $i
+        cli $but_id 0 nic sg add "nic-$nic_id" $i
     done
     sleep 1
-
-    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
-        sleep 1
-    fi
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
         echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
