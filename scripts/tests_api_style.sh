@@ -5,7 +5,6 @@ BUTTERFLY_ROOT=$(cd "$(dirname $0)/.." && pwd)
 
 sources="$BUTTERFLY_ROOT/api/client/client.cc \
 $BUTTERFLY_ROOT/api/client/client.h \
-$BUTTERFLY_ROOT/api/client/client.cc \
 $BUTTERFLY_ROOT/api/client/nic.cc \
 $BUTTERFLY_ROOT/api/client/request.cc \
 $BUTTERFLY_ROOT/api/client/sg.cc \
