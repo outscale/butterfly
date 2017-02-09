@@ -904,27 +904,8 @@ function sg_rule_del_icmp {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete rule allowing icmp from $sg"
-    f=/tmp/butterfly-client.req
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: 1
-          cidr {
-            address: \"0.0.0.0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto 1 --cidr 0.0.0.0/0
 }
 
 function sg_rule_add_icmp6 {
