@@ -11,6 +11,9 @@ if [ ! -f $BUTTERFLY_BUILD_ROOT/CMakeCache.txt ]; then
     exit 1
 fi
 
+#Clean coverage data
+sudo find $BUTTERFLY_BUILD_ROOT/api/ -name '*.gcda' -exec rm -fr {} \;
+
 echo "############################################################"
 echo "Butterfly tests start"
 echo $($BUTTERFLY_BUILD_ROOT/api/server/butterflyd --version)
@@ -59,6 +62,21 @@ else
     tput setaf 7
 fi
 
+# API coverage test
+check_files=$(find $BUTTERFLY_BUILD_ROOT/api/ -name '*.gcda' | wc -l)
+if [ $check_files -gt 0 ]; then
+    $BUTTERFLY_ROOT/scripts/tests_coverage.sh $BUTTERFLY_BUILD_ROOT
+    if [ $? != 0 ]; then
+        tput setaf 1
+        echo "API coverage test failed"
+        tput setaf 7
+       exit 1
+    else
+        tput setaf 2
+        echo "API coverage test OK"
+        tput setaf 7
+    fi
+fi
 
 tput setaf 2
 echo "All test succeded"
