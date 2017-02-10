@@ -153,7 +153,7 @@ bool API::action_nic_update(const API::NicUpdate &update,
     app::Nic &n = itn->second;
 
     // Update IP if needed
-    if (n.ip_list != update.ip) {
+    if (update.ip_overwrite && n.ip_list != update.ip) {
         n.ip_list = update.ip;
     }
 
@@ -169,7 +169,8 @@ bool API::action_nic_update(const API::NicUpdate &update,
     }
 
     // Update security groups if needed
-    if (n.security_groups != update.security_groups) {
+    if (update.security_groups_overwrite &&
+        n.security_groups != update.security_groups) {
         n.security_groups = update.security_groups;
         app::graph.fw_update(n);
 

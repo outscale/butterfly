@@ -435,53 +435,91 @@ static int sub_sg_rule_del(int argc, char **argv,
     }
 
     string sg = string(argv[4]);
-    string hash = string(argv[5]);
-    string req =
-        "messages {"
-        "  revision: " PROTO_REV
-        "  message_0 {"
-        "    request {"
-        "      sg_rule_list: \"" + sg + "\""
-        "    }"
-        "  }"
-        "}";
+    if (sizeof(string(argv[5])) == 16) {
+        string hash = string(argv[5]);
+        string req =
+            "messages {"
+            "  revision: " PROTO_REV
+            "  message_0 {"
+            "    request {"
+            "      sg_rule_list: \"" + sg + "\""
+            "    }"
+            "  }"
+            "}";
 
-    proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
-        return 1;
+        proto::Messages res;
+        if (request(req, &res, options, false) || check_request_result(res))
+             return 1;
 
-    MessageV0_Response res_0 = res.messages(0).message_0().response();
-    int size = res_0.sg_rule_list_size();
-    string delete_req;
-    for (int i = 0; i < size; i++) {
-        if (hash == rule_hash(res_0.sg_rule_list(i))) {
-            string rule_string;
-            google::protobuf::TextFormat::PrintToString(res_0.sg_rule_list(i),
+        MessageV0_Response res_0 = res.messages(0).message_0().response();
+        int size = res_0.sg_rule_list_size();
+        string delete_req;
+        for (int i = 0; i < size; i++) {
+            if (hash == rule_hash(res_0.sg_rule_list(i))) {
+                string rule_string;
+                google::protobuf::TextFormat::PrintToString(res_0.sg_rule_list(i),
                                                         &rule_string);
-            delete_req +=
-                "messages {"
-                "  revision: " PROTO_REV
-                "  message_0 {"
-                "    request {"
-                "      sg_rule_del {"
-                "        sg_id: \"" + sg + "\""
-                "        rule {" + rule_string + "}"
-                "      }"
-                "    }"
-                " }"
-                "}";
-            break;
+                delete_req +=
+                    "messages {"
+                    "  revision: " PROTO_REV
+                    "  message_0 {"
+                    "    request {"
+                    "      sg_rule_del {"
+                    "        sg_id: \"" + sg + "\""
+                    "        rule {" + rule_string + "}"
+                    "      }"
+                    "    }"
+                    " }"
+                    "}";
+                break;
+            }
+         }
+
+        if (!delete_req.length()) {
+            cerr << "no rule found with hash " << hash << endl;
+            return 1;
         }
-    }
 
-    if (!delete_req.length()) {
-        cerr << "no rule found with hash " << hash << endl;
-        return 1;
+        proto::Messages delete_res;
+        return request(delete_req, &delete_res, options, false) ||
+            check_request_result(delete_res);
     }
+    else {
+        RuleAddOptions o;
+        if (o.parse(argc, argv)) {
+            sub_sg_rule_add_help();
+            return 1;
+        }
 
-    proto::Messages delete_res;
-    return request(delete_req, &delete_res, options, false) ||
-        check_request_result(delete_res);
+        string req =
+            "messages {"
+            "  revision: " PROTO_REV
+            "  message_0 {"
+            "    request {"
+            "      sg_rule_del {"
+            "        sg_id: \"" + o.sg + "\""
+	    "        rule {"
+	    "          direction: " + o.direction +
+	    "          protocol: " + to_string(o.proto);
+	if (o.has_port_start)
+		req += "   port_start: " + to_string(o.port_start) +
+			"   port_end: " + to_string(o.port_end);
+	if (o.cidr.length())
+		req += "   cidr { " + o.cidr + " }";
+	else if (o.sg_members.length())
+		req += "   security_group: \"" + o.sg_members + "\"";
+	req +=
+		"        }"
+		"      }"
+		"    }"
+		"  }"
+		"}";
+
+	proto::Messages res;
+	if (request(req, &res, options, false) || check_request_result(res))
+		return 1;
+	return 0; 
+  }
 }
 
 static void sub_sg_rule_help(void) {

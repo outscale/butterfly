@@ -477,31 +477,15 @@ function nic_add {
     vni=$3
     sg_list=${@:4}
 
-    f=/tmp/butterfly.req
     echo "[butterfly-$but_id] add nic $nic_id with vni $vni"
+ 
+    cli $but_id 0 nic add --id "nic-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "42.0.0.$nic_id" --enable-antispoof
+    sleep 1
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      nic_add {
-        id: \"nic-$nic_id\"
-        mac: \"52:54:00:12:34:0$nic_id\"
-        vni: $vni
-        ip: \"42.0.0.$nic_id\"
-        ip_anti_spoof: true" > $f
     for i in $sg_list; do
-    echo "        security_group: \"$i\"" >> $f
+               cli $but_id 0 nic sg add "nic-$nic_id" $i
     done
-    echo "
-      }
-    }
-  }
-}
-" >> $f
-
-    request $but_id $f
-    sleep 0.3
+    sleep 1
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
         sleep 1
@@ -520,30 +504,13 @@ function nic_add6 {
     vni=$3
     sg_list=${@:4}
 
-    f=/tmp/butterfly-client.req
     echo "[butterfly-$but_id] add nic(6) $nic_id with vni $vni"
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      nic_add {
-        id: \"nic-$nic_id\"
-        mac: \"52:54:00:12:34:0$nic_id\"
-        vni: $vni
-        ip: \"2001:db8:2000:aff0::$nic_id\"
-        ip_anti_spoof: true" > $f
-    for i in $sg_list; do
-        echo "        security_group: \"$i\"" >> $f
-    done
-    echo "
-      }
-    }
-  }
-}
-" >> $f
+    cli $but_id 0 nic add --id "nic-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "2001:db8:2000:aff0::$nic_id" --enable-antispoof
 
-    request $but_id $f
+    for i in $sg_list; do
+       cli $but_id 0 nic sg add "nic-$nic_id" $i
+    done
     sleep 0.3
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
@@ -556,65 +523,18 @@ function nic_add6 {
 function nic_del {
     but_id=$1
     nic_id=$2
-    f=/tmp/butterfly.req
     echo "[butterfly-$but_id] delete nic $nic_id"
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      nic_del: \"nic-$nic_id\"
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 nic del "nic-$nic_id"
+    sleep 0.3
 }
 
 function sg_rule_add_all_open {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] add rule all open in $sg"
-    f=/tmp/butterfly.req
-
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: -1
-          cidr {
-            address: \"0.0.0.0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: -1
-          cidr {
-            address: \"0::\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto all --cidr 0.0.0.0/0
 }
 
 function sg_rule_add_port_open {
@@ -623,58 +543,8 @@ function sg_rule_add_port_open {
     port=$3
     sg=$4
     echo "[butterfly-$but_id] add rule $protocol port $port open in $sg"
-    if [ "$protocol" == "tcp" ]; then
-        protocol=6
-    elif [ "$protocol" == "udp" ]; then
-        protocol=17
-    else
-        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-        RETURN_CODE=1
-    fi
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          cidr {
-            address: \"0.0.0.0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          cidr {
-            address: \"0::\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0.0.0.0/0
 }
 
 function sg_rule_add_ip_and_port {
@@ -685,38 +555,8 @@ function sg_rule_add_ip_and_port {
     port=$5
     sg=$6
     echo "[butterfly-$but_id] add rule $protocol port $port ip $ip/$mask_size in $sg"
-    if [ "$protocol" == "tcp" ]; then
-        protocol=6
-    elif [ "$protocol" == "udp" ]; then
-        protocol=17
-    else
-        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-        RETURN_CODE=1
-    fi
-    f=/tmp/butterfly-client.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          cidr {
-            address: \"$ip\"
-            mask_size: $mask_size
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr $ip/$mask_size 
 }
 
 function sg_rule_del_ip_and_port {
@@ -768,28 +608,8 @@ function sg_rule_add_ip {
     sg=$4
     
     echo "[butterfly-$but_id] add rule to $sg: allow $ip/$mask_size on all protocols"
-    f=/tmp/butterfly-client.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: -1
-          cidr {
-            address: \"$ip\"
-            mask_size: $mask_size
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto -1 --cidr $ip/$mask_size
 }
 
 function sg_rule_del_ip {
@@ -799,28 +619,8 @@ function sg_rule_del_ip {
     sg=$4
     
     echo "[butterfly-$but_id] delete rule on $sg: allow $ip/$mask_size on all protocols"
-    f=/tmp/butterfly-client.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: -1
-          cidr {
-            address: \"$ip\"
-            mask_size: $mask_size
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto -1 --cidr $ip/$mask_size
 }
 
 function sg_rule_add_with_sg_member {
@@ -830,35 +630,8 @@ function sg_rule_add_with_sg_member {
     port=$4
     sg_member=$5
     echo "[butterfly-$but_id] add rule to $sg: allow sg members of $sg_member on $protocol:$port"
-    if [ "$protocol" == "tcp" ]; then
-        protocol=6
-    elif [ "$protocol" == "udp" ]; then
-        protocol=17
-    else
-        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-        RETURN_CODE=1
-    fi
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          security_group: \"$sg_member\"
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --sg-members $sg_member
 }
 
 function sg_rule_del_with_sg_member {
@@ -918,21 +691,8 @@ function sg_member_add {
     sg=$2
     ip_member=$3
     echo "[butterfly-$but_id] add member $ip_member in $sg"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_member_add {
-        sg_id: \"$sg\"
-          member: \"$ip_member\"
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg member add $sg $ip_member
 }
 
 function nic_set_sg {
@@ -980,6 +740,7 @@ function remove_sg_from_nic {
       nic_update {
         id: \"nic-$nic_id\"
         ip: \"42.0.0.$nic_id\"
+        security_group: \"\"
         ip_anti_spoof: true
       }
     }
@@ -993,38 +754,16 @@ function sg_add {
     sg=$1
     but_id=$2
     echo "[butterfly-$but_id] add $sg"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_add {
-        id: \"$sg\"
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg add $sg
 }
 
 function sg_del {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete $sg"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_del: \"$sg\"
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg del $sg
 }
 
 function sg_rule_del {
@@ -1153,81 +892,24 @@ function sg_rule_add_icmp {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] add rule allowing icmp from $sg"
-    f=/tmp/butterfly-client.req
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: 1
-          cidr {
-            address: \"0.0.0.0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto 1 --cidr 0.0.0.0/0
 }
 
 function sg_rule_del_icmp {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete rule allowing icmp from $sg"
-    f=/tmp/butterfly-client.req
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: 1
-          cidr {
-            address: \"0.0.0.0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto 1 --cidr 0.0.0.0/0
 }
 
 function sg_rule_add_icmp6 {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] add rule allowing icmp6 from $sg"
-    f=/tmp/butterfly-client.req
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: 58
-          cidr {
-            address: \"::0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto 58 --cidr ::0/0
 }
 
 function sg_rule_del_icmp6 {
@@ -1262,21 +944,8 @@ function sg_member_del {
     sg=$2
     ip_member=$3
     echo "[butterfly-$but_id] delete member $ip_member from $sg"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_member_del {
-        sg_id: \"$sg\"
-          member: \"$ip_member\"
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg member del $sg $ip_member
 }
 
 function check_bin {

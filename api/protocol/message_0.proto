@@ -249,8 +249,10 @@ message MessageV0 {
     // Update IP anti-spoof
     optional bool ip_anti_spoof = 2;
     // Replace all IP of NIC
+    // To erase all ip, set a empty string
     repeated string ip = 3;
     // Replace Security Groups of a NIC
+    // To remove all security groups, set a empty string
     repeated string security_group = 4;
   }
 
