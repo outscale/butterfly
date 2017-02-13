@@ -424,6 +424,7 @@ std::string Graph::nic_add(const app::Nic &nic) {
         LOG_ERROR_("Firewall creation failed");
         return "";
     }
+
     gn.firewall = BrickShrPtr(tmp_fw, pg_fake_destroy);
     name = "antispoof-" + gn.id;
     struct ether_addr mac;
@@ -443,7 +444,11 @@ std::string Graph::nic_add(const app::Nic &nic) {
         std::string ip = nic.ip_list.front().str();
         uint32_t ipp;
         inet_pton(AF_INET, ip.c_str(), &ipp);
-        pg_antispoof_arp_enable(gn.antispoof.get(), ipp);
+        pg_antispoof_arp_enable(gn.antispoof.get());
+        if (pg_antispoof_arp_add(gn.antispoof.get(), ipp, &app::pg_error) < 0) {
+            PG_ERROR_(app::pg_error);
+            return "";
+        }
     }
 
     name = "vhost-" + gn.id;
@@ -658,10 +663,14 @@ void Graph::nic_config_anti_spoof(const app::Nic &nic, bool enable) {
         std::string ip = nic.ip_list.front().str();
         uint32_t ipp;
         inet_pton(AF_INET, ip.c_str(), &ipp);
-        pg_antispoof_arp_enable(antispoof.get(), ipp);
-
+        pg_antispoof_arp_enable(antispoof.get());
+        if (pg_antispoof_arp_add(antispoof.get(), ipp, &app::pg_error) < 0) {
+            PG_ERROR_(app::pg_error);
+            return;
+        }
     } else {
         pg_antispoof_arp_disable(antispoof.get());
+        pg_antispoof_arp_del_all(antispoof.get());
     }
 }
 

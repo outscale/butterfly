@@ -4,7 +4,8 @@ set(LIBZMQ_SOURCE_DIR ${3RDPARTY_DIR}/libzmq)
 set(ZMQPP_SOURCE_DIR ${3RDPARTY_DIR}/zmqpp)
 set(PG_SOURCE_DIR ${3RDPARTY_DIR}/packetgraph)
 
-set(CMAKE_C_FLAGS "-g -Wall")
+message(${DPDK_INSTALL_DIR})
+message(${DPDK_SOURCE_DIR})
 
 ExternalProject_Add(dpdk
 	SOURCE_DIR ${DPDK_SOURCE_DIR}
@@ -15,7 +16,7 @@ ExternalProject_Add(dpdk
 	BINARY_DIR ${DPDK_SOURCE_DIR}
 	BUILD_COMMAND make EXTRA_CFLAGS='-fPIC'
 	INSTALL_DIR ${DPDK_INSTALL_DIR}
-	INSTALL_COMMAND  touch ${DPDK_INSTALL_DIR}/build && rm -rvf ${DPDK_INSTALL_DIR}/build && touch ${DPDK_INSTALL_DIR}/lib && rm  ${DPDK_INSTALL_DIR}/lib  && mv -vf ${DPDK_SOURCE_DIR}/build ${DPDK_INSTALL_DIR} && ln -s ${DPDK_SOURCE_DIR}/lib ${DPDK_INSTALL_DIR}/lib
+	INSTALL_COMMAND  echo ${DPDK_INSTALL_DIR} && ls -l ${DPDK_INSTALL_DIR}
 	LOG_BUILD 1 Building dpdk)
 
 ExternalProject_Add(protobuf
@@ -54,7 +55,7 @@ ExternalProject_Add(zmqpp
 
 ExternalProject_Add(packetgraph
 	SOURCE_DIR ${PG_SOURCE_DIR}
-	CONFIGURE_COMMAND ${PG_SOURCE_DIR}/autogen.sh ${PG_SOURCE_DIR} && ${PG_SOURCE_DIR}/configure --prefix=${PG_INSTALL_DIR} RTE_SDK=${DPDK_INSTALL_DIR}
+	CONFIGURE_COMMAND export RTE_SDK=${DPDK_INSTALL_DIR} && ${PG_SOURCE_DIR}/autogen.sh ${PG_SOURCE_DIR} && ${PG_SOURCE_DIR}/configure_clang --prefix=${PG_INSTALL_DIR}
 	DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
 	DOWNLOAD_COMMAND git submodule update --init ${PG_SOURCE_DIR}
 	BINARY_DIR ${PG_INSTALL_DIR}
