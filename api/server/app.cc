@@ -344,7 +344,6 @@ void signal_handler(int signum) {
     app::request_exit = true;
 }
 
-
 std::string graph_dot(struct pg_brick *brick) {
     char buf[10000];
     FILE *fd = fmemopen(buf, 10000, "w+");
