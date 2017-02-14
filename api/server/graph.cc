@@ -26,6 +26,7 @@ extern "C" {
 #include <utility>
 #include <thread>
 #include <chrono>
+#include <cstring>
 #include "api/server/app.h"
 #include "api/server/graph.h"
 
@@ -168,12 +169,12 @@ bool Graph::start(std::string dpdk_args) {
     }
 
     // Create vtep brick
-    uint32_t ipp;
-    inet_pton(AF_INET, app::config.external_ip.c_str(), &ipp);
-    vtep_ = BrickShrPtr(pg_vtep_new("vxlan", 50, PG_WEST_SIDE, ipp, mac,
-                                    PG_VTEP_DST_PORT, PG_VTEP_ALL_OPTI,
-                                    &app::pg_error),
-                  pg_brick_destroy);
+    vtep_ = BrickShrPtr(pg_vtep_new_by_string("vxlan", 50, PG_WEST_SIDE,
+                                              app::config.external_ip.c_str(),
+                                              mac, PG_VTEP_DST_PORT,
+                                              PG_VTEP_ALL_OPTI, &app::pg_error),
+                        pg_brick_destroy);
+    isVtep6_ = !strcmp(pg_brick_type(vtep_.get()), "vtep6");
     if (vtep_.get() == NULL) {
         PG_ERROR_(app::pg_error);
         return false;
@@ -350,12 +351,21 @@ bool Graph::poller_update(struct RpcQueue **list) {
                     PG_ERROR_(app::pg_error);
                 break;
             case ADD_VNI:
-                if (pg_vtep_add_vni(a->add_vni.vtep,
-                                    a->add_vni.neighbor,
-                                    a->add_vni.vni,
-                                    a->add_vni.multicast_ip,
-                                    &app::pg_error) < 0)
-                    PG_ERROR_(app::pg_error);
+                if (isVtep6_) {
+                    if (pg_vtep_add_vni(a->add_vni.vtep,
+                                        a->add_vni.neighbor,
+                                        a->add_vni.vni,
+                                        a->add_vni.multicast_ip6,
+                                        &app::pg_error) < 0)
+                        PG_ERROR_(app::pg_error);
+                } else {
+                    if (pg_vtep_add_vni(a->add_vni.vtep,
+                                        a->add_vni.neighbor,
+                                        a->add_vni.vni,
+                                        a->add_vni.multicast_ip4,
+                                        &app::pg_error) < 0)
+                        PG_ERROR_(app::pg_error);
+                }
                 break;
             case UPDATE_POLL:
                 // Swap with the old list
@@ -991,13 +1001,15 @@ void Graph::brick_destroy(BrickShrPtr b) {
 }
 
 void Graph::add_vni(BrickShrPtr vtep, BrickShrPtr neighbor, uint32_t vni) {
-    uint32_t multicast_ip = build_multicast_ip(vni);
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = ADD_VNI;
     a->add_vni.vtep = vtep.get();
     a->add_vni.neighbor = neighbor.get();
     a->add_vni.vni = vni;
-    a->add_vni.multicast_ip = multicast_ip;
+    if (!isVtep6_)
+        a->add_vni.multicast_ip4 = build_multicast_ip4(vni);
+    else
+        build_multicast_ip6(a->add_vni.multicast_ip6, vni);
     g_async_queue_push(queue_, a);
 }
 
@@ -1039,11 +1051,23 @@ void Graph::wait_empty_queue() {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
-uint32_t Graph::build_multicast_ip(uint32_t vni) {
+uint32_t Graph::build_multicast_ip4(uint32_t vni) {
     // Build mutlicast IP, CIDR: 224.0.0.0/4
     // (224.0.0.0 to 239.255.255.255)
     // 224 and 239 are already used.
     uint32_t multicast_ip = htonl(vni);
     reinterpret_cast<uint8_t *>(& multicast_ip)[0] = 230;
     return multicast_ip;
+}
+
+void Graph::build_multicast_ip6(uint8_t *multicast_ip, uint32_t vni) {
+    // Build mutlicast IP, CIDR: 224.0.0.0/4
+    // (224.0.0.0 to 239.255.255.255)
+    // 224 and 239 are already used.
+    memset(multicast_ip, 0, 16);
+    multicast_ip[0] = 0xff;
+    multicast_ip[15] = reinterpret_cast<uint8_t *>(& vni)[0];
+    multicast_ip[14] = reinterpret_cast<uint8_t *>(& vni)[1];
+    multicast_ip[13] = reinterpret_cast<uint8_t *>(& vni)[2];
+    multicast_ip[12] = reinterpret_cast<uint8_t *>(& vni)[3];
 }
