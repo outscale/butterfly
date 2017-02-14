@@ -119,7 +119,10 @@ class Graph {
         struct pg_brick *vtep;
         struct pg_brick *neighbor;
         uint32_t vni;
-        uint32_t multicast_ip;
+        union {
+            uint32_t multicast_ip4;
+            uint8_t multicast_ip6[16];
+        };
     };
 
     struct RpcFwReload {
@@ -208,13 +211,6 @@ class Graph {
     std::string fw_build_sg(const app::Sg &sg);
 
     /**
-     * Convert a VNI to a mutlicast IP
-     * @param   vni vni integer to convert
-     * @return  multicast IP
-     */
-    uint32_t build_multicast_ip(uint32_t vni);
-
-    /**
      * Try to link @eastBrick to @westBrick, and add @sniffer betwin those
      * bricks
      */
@@ -245,6 +241,7 @@ class Graph {
     /* Global branch. */
     BrickShrPtr nic_;
     BrickShrPtr vtep_;
+    bool isVtep6_;
     BrickShrPtr sniffer_;
     FILE *pcap_file_;
     /* vni -> vni branch */
