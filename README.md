@@ -11,64 +11,63 @@ network rules (dropping traffic by default).
 
 # Virtual NICs
 
-A Virtual NIC (or vnic) in butterfly allows you to add a virtual network
+In Butterfly, a Virtual NIC (or vnic) enables you to add a virtual network
 interface to your Qemu VM through vhost-user.
-Each nick have a 24 bits network id called VNI.
+Each vnic has a 24 bit network id called VNI.
 If two vnics with the same VNI are located on different physical hosts,
 Butterfly will encapsulate VM packets over VXLAN and send them to the
 corresponding physical host.
 Once received, packets will be decapsulated and routed to their final
 destination.
-Each vnic created with the same VNI are located on the same network.
-If two vnic with the same VNI are on the same physical host, then packets do
+All vnics created with the same VNI are located on the same network.
+If two vnics with the same VNI are on the same physical host, then packets do
 not exit to physical network.
 
 Butterfly is meant to be connected to the physical network using a dedicated
-[DPDK](http://dpdk.org/) port. It allows Butterfly to have a very low latency between VM while
-using physical NIC offload capabilities.
+[DPDK](http://dpdk.org/) port.
+It allows Butterfly to have a very low latency between VMs while using physical
+NIC offload capabilities.
 
-For VM to VM communication, checksum and segmentation won't occure as packets
-won't transit on a physical network. This allow Butterfly to have a high speed
-and low latency communication between VM.
+For VM-to-VM communication, checksum and segmentation do not occurs as packets
+do not transit on a physical network. This enables Butterfly to have a high speed
+and low latency communication between VMs.
 
-e.g. create of a new vnic "vnic_1" on vni "1337":
+Example: create of a new vnic "vnic_1" on vni "1337":
 ```
 butterfly nic add --ip 42.0.0.1 --mac 52:54:00:12:34:01 --vni 1337 --id vnic_1
 ```
 
 # Filtering
 
-VMs traffic is filtered using an integrated firewall inside Butterfly
+VMs traffic is filtered using an integrated firewall within Butterfly
 ([NetBSD's NPF](http://www.netbsd.org/~rmind/npf/)) for each vnic.
-Filtering rules are applied to each VM by expressing _Security Groups_ (SG).
-A vnic can use several SG and a SG can be used by several vnics.
-When a vnic use several SG, then rules are cumulated.
-A SG contains a list of rules to allow (default policy is to block) and a list
+Filtering rules are applied to each VM depending on the rules contained in its _Security Groups_.
+A vnic can use several security groups and a security group can be used by several vnics.
+When a vnic use several security group, then rules are cumulated.
+A security group contains a list of rules to allow (default policy is to block) and a list
 of members (IP addresses).
 
 A Butterfly rule is mainly described by a protocol/port and source to allow.
-This source can be either a CIDR _or_ members of a security group.
+This source can be either a CIDR block _or_ members of a security group.
 
-e.g. add a rule in security group "mysg" to allow 42.0.3.1 on TCP port 22:
+Example: Add a rule in the "mysg" security group that allows 42.0.3.1 in TCP protocol on port 22:
 ```
 butterfly sg rule add mysg --ip-proto tcp --port 22 --cidr 42.0.3.1/32
 ```
 
-e.g. add rule in security group "mysg" to allow members of SG "users":
-on TCP port 80:
+Example: Add a rule in the "mysg" security group that allows "users" security group members in TCP protocol on port 80:
 ```
 butterfly sg rule add mysg --ip-proto tcp --port 80 --sg-members users
 ```
 
-Note that when a SG used by one or more vnic is modified, firewalling rules
-attached to each impacted virtual machines are reloaded.
+Note: When a security group used by one or more vnics is modified, firewalling rules
+attached to each impacted VM are reloaded.
 
 # Using Butterfly
 
 Butterfly is a daemon you can control over a network API.
 
-It is packaged with a client mainly allowing you to add/remove/list virtual
-network interfaces and security groups.
+It is packaged with a client mainly allowing you to add/remove/list vnics and security groups.
 
 You can of course directly code your calls to Butterfly's API.
 API message transport is based on [ZeroMQ](http://zeromq.org/) and messages
@@ -76,15 +75,15 @@ are encoded in [Protobuf](https://github.com/google/protobuf/ "Google's protobuf
 format. Check out [protocol](https://github.com/outscale/butterfly/tree/master/api/protocol)
 for more details.
 
-Here is an example of Butterfly with 6 Virtual Machines isolated in 3 networks (VNI 42, 51 and 1337).
+Here is an example of Butterfly with 6 VMs isolated in three networks (VNI 42, 51 and 1337).
 
 ![Butterfly execution](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly.svg)
 
 Butterfly binds a dedicated NIC to send/receive VXLAN packets and binds a socket
 (default: tcp) to listen to queries on its API. If you use a DPDK compatible
-card, you won't be able to access the API through it.
+card, you will not be able to access the API through it.
 
-You can build this configuration in few lines of client calls:
+You can build this configuration using a few lines of client calls:
 ```
 butterfly nic add --ip 42.0.0.1 --mac 52:54:00:12:34:01 --vni 42 --id vnic_1
 butterfly nic add --ip 42.0.0.1 --mac 52:54:00:12:34:01 --vni 51 --id vnic_2
@@ -96,9 +95,8 @@ butterfly nic add --ip 42.0.0.2 --mac 52:54:00:12:34:02 --vni 1337 --id vnic_6
 
 Tip: if you want to see what the graph looks like: run `butterfly status` and copy past the dot diagram in [webgraphviz.com](http://www.webgraphviz.com/)
 
-You can edit security groups whenever you want, and virtual nics filtering will be
-updated. Here, we simply create a new rule to allow the whole world on http
-and ask some vnics to use this security group.
+You can edit security groups whenever you want, which automatically updates vnics filtering.
+In the following example, we create a new rule to allow everyone in http protocol and ask some vnics to use this security group.
 ```
 butterfly sg add sg-web
 butterfly sg rule add sg-web --ip-proto tcp --port 80 --cidr 0.0.0.0/0
@@ -159,14 +157,14 @@ $ cat /proc/meminfo | grep Huge
 $ sudo mkdir -p /mnt/huge
 $ sudo mount -t hugetlbfs nodev /mnt/huge
 ```
-- You may want to add this mount in your `/etc/fstab`:
+- (optional) Add this mount in your `/etc/fstab`:
 ```
 hugetlbfs       /mnt/huge  hugetlbfs       rw,mode=0777        0 0
 ```
 
 ## Prepare DPDK Compatible NIC
 
-Before being able to bind your port, you will need to enable Intel VT-d in your BIOS and have IOMMU explicitly enabled in your kernel parameters.
+Before being able to bind your port, you need to enable Intel VT-d in your BIOS and have IOMMU explicitly enabled in your kernel parameters.
 Check [DPDK compatible NICs](http://dpdk.org/doc/nics) and how to [bind NIC drivers](http://people.redhat.com/~pmatilai/dpdk-guide/setup/binding.html).
 Packetgraph also has an [example](https://github.com/outscale/packetgraph/tree/master/examples/firewall#configure-your-nics) on how to bind DPDK NICs.
 
@@ -182,7 +180,7 @@ available DPDK port. If no port is found, a (slow) tap interface is created.
 $ sudo butterflyd -i 192.168.0.1 -s /tmp
 ```
 
-If you don't have a DPDK compatible card, you can also init a DPDK virtual
+If you do not have a DPDK compatible card, you can also init a DPDK virtual
 device (which is _much_ slower than a DPDK compatible hardware).
 
 For example, we can ask Butterfly to listen to the existing `eth0` interface:
@@ -306,11 +304,11 @@ Filing an issue is very valuable to the project. Please provide the following in
 It may be soon possible to choose which one is the vhost-user server between QEMU and
 Butterfly, [comming soon in DPDK](http://dpdk.org/ml/archives/dev/2016-May/038627.html) :)
 
-## What Ss Butterfly’s License?
+## What Is Butterfly’s License?
 
 Butterfly is licensed under [GPLv3](http://gplv3.fsf.org/).
 
-## Is There Any Authentification on the API or Protection?
+## Is There Any Authentication on the API or Protection?
 
 The network API is currently not protected at all.
 
