@@ -211,14 +211,6 @@ class Graph {
     std::string fw_build_sg(const app::Sg &sg);
 
     /**
-     * Convert a VNI to a mutlicast IP
-     * @param   vni vni integer to convert
-     * @return  multicast IP
-     */
-    uint32_t build_multicast_ip4(uint32_t vni);
-    void build_multicast_ip6(uint8_t *multicast_ip, uint32_t vni);
-
-    /**
      * Try to link @eastBrick to @westBrick, and add @sniffer betwin those
      * bricks
      */

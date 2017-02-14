@@ -32,7 +32,31 @@ extern "C" {
 
 namespace {
 void pg_fake_destroy(struct pg_brick *) {}
+
+/**
+ * Convert a VNI to a mutlicast IP
+ * @param   vni vni integer to convert
+ * @return  multicast IP
+ */
+uint32_t build_multicast_ip4(uint32_t vni) {
+    // Build mutlicast IP, CIDR: 224.0.0.0/4
+    // (224.0.0.0 to 239.255.255.255)
+    // 224 and 239 are already used.
+    uint32_t multicast_ip = htonl(vni);
+    reinterpret_cast<uint8_t *>(& multicast_ip)[0] = 230;
+    return multicast_ip;
 }
+
+void build_multicast_ip6(uint8_t *multicast_ip, uint32_t vni) {
+    memset(multicast_ip, 0, 16);
+    multicast_ip[0] = 0xff;
+    multicast_ip[15] = reinterpret_cast<uint8_t *>(& vni)[0];
+    multicast_ip[14] = reinterpret_cast<uint8_t *>(& vni)[1];
+    multicast_ip[13] = reinterpret_cast<uint8_t *>(& vni)[2];
+    multicast_ip[12] = reinterpret_cast<uint8_t *>(& vni)[3];
+}
+
+}  // namespace
 
 Graph::Graph(void) {
     // Init rpc queue
@@ -1031,25 +1055,4 @@ void Graph::update_poll() {
 void Graph::wait_empty_queue() {
     while (g_async_queue_length_unlocked(queue_) > 0)
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-}
-
-uint32_t Graph::build_multicast_ip4(uint32_t vni) {
-    // Build mutlicast IP, CIDR: 224.0.0.0/4
-    // (224.0.0.0 to 239.255.255.255)
-    // 224 and 239 are already used.
-    uint32_t multicast_ip = htonl(vni);
-    reinterpret_cast<uint8_t *>(& multicast_ip)[0] = 230;
-    return multicast_ip;
-}
-
-void Graph::build_multicast_ip6(uint8_t *multicast_ip, uint32_t vni) {
-    // Build mutlicast IP, CIDR: 224.0.0.0/4
-    // (224.0.0.0 to 239.255.255.255)
-    // 224 and 239 are already used.
-    memset(multicast_ip, 0, 16);
-    multicast_ip[0] = 0xff;
-    multicast_ip[15] = reinterpret_cast<uint8_t *>(& vni)[0];
-    multicast_ip[14] = reinterpret_cast<uint8_t *>(& vni)[1];
-    multicast_ip[13] = reinterpret_cast<uint8_t *>(& vni)[2];
-    multicast_ip[12] = reinterpret_cast<uint8_t *>(& vni)[3];
 }
