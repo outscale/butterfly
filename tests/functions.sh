@@ -731,6 +731,7 @@ function sg_rule_add_all_open {
     echo "[butterfly-$but_id] add rule all open in $sg"
     
     cli $but_id 0 sg rule add $sg --dir in --ip-proto all --cidr 0.0.0.0/0
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto all --cidr ::0/0
 }
 
 function sg_rule_add_port_open {
