@@ -45,7 +45,7 @@ echo >> out.txt
 echo >> out.txt # add some blank lines
 
 # Start server
-$server --dpdk-args "-c1 -n1 --vdev=eth_ring0" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:8765 --packet-trace &>> out.txt &
+$server --dpdk-args "-c1 -n1 --vdev=eth_ring0" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:8765 --packet-trace &>> out.txt &
 server_pid=$!
 sleep 1
 set +e

@@ -518,7 +518,7 @@ function server_start_options {
     options=${@:2}
     echo "[butterfly-$id] starting"
 
-    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i noze -s /tmp --endpoint=tcp://0.0.0.0:876$id $options -t &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options -t &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
     pid=$!
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
