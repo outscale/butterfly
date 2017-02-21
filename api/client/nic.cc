@@ -271,6 +271,37 @@ static int sub_nic_sg_add(int argc, char **argv,
     return sg_update(nic, all_sg, options);
 }
 
+static void sub_nic_sg_set_help(void) {
+    cout << "usage: butterfly nic sg set NIC SG [SG...] [options...]" << endl;
+    cout << endl << "Set security groups from a vnic" << endl;
+    global_parameter_help();
+}
+
+static int sub_nic_sg_set(int argc, char **argv,
+                          const GlobalOptions &options) {
+    if (argc >= 5 && string(argv[4]) == "help") {
+        sub_nic_sg_set_help();
+        return 0;
+    }
+
+    if (argc <= 5) {
+        sub_nic_sg_set_help();
+        return 1;
+    }
+    string nic = string(argv[4]);
+    vector<string> to_set;
+    for (int i = 5; i < argc; i++) {
+        string check = string(argv[i]);
+        if (check[0] == '-')
+            break;
+        to_set.push_back(check);
+    }
+    if (!to_set.size()) {
+        to_set.push_back("");
+    }
+
+    return sg_update(nic, to_set, options);
+}
 static void sub_nic_sg_del_help(void) {
     cout << "usage: butterfly nic sg del NIC SG [SG...] [options...]" << endl;
     cout << endl << "Remove a security group from a vnic" << endl;
@@ -324,7 +355,8 @@ static void sub_nic_sg_help(void) {
         "butterfly nic sg subcommands:" << endl <<
         "    list  list security groups attached to a nic" << endl <<
         "    add   add one or more security group to a nic" << endl <<
-        "    del   removes one or more security group of a nic" << endl;
+        "    del   removes one or more security group of a nic" << endl <<
+        "    set   update all security groups of a nic" << endl;
         global_parameter_help();
 }
 
@@ -340,6 +372,8 @@ static int sub_nic_sg(int argc, char **argv, const GlobalOptions &options) {
         return sub_nic_sg_add(argc, argv, options);
     } else if (cmd == "del") {
         return sub_nic_sg_del(argc, argv, options);
+    } else if (cmd == "set") {
+        return sub_nic_sg_set(argc, argv, options);
     } else if (cmd == "help") {
         sub_nic_sg_help();
         return 0;
