@@ -861,31 +861,8 @@ function nic_set_sg {
     nic_id=$2
     sg_list=${@:3}
     echo "[butterfly-$but_id] update nic's security groups of $nic_id to: $sg_list"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      nic_update {
-        id: \"nic-$nic_id\"
-        ip: \"42.0.0.$nic_id\"
-        ip_anti_spoof: true
-        " > $f
-
-    for i in $sg_list; do
-        echo "        security_group: \"$i\"
-    " >> $f
-    done
-
-    echo "
-      }
-    }
-  }
-}
-" >> $f
-
-    request $but_id $f
+    cli $but_id 0 nic sg set "nic-$nic_id" $sg_list
 }
 
 function remove_sg_from_nic {
