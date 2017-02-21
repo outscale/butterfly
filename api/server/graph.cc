@@ -611,7 +611,7 @@ void Graph::nic_del(const app::Nic &nic) {
         unlink(n.head);
     } else if (vni.nics.size() == 2) {
         // We have do:
-        // - unlink the switch (which unlink all branch heads).
+        // - unlink the switch which unlink all branch heads.
         // - connect the other head to vtep
         // - re-add other head to vni
         // - destroy the switch
