@@ -774,8 +774,13 @@ std::string Graph::fw_build_rule(const app::Rule &rule) {
         // Allow all
         break;
     default:
-        LOG_ERROR_("unsupported protocol");
-        return "";
+        // Note: this rule match first ipv6 header, not the potential next ones
+        std::string p = std::to_string(rule.protocol);
+        if (rule.cidr.address.type() == app::Ip::V4) {
+            r += " and (ip proto " + p + ")";
+        } else {
+            r += " and (ip6 proto " + p + ")";
+        }
     }
 
     if (rule.protocol == IPPROTO_TCP || rule.protocol == IPPROTO_UDP) {
