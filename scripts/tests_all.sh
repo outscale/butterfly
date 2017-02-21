@@ -14,6 +14,8 @@ fi
 #Clean coverage data
 sudo find $BUTTERFLY_BUILD_ROOT/api/ -name '*.gcda' -exec rm -fr {} \;
 
+make all
+
 echo "############################################################"
 echo "Butterfly tests start"
 echo $($BUTTERFLY_BUILD_ROOT/api/server/butterflyd --version)
