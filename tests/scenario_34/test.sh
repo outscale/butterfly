@@ -25,6 +25,11 @@ sg_rule_del_all_open 1 sg-1
 ssh_no_connection_test sctp 1 2 8000
 ssh_no_connection_test sctp 2 1 8000
 
+cli 0 0 sg rule add $sg --dir in --ip-proto 132 --cidr 0.0.0.0/0
+cli 1 0 sg rule add $sg --dir in --ip-proto 132 --cidr 0.0.0.0/0
+ssh_connection_test sctp 1 2 8000
+ssh_connection_test sctp 2 1 8000
+
 qemu_stop 1
 qemu_stop 2
 server_stop 0
