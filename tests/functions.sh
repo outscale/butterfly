@@ -869,23 +869,8 @@ function remove_sg_from_nic {
     but_id=$1
     nic_id=$2
     echo "[butterfly-$but_id] remove sg from nic $nic_id"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      nic_update {
-        id: \"nic-$nic_id\"
-        ip: \"42.0.0.$nic_id\"
-        security_group: \"\"
-        ip_anti_spoof: true
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 nic sg set "nic-$nic_id"
 }
 
 function sg_add {
