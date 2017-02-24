@@ -188,7 +188,9 @@ function ssh_iperf_tcp {
     else
         echo "iperf tcp VM $id1 ---> VM $id2 OK"
     fi
-    kill -9 $server_pid &> /dev/null
+    kill -2 $server_pid &> /dev/null
+    sleep 0.4
+    kill -9 $server_pid &> /dev/null || true
     set -e
 }
 
@@ -208,7 +210,9 @@ function ssh_iperf_udp {
     else
         echo "iperf udp VM $id1 ---> VM $id2 OK"
     fi
-    kill -9 server_pid &> /dev/null
+    kill -2 server_pid &> /dev/null
+    sleep 0.4
+    kill -9 server_pid &> /dev/null || true
     rm /tmp/iperf_tmp_results
     set -e
 }
@@ -227,7 +231,9 @@ function ssh_iperf3_tcp {
     else
         echo "iperf3 tcp VM $id1 ---> VM $id2 OK"
     fi
-    kill -9 $server_pid &> /dev/null
+    kill -2 $server_pid &> /dev/null
+    sleep 0.4
+    kill -9 $server_pid &> /dev/null || true
     set -e
 }
 
@@ -247,7 +253,9 @@ function ssh_iperf3_udp {
     else
         echo "iperf3 udp VM $id1 ---> VM $id2 OK"
     fi
-    kill -9 $server_pid &> /dev/null
+    kill -2 $server_pid &> /dev/null
+    sleep 0.4
+    kill -9 $server_pid &> /dev/null || true
     rm /tmp/iperf3_tmp_results
     set -e
 }
@@ -505,7 +513,9 @@ function qemu_start {
 function qemu_stop {
     id=$1
     echo "stopping VM $id"
-    sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
+    sudo kill -2 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
+    sleep 0.4
+    sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null || true
 }
 
 function server_start {
@@ -561,7 +571,9 @@ function network_disconnect {
     id1=$1
     id2=$2
     echo "network disconnect butterfly-$id1 <--> butterfly-$id2"
-    sudo kill -9 $(ps --ppid ${socat_pids[$id1$id2]} -o pid=)
+    sudo kill -2 $(ps --ppid ${socat_pids[$id1$id2]} -o pid=)
+    sleep 0.4
+    sudo kill -9 $(ps --ppid ${socat_pids[$id1$id2]} -o pid=) || true
 }
 
 function download {
@@ -1200,6 +1212,8 @@ function clean_pcaps {
     sudo rm -rf /tmp/butterfly-*.pcap
 }
 function clean_all {
+    sudo killall -2 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null || true
+    sleep 0.6
     sudo killall -9 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null || true
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
