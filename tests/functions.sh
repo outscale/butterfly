@@ -18,6 +18,8 @@ declare -A socat_pids
 
 RETURN_CODE=0
 
+CLIENT=$BUTTERFLY_BUILD_ROOT/api/client/butterfly
+
 function return_result {
     clean_all
     exit $RETURN_CODE
@@ -588,7 +590,7 @@ function request {
     but_id=$1
     f=$2
 
-    $BUTTERFLY_BUILD_ROOT/api/client/butterfly request $f -e tcp://127.0.0.1:876$but_id
+    $CLIENT request $f -e tcp://127.0.0.1:876$but_id
     ret=$?
     rm $f
     if [ ! "$ret" == "0" ]; then
@@ -604,7 +606,7 @@ function cli {
     opts=${@:3}
     echo "[butterfly-$but_id] cli run $opts"
     set +e
-    $BUTTERFLY_BUILD_ROOT/api/client/butterfly $opts -e tcp://127.0.0.1:876$but_id &> $BUTTERFLY_BUILD_ROOT/cli_output
+    $CLIENT $opts -e tcp://127.0.0.1:876$but_id &> $BUTTERFLY_BUILD_ROOT/cli_output
     if [ ! "$?" == "$excepted_result" ]; then
         echo "cli run failed, check cli_output file"
         clean_all
