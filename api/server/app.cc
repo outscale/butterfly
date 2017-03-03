@@ -26,6 +26,7 @@ extern "C" {
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <memory>
 #include "api/server/app.h"
 #include "api/server/graph.h"
 #include "api/server/server.h"
