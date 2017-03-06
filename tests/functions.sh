@@ -66,7 +66,7 @@ function ssh_ping_ip {
 
     ssh_run $id ping -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
-	fail "ping on VM $id: $src ---> $dst FAIL"
+        fail "ping on VM $id: $src ---> $dst FAIL"
     else
         echo "ping on VM $id: $src ---> $dst OK"
     fi
@@ -81,7 +81,7 @@ function ssh_no_ping_ip {
     if [ $? -ne 0 ]; then
         echo "ping on VM $id: $src -/-> $dst OK"
     else
-	fail "ping on VM $id: $src -/-> $dst FAIL"
+        fail "ping on VM $id: $src -/-> $dst FAIL"
     fi
 }
 
@@ -92,7 +92,7 @@ function ssh_ping_ip6 {
 
     ssh_run $id ping6 -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
-	fail "ping6 on VM $id: $src ---> $dst FAIL"
+        fail "ping6 on VM $id: $src ---> $dst FAIL"
     else
         echo "ping6 on VM $id: $src ---> $dst OK"
     fi
@@ -107,7 +107,7 @@ function ssh_no_ping_ip6 {
     if [ $? -ne 0 ]; then
         echo "ping on VM $id: $src -/-> $dst OK"
     else
-	fail "ping6 on VM $id: $src -/-> $dst FAIL"
+        fail "ping6 on VM $id: $src -/-> $dst FAIL"
     fi
 }
 
@@ -391,6 +391,68 @@ function qemu_del_ipv6 {
     done
 }
 
+function qemu_start_async {
+    qemu_start $1 $2 &
+}
+
+
+function qemus_wait {
+    if [ "$#" -eq 0 ]; then
+        return 0
+    fi
+    qemu_wait $1
+    shift 1
+    qemus_wait $@
+}
+
+function qemus_start_ {
+    if [ "$#" -eq 0 ]; then
+        return 0
+    fi
+    qemu_start_async $1
+    shift 1
+    qemus_start_ $@
+}
+
+function qemus_start {
+    qemus_start_ $@
+    qemus_wait $@
+}
+
+function qemu_wait_pid {
+    if [ ! -f "/tmp/qemu_pids$id" ]; then
+        if [ $2 == 0 ]; then
+            return 0
+        fi
+        sleep 1
+        num=$(($2 - 1))
+        qemu_wait_pid $1 $num
+        return $ret
+    fi
+    return 1
+}
+
+function qemu_wait {
+    id=$1
+    echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
+    TEST=$?
+    MAX_TEST=0
+    while  [ $TEST -ne 0 -a $MAX_TEST -ne 20 ]
+    do
+        echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
+        TEST=$?
+        MAX_TEST=$(($MAX_TEST + 1))
+        sleep 0.2
+    done
+
+    qemu_wait_pid $id 30
+    if [ ! $? ]; then
+        fail "qemu $id starting timeout"
+        return
+    fi
+    qemu_pids["$id"]=$(< /tmp/qemu_pids$id)
+}
+
 function qemu_start {
     id=$1
     ip=$2
@@ -465,12 +527,24 @@ function qemu_start {
 
     ssh_run $id pacman -Sy nmap --noconfirm &>/dev/null
     ssh_run $id pacman -Sy lksctp-tools --noconfirm &>/dev/null
+    echo $pid > /tmp/qemu_pids$id
 }
 
 function qemu_stop {
     id=$1
-    echo "stopping VM $id"
+    rm -vf /tmp/qemu_pids$id
+    echo "stopping VM $id pid: ${qemu_pids[$id]}"
     sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
+    sleep 0.3
+}
+
+function qemus_stop {
+    if [ "$#" -eq 0 ]; then
+        return 0
+    fi
+    qemu_stop $1
+    shift 1
+    qemus_stop $@
 }
 
 function server_start {
@@ -1154,6 +1228,7 @@ function clean_all {
     sudo killall -9 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
+    rm -rvf /tmp/qemu_pids*
 }
 
 function fail {
