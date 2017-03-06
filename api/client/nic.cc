@@ -393,19 +393,24 @@ NicAddOptions::NicAddOptions() {
     bypass_filtering = "false";
 }
 
+static inline bool CheckOption(int count, int argc, char **argv,
+                               char const *option) {
+    return count + 1 < argc && string(argv[count]) == option;
+}
+
 int NicAddOptions::Parse(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
-        if (i + 1 < argc && (string(argv[i]) == "--ip"))
+        if (CheckOption(i, argc, argv, "--ip"))
             ips.push_back(string(argv[i + 1]));
-        else if (i + 1 < argc && (string(argv[i]) == "--sg"))
+        else if (CheckOption(i, argc, argv, "--sg"))
             sgs.push_back(string(argv[i + 1]));
-        else if (i + 1 < argc && (string(argv[i]) == "--mac"))
+        else if (CheckOption(i, argc, argv, "--mac"))
             mac = string(argv[i + 1]);
         else if (string(argv[i]) == "--enable-antispoof")
             enable_antispoof = "true";
-        else if (i + 1 < argc && (string(argv[i]) == "--id"))
+        else if (CheckOption(i, argc, argv, "--id"))
             id = string(argv[i + 1]);
-        else if (i + 1 < argc && (string(argv[i]) == "--vni"))
+        else if (CheckOption(i, argc, argv, "--vni"))
             vni = string(argv[i + 1]);
         else if (string(argv[i]) == "--bypass-filtering")
             bypass_filtering = "true";

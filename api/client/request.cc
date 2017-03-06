@@ -132,6 +132,23 @@ int Request(const string &req,
     return Request(proto_req, res, options, response_to_stdout);
 }
 
+static void PrintError(MessageV0_Error error) {
+    if (error.has_description())
+        cerr << endl << "description: " << error.description() << endl;
+    else if (error.has_err_no())
+        cerr << endl << "errno: " << to_string(error.err_no()) << endl;
+    else if (error.has_file())
+        cerr << endl << "file: " << error.file() << endl;
+    else if (error.has_line())
+        cerr << endl << "errno: " << to_string(error.line()) << endl;
+    else if (error.has_curs_pos())
+        cerr << endl << "curs_pos: " << to_string(error.curs_pos()) << endl;
+    else if (error.has_function())
+        cerr << endl << "function: " << error.function() << endl;
+    else
+        cerr << " no details provided" << endl;
+}
+
 int CheckRequestResult(const proto::Messages &res) {
     if (res.messages_size() == 0) {
         cerr << "error: no message in response" << endl;
@@ -156,27 +173,9 @@ int CheckRequestResult(const proto::Messages &res) {
         } else if (!res_0.response().status().status()) {
             cerr << "error in response";
             if (res_0.response().status().has_error()) {
-                MessageV0_Error e = res_0.response().status().error();
-                if (e.has_description()) {
-                    cerr << endl << "description: " << e.description() << endl;
-                } else if (e.has_err_no()) {
-                    cerr << endl << "errno: " << to_string(e.err_no()) <<
-                        endl;
-                } else if (e.has_file()) {
-                    cerr << endl << "file: " << e.file() << endl;
-                } else if (e.has_line()) {
-                    cerr << endl << "errno: " << to_string(e.line()) <<
-                        endl;
-                } else if (e.has_curs_pos()) {
-                    cerr << endl << "curs_pos: " <<
-                        to_string(e.curs_pos()) << endl;
-                } else if (e.has_function()) {
-                    cerr << endl << "function: " << e.function() << endl;
-                } else {
-                    cerr << " no details provided" << endl;
-                }
+                PrintError(res_0.response().status().error());
             }
-            return 1;
+             return 1;
         }
     } else {
         cerr << "error: no message recognized in response" << endl;
