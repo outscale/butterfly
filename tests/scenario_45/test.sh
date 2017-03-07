@@ -28,8 +28,7 @@ for big in \
     server_start_options 1 $_server_start_options
     nic_add 0 1 42 sg-1
     nic_add 1 2 42 sg-1
-    qemu_start 1
-    qemu_start 2
+    qemus_start 1 2
     sg_rule_add_icmp 0 sg-1
     sg_rule_add_icmp 1 sg-1
     ssh_ping 1 2
@@ -59,8 +58,7 @@ for big in \
     nic_del 0 3
     nic_del 0 4
     ssh_ping 1 2
-    qemu_stop 1
-    qemu_stop 2
+    qemus_stop 1 2
     server_stop 0
     server_stop 1
 
