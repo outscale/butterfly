@@ -21,21 +21,6 @@ echo "Butterfly tests start"
 echo $($BUTTERFLY_BUILD_ROOT/api/server/butterflyd --version)
 echo "############################################################"
 
-# API tests
-$BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
-if [ $? != 0 ]; then
-    tput setaf 1
-    echo "API test failed"
-    tput setaf 7
-    exit 1
-else
-    tput setaf 2
-    echo "API test OK"
-    tput setaf 7
-fi
-
-sleep 5
-
 # API style test
 $BUTTERFLY_ROOT/scripts/tests_api_style.sh
 if [ $? != 0 ]; then
@@ -46,6 +31,21 @@ if [ $? != 0 ]; then
 else
     tput setaf 2
     echo "API style test OK"
+    tput setaf 7
+fi
+
+sleep 1
+
+# API tests
+$BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "API test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "API test OK"
     tput setaf 7
 fi
 
