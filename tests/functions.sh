@@ -447,7 +447,7 @@ function qemu_wait {
 
     qemu_wait_pid $id 30
     if [ ! $? ]; then
-        fail "qemu $id starting timeout"
+        fail "[VM $id] qemu timeout"
         return
     fi
     qemu_pids["$id"]=$(< $BUTTERFLY_BUILD_ROOT/qemu_pids$id)
@@ -456,7 +456,7 @@ function qemu_wait {
 function qemu_start {
     id=$1
     ip=$2
-    echo "starting VM $id"
+    echo "[VM $id] starting"
     SOCKET_PATH=/tmp/qemu-vhost-nic-$id
     IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
     MAC=52:54:00:12:34:0$id
@@ -533,7 +533,7 @@ function qemu_start {
 function qemu_stop {
     id=$1
     rm -vf $BUTTERFLY_BUILD_ROOT/qemu_pids$id
-    echo "stopping VM $id pid: ${qemu_pids[$id]}"
+    echo "[VM $id] stopping (pid ${qemu_pids[$id]})"
     sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
     sleep 0.3
 }
