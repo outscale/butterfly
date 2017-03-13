@@ -532,7 +532,7 @@ function qemu_start {
 
 function qemu_stop {
     id=$1
-    rm -vf $BUTTERFLY_BUILD_ROOT/qemu_pids$id
+    rm -f $BUTTERFLY_BUILD_ROOT/qemu_pids$id
     echo "[VM $id] stopping (pid ${qemu_pids[$id]})"
     sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
     sleep 0.3
@@ -1228,7 +1228,7 @@ function clean_all {
     sudo killall -9 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
-    rm -rvf $BUTTERFLY_BUILD_ROOT/qemu_pids*
+    rm -rf $BUTTERFLY_BUILD_ROOT/qemu_pids*
 }
 
 function fail {
