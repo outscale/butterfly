@@ -691,6 +691,10 @@ function nic_add6 {
     sleep 0.3
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+	sleep 1
+    fi
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
         echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
         clean_all
         exit 1
