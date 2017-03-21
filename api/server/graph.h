@@ -240,6 +240,7 @@ class Graph {
        std::map<std::string, struct GraphNic> nics;
     };
 
+    GraphNic *GetGraphNic(const app::Nic &nic);
     /* Global branch. */
     BrickShrPtr nic_;
     BrickShrPtr vtep_;

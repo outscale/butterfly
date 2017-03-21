@@ -579,6 +579,29 @@ std::string Graph::NicAdd(const app::Nic &nic) {
     return std::string(ret);
 }
 
+Graph::GraphNic *Graph::GetGraphNic(const app::Nic &nic) {
+    if (!started) {
+        LOG_ERROR_("Graph has not been started");
+        return NULL;
+    }
+
+    auto vni_it = app::graph.vnis_.find(nic.vni);
+    if (vni_it == app::graph.vnis_.end()) {
+        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
+            std::to_string(nic.vni) + " don't seems to exist.");
+        return NULL;
+    }
+
+    struct GraphVni &vni = vni_it->second;
+    auto nic_it = vni.nics.find(nic.id);
+    if (nic_it == vni.nics.end()) {
+        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
+            std::to_string(nic.vni) + " don't seems to exist in branch.");
+        return NULL;
+    }
+    return &nic_it->second;
+}
+
 void Graph::NicDel(const app::Nic &nic) {
     if (!started) {
         LOG_ERROR_("Graph has not been started");
@@ -653,53 +676,21 @@ std::string Graph::NicExport(const app::Nic &nic) {
 }
 
 void Graph::NicGetStats(const app::Nic &nic, uint64_t *in, uint64_t *out) {
-    if (!started) {
-        LOG_ERROR_("Graph has not been started");
+    Graph::GraphNic *graph_nic = GetGraphNic(nic);
+    if (graph_nic == NULL) {
         return;
     }
-    *in = *out = 0;
-
-    auto vni_it = app::graph.vnis_.find(nic.vni);
-    if (vni_it == app::graph.vnis_.end()) {
-        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
-            std::to_string(nic.vni) + " don't seems to exist.");
-        return;
-    }
-    struct GraphVni &vni = vni_it->second;
-
-    auto nic_it = vni.nics.find(nic.id);
-    if (nic_it == vni.nics.end()) {
-        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
-            std::to_string(nic.vni) + " don't seems to exist in branch.");
-        return;
-    }
-
-    *in = pg_brick_rx_bytes(nic_it->second.vhost.get());
-    *out = pg_brick_tx_bytes(nic_it->second.vhost.get());
+    *in = pg_brick_rx_bytes(graph_nic->vhost.get());
+    *out = pg_brick_tx_bytes(graph_nic->vhost.get());
 }
 
 void Graph::NicConfigAntiSpoof(const app::Nic &nic, bool enable) {
-    if (!started) {
-        LOG_ERROR_("Graph has not been started");
+    Graph::GraphNic *graph_nic = GetGraphNic(nic);
+    if (graph_nic == NULL) {
         return;
     }
 
-    auto vni_it = app::graph.vnis_.find(nic.vni);
-    if (vni_it == app::graph.vnis_.end()) {
-        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
-            std::to_string(nic.vni) + " don't seems to exist.");
-        return;
-    }
-    struct GraphVni &vni = vni_it->second;
-
-    auto nic_it = vni.nics.find(nic.id);
-    if (nic_it == vni.nics.end()) {
-        LOG_ERROR_("NIC id: " + nic.id + " in vni: " +
-            std::to_string(nic.vni) + " don't seems to exist in branch.");
-        return;
-    }
-
-    BrickShrPtr &antispoof = nic_it->second.antispoof;
+    BrickShrPtr &antispoof = graph_nic->antispoof;
     if (enable) {
         pg_antispoof_arp_del_all(antispoof.get());
         for (auto it = nic.ip_list.begin(); it != nic.ip_list.end(); it++) {
