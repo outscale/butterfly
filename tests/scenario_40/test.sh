@@ -9,8 +9,9 @@ server_start 0
 nic_add_noip 0 1 42 sg-1
 nic_add_noip 0 2 42 sg-1
 sg_rule_add_all_open 0 sg-1
-qemu_start 1 noip
-qemu_start 2 noip
+qemu_start_async 1 noip
+qemu_start_async 2 noip
+qemus_wait 1 2
 
 a1=42.0.0.1
 a2=42.0.0.2

@@ -1,4 +1,3 @@
-set -e
 IMG_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-100816.qcow
 IMG_MD5=1ca000ddbc5ac271c77d1875fab71083
 KEY_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-100816.rsa
@@ -42,7 +41,7 @@ function ssh_run_timeout {
     timeout=$2
     cmd="${@:3}"
     key=$BUTTERFLY_BUILD_ROOT/vm.rsa
-    ssh -q -p 500$id -l root -i $key -oStrictHostKeyChecking=no -oConnectTimeout=$timeout 127.0.0.1 $cmd 
+    ssh -q -p 500$id -l root -i $key -oStrictHostKeyChecking=no -oConnectTimeout=$timeout 127.0.0.1 $cmd
 }
 
 function scp_to {
@@ -64,88 +63,76 @@ function ssh_ping_ip {
     id=$1
     src=$2
     dst=$3
-    set +e
+
     ssh_run $id ping -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "ping on VM $id: $src ---> $dst FAIL"
-        RETURN_CODE=1
+        fail "ping on VM $id: $src ---> $dst FAIL"
     else
         echo "ping on VM $id: $src ---> $dst OK"
     fi
-    set -e
 }
 
 function ssh_no_ping_ip {
     id=$1
     src=$2
     dst=$3
-    set +e
+
     ssh_run $id ping -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping on VM $id: $src -/-> $dst OK"
     else
-        echo "ping on VM $id: $src -/-> $dst FAIL"
-        RETURN_CODE=1
+        fail "ping on VM $id: $src -/-> $dst FAIL"
     fi
-    set -e
 }
 
 function ssh_ping_ip6 {
     id=$1
     src=$2
     dst=$3
-    set +e
+
     ssh_run $id ping6 -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "ping6 on VM $id: $src ---> $dst FAIL"
-        RETURN_CODE=1
+        fail "ping6 on VM $id: $src ---> $dst FAIL"
     else
         echo "ping6 on VM $id: $src ---> $dst OK"
     fi
-    set -e
 }
 
 function ssh_no_ping_ip6 {
     id=$1
     src=$2
     dst=$3
-    set +e
+
     ssh_run $id ping6 -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping on VM $id: $src -/-> $dst OK"
     else
-        echo "ping on VM $id: $src -/-> $dst FAIL"
-        RETURN_CODE=1
+        fail "ping6 on VM $id: $src -/-> $dst FAIL"
     fi
-    set -e
 }
 
 function ssh_ping {
     id1=$1
     id2=$2
-    set +e
+
     ssh_run $id1 ping 42.0.0.$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "ping VM $id1 ---> VM $id2 FAIL"
-        RETURN_CODE=1
+        fail "ping VM $id1 ---> VM $id2 FAIL"
     else
         echo "ping VM $id1 ---> VM $id2 OK"
     fi
-    set -e
 }
 
 function ssh_no_ping {
     id1=$1
     id2=$2
-    set +e
+
     ssh_run $id1 ping 42.0.0.$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping VM $id1 -/-> VM $id2 OK"
     else
-        echo "ping VM $id1 -/-> VM $id2 FAIL"
-        RETURN_CODE=1
+        fail "ping VM $id1 -/-> VM $id2 FAIL"
     fi
-    set -e
 }
 
 function ssh_ping6 {
@@ -153,8 +140,7 @@ function ssh_ping6 {
     id2=$2
     ssh_run $id1 ping6 2001:db8:2000:aff0::$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "ping6 VM $id1 ---> VM $id2 FAIL"
-        RETURN_CODE=1
+        fail "ping6 VM $id1 ---> VM $id2 FAIL"
     else
         echo "ping6 VM $id1 ---> VM $id2 OK"
     fi
@@ -163,39 +149,35 @@ function ssh_ping6 {
 function ssh_no_ping6 {
     id1=$1
     id2=$2
-    set +e
+
     ssh_run $id1 ping6 2001:db8:2000:aff0::$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping6 VM $id1 -/-> VM $id2 OK"
     else
-        echo "ping6 VM $id1 -/-> VM $id2 FAIL"
-        RETURN_CODE=1
+        fail "ping6 VM $id1 -/-> VM $id2 FAIL"
     fi
-    set -e
 }
 
 function ssh_iperf_tcp {
     id1=$1
     id2=$2
-    set +e
+
     (ssh_run $id1 iperf -s &> /dev/null &)
     local server_pid=$!
     sleep 1
     ssh_run $id2 iperf -c 42.0.0.$id1 -t 3 &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "iperf tcp VM $id1 ---> VM $id2 FAIL"
-        RETURN_CODE=1
+        fail "iperf tcp VM $id1 ---> VM $id2 FAIL"
     else
         echo "iperf tcp VM $id1 ---> VM $id2 OK"
     fi
     kill -9 $server_pid &> /dev/null
-    set -e
 }
 
 function ssh_iperf_udp {
     id1=$1
     id2=$2
-    set +e
+
     (ssh_run $id1 iperf -s -u &> /tmp/iperf_tmp_results &)
     local server_pid=$!
     sleep 1
@@ -203,38 +185,34 @@ function ssh_iperf_udp {
     ret=$?
     res=$(cat /tmp/iperf_tmp_results |grep "%" | cut -d '(' -f 2 | cut -d '%' -f 1)
     if [ $ret -ne 0 ] || [ ".$res" != ".0" ]; then
-        echo "iperf udp VM $id1 ---> VM $id2 FAIL"
-        RETURN_CODE=1
+        fail "iperf udp VM $id1 ---> VM $id2 FAIL"
     else
         echo "iperf udp VM $id1 ---> VM $id2 OK"
     fi
     kill -9 server_pid &> /dev/null
     rm /tmp/iperf_tmp_results
-    set -e
 }
 
 function ssh_iperf3_tcp {
     id1=$1
     id2=$2
-    set +e
+
     (ssh_run $id1 iperf3 -s &> /dev/null &)
     local server_pid=$!
     sleep 1
     ssh_run $id2 iperf3 -c 42.0.0.$id1 -t 3 &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "iperf3 tcp VM $id1 ---> VM $id2 FAIL"
-        RETURN_CODE=1
+        fail "iperf3 tcp VM $id1 ---> VM $id2 FAIL"
     else
         echo "iperf3 tcp VM $id1 ---> VM $id2 OK"
     fi
     kill -9 $server_pid &> /dev/null
-    set -e
 }
 
 function ssh_iperf3_udp {
     id1=$1
     id2=$2
-    set +e
+
     (ssh_run $id1 iperf3 -s &> /dev/null &)
     local server_pid=$!
     sleep 1
@@ -242,14 +220,12 @@ function ssh_iperf3_udp {
     local ret=$?
     local res=$(cat /tmp/iperf3_tmp_results | grep packets | tail -n 1 | cut -d ':' -f 2 | cut -d ',' -f 1 | tr -d ' ' | tr -d '\t')
     if [ $res -eq 0 ] || [ $ret -ne 0 ]; then
-        echo "iperf3 udp VM $id1 ---> VM $id2 FAIL"
-        RETURN_CODE=1
+        fail "iperf3 udp VM $id1 ---> VM $id2 FAIL"
     else
         echo "iperf3 udp VM $id1 ---> VM $id2 OK"
     fi
     kill -9 $server_pid &> /dev/null
     rm /tmp/iperf3_tmp_results
-    set -e
 }
 
 function ssh_connection_tests_internal {
@@ -270,9 +246,7 @@ function ssh_connection_tests_internal {
     elif [ "$protocol" == "sctp" ]; then
         proto_cmd="sctp"
     else
-        echo -e "protocol $protocol not supported by nic_add_port_open"
-        RETURN_CODE=1
-        return $RETURN_CODE
+        fail "protocol $protocol not supported by nic_add_port_open"
     fi
 
     if [ "$proto_cmd" == "sctp" ]; then
@@ -294,11 +268,11 @@ function ssh_connection_tests_internal {
 function ssh_clean_connection {
     id1=$1
     id2=$2
-    
-    ssh_run $id2 "rm /tmp/test" &> /dev/null || true
-    ssh_run $id1 "killall ncat" &> /dev/null || true
-    ssh_run $id2 "killall ncat" &> /dev/null || true
-    ssh_run $id2 "killall sctp_test" &> /dev/null || true
+
+    ssh_run $id2 "rm /tmp/test" &> /dev/null
+    ssh_run $id1 "killall ncat" &> /dev/null
+    ssh_run $id2 "killall ncat" &> /dev/null
+    ssh_run $id2 "killall sctp_test" &> /dev/null
 }
 
 function ssh_connection_test_file {
@@ -335,21 +309,18 @@ function ssh_connection_test {
     id2=$3
     port=$4
 
-    set +e
     ssh_connection_tests_internal $protocol $id1 $id2 $port
     if [ "$?" != "0" ]; then
-        echo -e "$protocol test VM $id1 ---> VM $id2 FAIL (1)"
-        return
+        fail "$protocol test VM $id1 ---> VM $id2 FAIL (1)"
     fi
 
     ssh_connection_test_file $id2 $protocol
     if [ "$?" == "0" ]; then
         echo -e "$protocol test VM $id1 ---> VM $id2 OK"
     else
-        echo -e "$protocol test VM $id1 ---> VM $id2 FAIL"
-        RETURN_CODE=1
+        fail "$protocol test VM $id1 ---> VM $id2 FAIL"
     fi
-    set -e
+
     ssh_clean_connection $id1 $id2
     return $RETURN_CODE
 }
@@ -360,30 +331,26 @@ function ssh_no_connection_test {
     id2=$3
     port=$4
 
-    set +e
     ssh_connection_tests_internal $protocol $id1 $id2 $port
     if [ "$?" != "0" ]; then
-        echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL (1)"
-        return
+        fail "$protocol test VM $id1 -/-> VM $id2 FAIL (1)"
     fi
     if [ "$protocol" == "sctp" ]; then
         ssh_connection_test_file $id2 $protocol
         if [ "$?" == "0" ]; then
-            echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL"
-            RETURN_CODE=1
+            fail "$protocol test VM $id1 -/-> VM $id2 FAIL"
         else
             echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
         fi
     else
         ssh_run $id2 [ -s "/tmp/test" ]
         if [ "$?" == "0" ]; then
-            echo -e "$protocol test VM $id1 -/-> VM $id2 FAIL"
-            RETURN_CODE=1
+            fail "$protocol test VM $id1 -/-> VM $id2 FAIL"
         else
             echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
         fi
     fi
-    set -e
+
     ssh_clean_connection $id1 $id2
     return $RETURN_CODE
 }
@@ -424,18 +391,49 @@ function qemu_del_ipv6 {
     done
 }
 
-function qemu_start {
-    id=$1
-    ip=$2
-    echo "starting VM $id"
-    SOCKET_PATH=/tmp/qemu-vhost-nic-$id
-    IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
-    MAC=52:54:00:12:34:0$id
+function qemu_start_async {
+    qemu_start $1 $2 &
+}
 
-    CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
-    exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
-    pid=$!
-    set +e
+
+function qemus_wait {
+    if [ "$#" -eq 0 ]; then
+        return 0
+    fi
+    qemu_wait $1
+    shift 1
+    qemus_wait $@
+}
+
+function qemus_start_ {
+    if [ "$#" -eq 0 ]; then
+        return 0
+    fi
+    qemu_start_async $1
+    shift 1
+    qemus_start_ $@
+}
+
+function qemus_start {
+    qemus_start_ $@
+    qemus_wait $@
+}
+
+function qemu_wait_pid {
+    if [ ! -f "$BUTTERFLY_BUILD_ROOT/qemu_pids$id" ]; then
+        if [ $2 == 0 ]; then
+            return 0
+        fi
+        sleep 1
+        num=$(($2 - 1))
+        qemu_wait_pid $1 $num
+        return $ret
+    fi
+    return 1
+}
+
+function qemu_wait {
+    id=$1
     echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
     TEST=$?
     MAX_TEST=0
@@ -446,12 +444,41 @@ function qemu_start {
         MAX_TEST=$(($MAX_TEST + 1))
         sleep 0.2
     done
-    set -e
+
+    qemu_wait_pid $id 30
+    if [ ! $? ]; then
+        fail "[VM $id] qemu timeout"
+        return
+    fi
+    qemu_pids["$id"]=$(< $BUTTERFLY_BUILD_ROOT/qemu_pids$id)
+}
+
+function qemu_start {
+    id=$1
+    ip=$2
+    echo "[VM $id] starting"
+    SOCKET_PATH=/tmp/qemu-vhost-nic-$id
+    IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
+    MAC=52:54:00:12:34:0$id
+
+    CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
+    exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
+    pid=$!
+
+    echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
+    TEST=$?
+    MAX_TEST=0
+    while  [ $TEST -ne 0 -a $MAX_TEST -ne 20 ]
+    do
+        echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
+        TEST=$?
+        MAX_TEST=$(($MAX_TEST + 1))
+        sleep 0.2
+    done
+
     sudo kill -s 0 $pid &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "failed to start qemu, check qemu_${id}_output file"
-        clean_all
-        exit 1
+        fail "failed to start qemu, check qemu_${id}_output file"
     fi
     qemu_pids["$id"]=$pid
 
@@ -500,12 +527,24 @@ function qemu_start {
 
     ssh_run $id pacman -Sy nmap --noconfirm &>/dev/null
     ssh_run $id pacman -Sy lksctp-tools --noconfirm &>/dev/null
+    echo $pid > $BUTTERFLY_BUILD_ROOT/qemu_pids$id
 }
 
 function qemu_stop {
     id=$1
-    echo "stopping VM $id"
+    rm -f $BUTTERFLY_BUILD_ROOT/qemu_pids$id
+    echo "[VM $id] stopping (pid ${qemu_pids[$id]})"
     sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
+    sleep 0.3
+}
+
+function qemus_stop {
+    if [ "$#" -eq 0 ]; then
+        return 0
+    fi
+    qemu_stop $1
+    shift 1
+    qemus_stop $@
 }
 
 function server_start {
@@ -522,9 +561,7 @@ function server_start_options {
     pid=$!
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
-        echo "failed to start butterfly, check butterflyd_${id}_output file"
-        clean_all
-        exit 1
+        fail "failed to start butterfly, check butterflyd_${id}_output file"
     fi
 
     server_pids["$id"]=$pid
@@ -548,9 +585,7 @@ function network_connect {
     sleep 0.2
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
-        echo "failed connect but$id1 and but$id2"
-        clean_all
-        exit 1
+        fail "failed connect but$id1 and but$id2"
     fi
     socat_pids["$id1$id2"]=$pid
     sudo ip link set dev but$id1 mtu 2000
@@ -592,9 +627,7 @@ function request {
     ret=$?
     rm $f
     if [ ! "$ret" == "0" ]; then
-        echo "client failed to send message to butterfly $but_id"
-        clean_all
-        exit 1
+        fail "client failed to send message to butterfly $but_id"
     fi
 }
 
@@ -603,14 +636,11 @@ function cli {
     excepted_result=$2
     opts=${@:3}
     echo "[butterfly-$but_id] cli run $opts"
-    set +e
+
     $BUTTERFLY_BUILD_ROOT/api/client/butterfly $opts -e tcp://127.0.0.1:876$but_id &> $BUTTERFLY_BUILD_ROOT/cli_output
     if [ ! "$?" == "$excepted_result" ]; then
-        echo "cli run failed, check cli_output file"
-        clean_all
-        exit 1
+        fail "cli run failed, check cli_output file"
     fi
-    set -e
 }
 
 function nic_add_noip {
@@ -659,7 +689,7 @@ function nic_add {
     sg_list=${@:4}
 
     echo "[butterfly-$but_id] add nic $nic_id with vni $vni"
- 
+
     cli $but_id 0 nic add --id "nic-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "42.0.0.$nic_id" --enable-antispoof
     sleep 1
 
@@ -669,9 +699,7 @@ function nic_add {
     sleep 1
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
-        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
-        clean_all
-        exit 1
+        fail "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
     fi
 }
 
@@ -691,9 +719,7 @@ function nic_add6 {
     sleep 0.3
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
-        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
-        clean_all
-        exit 1
+        fail "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
     fi
 }
 
@@ -710,9 +736,7 @@ function nic_add_bypass {
     sleep 0.3
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
-        echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
-        clean_all
-        exit 1
+        fail "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
     fi
 }
 
@@ -729,7 +753,7 @@ function sg_rule_add_all_open {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] add rule all open in $sg"
-    
+
     cli $but_id 0 sg rule add $sg --dir in --ip-proto all --cidr 0.0.0.0/0
     cli $but_id 0 sg rule add $sg --dir in --ip-proto all --cidr ::0/0
 }
@@ -751,7 +775,7 @@ function sg_rule_add_ip_and_port {
     port=$5
     sg=$6
     echo "[butterfly-$but_id] add rule $protocol port $port ip $ip/$mask_size in $sg"
-    cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr $ip/$mask_size 
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr $ip/$mask_size
 }
 
 function sg_rule_del_ip_and_port {
@@ -762,40 +786,8 @@ function sg_rule_del_ip_and_port {
     port=$5
     sg=$6
     echo "[butterfly-$but_id] del rule $protocol port $port ip $ip/$mask_size in $sg"
-    if [ "$protocol" == "tcp" ]; then
-        protocol=6
-    elif [ "$protocol" == "udp" ]; then
-        protocol=17
-    elif [ "$protocol" == "sctp" ]; then
-        protocol=132
-    else
-        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-        RETURN_CODE=1
-    fi
-    f=/tmp/butterfly-client.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          cidr {
-            address: \"$ip\"
-            mask_size: $mask_size
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr $ip/$mask_size
 }
 
 function sg_rule_add_ip {
@@ -803,7 +795,7 @@ function sg_rule_add_ip {
     ip=$2
     mask_size=$3
     sg=$4
-    
+
     echo "[butterfly-$but_id] add rule to $sg: allow $ip/$mask_size on all protocols"
 
     cli $but_id 0 sg rule add $sg --dir in --ip-proto -1 --cidr $ip/$mask_size
@@ -814,30 +806,10 @@ function sg_rule_del_ip {
     ip=$2
     mask_size=$3
     sg=$4
-    
-    echo "[butterfly-$but_id] delete rule on $sg: allow $ip/$mask_size on all protocols"
-    f=/tmp/butterfly-client.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: -1
-          cidr {
-            address: \"$ip\"
-            mask_size: $mask_size
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    echo "[butterfly-$but_id] delete rule on $sg: allow $ip/$mask_size on all protocols"
+
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto -1 --cidr $ip/$mask_size
 }
 
 function sg_rule_add_with_sg_member {
@@ -857,37 +829,8 @@ function sg_rule_del_with_sg_member {
     port=$4
     sg_member=$5
     echo "[butterfly-$but_id] delete rule from $sg: allow sg members of $sg_member on $protocol:$port"
-    if [ "$protocol" == "tcp" ]; then
-        protocol=6
-    elif [ "$protocol" == "udp" ]; then
-        protocol=17
-    elif [ "$protocol" == "sctp" ]; then
-        protocol=132
-    else
-        echo -e "protocol $protocol not supported by sg_rule_add_port_open"
-        RETURN_CODE=1
-    fi
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          security_group: \"$sg_member\"
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule del --dir in --ip-proto $protocol --port-start $port --port-end $port --sg-members $sg_member
 }
 
 function sg_rule_add_dhcp {
@@ -1003,46 +946,9 @@ function sg_rule_del_all_open {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete rule all open from $sg"
-    f=/tmp/butterfly.req
 
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: -1
-          cidr {
-            address: \"0.0.0.0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_add {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: -1
-          cidr {
-            address: \"0::\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto -1 --cidr 0.0.0.0/0
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto -1 --cidr 0::/0
 }
 
 function sg_rule_del_port_open {
@@ -1052,60 +958,8 @@ function sg_rule_del_port_open {
     port=$4
     echo "[butterfly-$but_id] delete rule $protocol port $port open from $sg"
 
-    if [ "$protocol" == "tcp" ]; then
-        protocol=6
-    elif [ "$protocol" == "udp" ]; then
-        protocol=17
-    elif [ "$protocol" == "sctp" ]; then
-        protocol=132
-    else
-        echo -e "protocol $protocol not supported by sg_rule_del_port_open"
-        RETURN_CODE=1
-    fi
-    f=/tmp/butterfly.req
-
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          cidr {
-            address: \"0.0.0.0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: $protocol
-          port_start: $port
-          port_end: $port
-          cidr {
-            address: \"0::\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0.0.0.0/0
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0::/0
 }
 
 function sg_rule_add_icmp {
@@ -1120,27 +974,8 @@ function sg_rule_del_icmp {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete rule allowing icmp from $sg"
-    f=/tmp/butterfly-client.req
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: 1
-          cidr {
-            address: \"0.0.0.0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto 1 --cidr 0.0.0.0/0
 }
 
 function sg_rule_add_icmp6 {
@@ -1155,27 +990,8 @@ function sg_rule_del_icmp6 {
     but_id=$1
     sg=$2
     echo "[butterfly-$but_id] delete rule allowing icmp6 from $sg"
-    f=/tmp/butterfly-client.req
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      sg_rule_del {
-        sg_id: \"$sg\"
-        rule {
-          direction: INBOUND
-          protocol: 58
-          cidr {
-            address: \"0::0\"
-            mask_size: 0
-          }
-        }
-      }
-    }
-  }
-}
-" > $f
-    request $but_id $f
+
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto 58 --cidr 0::0/0
 }
 
 function sg_member_del {
@@ -1200,9 +1016,18 @@ function clean_pcaps {
     sudo rm -rf /tmp/butterfly-*.pcap
 }
 function clean_all {
-    sudo killall -9 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null || true
+    sudo killall butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
+    sleep 0.5
+    sudo killall -9 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
+    rm -rf $BUTTERFLY_BUILD_ROOT/qemu_pids*
+}
+
+function fail {
+    echo $1
+    clean_all
+    exit 1
 }
 
 if [ "$BUTTERFLY_BUILD_ROOT" = "-h" ] || [ "$BUTTERFLY_BUILD_ROOT" = "--help" ] ||
