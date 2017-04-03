@@ -375,38 +375,69 @@ struct pg_error *pg_error;
 
 }  // namespace app
 
-int init_cgroup(int multiplier) {
-  system("mkdir /sys/fs/cgroup/cpu/butterfly");
-  system(std::string("echo $(( `cat /sys/fs/cgroup/cpu/cpu.shares` * "
-                     + std::to_string(multiplier)
-                     + " )) > /sys/fs/cgroup/cpu/butterfly/cpu.shares")
-        .c_str());
-  return 0;
+#define BASH(STR) if (system(("/bin/bash -c \"" + (STR) + "\"").c_str()))
+
+static const char *src_cgroup() {
+    if (!access("/sys/fs/cgroup/cpu/cpu.shares", R_OK)) {
+        return "/sys/fs/cgroup/cpu";
+    } else if (!access("/sys/fs/cgroup/cpu.shares", R_OK)) {
+        return "/sys/fs/cgroup";
+    }
+    return NULL;
+}
+
+static int init_cgroup(int multiplier) {
+    if (!src_cgroup())
+        return -1;
+    std::string create_dir("mkdir " + std::string(src_cgroup()) + "/butterfly");
+
+    BASH(create_dir) {
+        LOG_WARNING_("can't create butterfly cgroup, fail cmd '%s'",
+                     create_dir.c_str());
+    }
+    BASH("echo $(( `cat " + std::string(src_cgroup()) + "/cpu.shares` * " +
+         std::to_string(multiplier) + " )) > " +
+         src_cgroup() + "/butterfly/cpu.shares") {
+        LOG_WARNING_("can't set cgroup priority");
+    }
+    return 0;
 }
 
 void app::set_cgroup() {
-  if (!app::config.tid)
-    return;
-  std::string setStr;
-  std::string unsetOtherStr;
-  std::ostringstream oss;
+    if (!src_cgroup() || !app::config.tid)
+        return;
+    std::string setStr;
+    std::string unsetOtherStr;
+    std::ostringstream oss;
 
-  oss << app::config.tid;
-  setStr = "echo " + oss.str() + " > /sys/fs/cgroup/cpu/butterfly/tasks";
-  unsetOtherStr = "grep -v " + oss.str() +
-          " /sys/fs/cgroup/cpu/butterfly/tasks |" +
-          " while read ligne; do echo $ligne >" +
-          " /sys/fs/cgroup/cpu/tasks ; done";
+    oss << app::config.tid;
+    setStr = "echo " + oss.str() + " > " + src_cgroup() + "/butterfly/tasks";
+    unsetOtherStr = "grep -v " + oss.str() + " " + src_cgroup() +
+                    "/butterfly/tasks | while read ligne; do echo $ligne > " +
+                    src_cgroup() + "/tasks ; done";
 
-  system(setStr.c_str());
-  system(unsetOtherStr.c_str());
+    BASH(setStr) {
+        LOG_WARNING_("can't set cgroup pid");
+    }
+    BASH(unsetOtherStr) {
+        LOG_WARNING_("can't properly set cgroup pid");
+    }
 }
 
 void app::destroy_cgroup() {
-  system("cat /sys/fs/cgroup/cpu/butterfly/tasks |"
-         " while read ligne; do echo $ligne > /sys/fs/cgroup/cpu/tasks ; done");
-  system("rmdir /sys/fs/cgroup/cpu/butterfly");
+    if (!src_cgroup())
+        return;
+    BASH("cat " + std::string(src_cgroup()) +
+         "/butterfly/tasks | while read ligne; do echo $ligne > " +
+         src_cgroup() + "/bin/bash /tasks ; done") {
+        LOG_WARNING_("can't unset task from butterfly cgroup");
+    }
+    BASH("rmdir " + std::string(src_cgroup()) + "/butterfly") {
+        LOG_WARNING_("can't destroy cgroup");
+    }
 }
+
+#undef BASH
 
 int
 main(int argc, char *argv[]) {
