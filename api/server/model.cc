@@ -74,8 +74,8 @@ Cidr::Cidr() {
     mask_size = 0;
 }
 
-std::string Cidr::str() const {
-    return address.str() + "/" + std::to_string(mask_size);
+std::string Cidr::Str() const {
+    return address.Str() + "/" + std::to_string(mask_size);
 }
 
 Ip::Ip() {
@@ -84,18 +84,18 @@ Ip::Ip() {
 }
 
 Ip::Ip(std::string ip_string) {
-    set(ip_string);
+    Set(ip_string);
 }
 
-Ip::type_t Ip::type() const {
+Ip::type_t Ip::Type() const {
     return type_;
 }
 
-std::string Ip::str() const {
+std::string Ip::Str() const {
     return ip_;
 }
 
-bool Ip::bytes(uint8_t *data) const {
+bool Ip::Bytes(uint8_t *data) const {
     if (data == nullptr)
         return false;
     if (type_ == Ip::V4)
@@ -114,11 +114,11 @@ bool Ip::operator== (const Ip& a) const {
 }
 
 Ip Ip::operator= (const std::string& a) {
-    set(a);
+    Set(a);
     return *this;
 }
 
-bool Ip::set(std::string a) {
+bool Ip::Set(std::string a) {
     struct in6_addr a6;
     struct in_addr a4;
     if (inet_pton(AF_INET, a.c_str(), &a4) == 1) {
@@ -146,14 +146,14 @@ Mac::Mac() {
 }
 
 Mac::Mac(std::string mac_string) {
-    set(mac_string);
+    Set(mac_string);
 }
 
-std::string Mac::str() const {
+std::string Mac::Str() const {
     return mac_;
 }
 
-bool Mac::bytes(uint8_t *data) const {
+bool Mac::Bytes(uint8_t *data) const {
     if (data == nullptr)
         return false;
     memcpy(reinterpret_cast<void *>(data),
@@ -166,11 +166,11 @@ bool Mac::operator== (const Mac& a) const {
 }
 
 Mac Mac::operator= (const std::string& a) {
-    set(a);
+    Set(a);
     return *this;
 }
 
-bool Mac::set(std::string a) {
+bool Mac::Set(std::string a) {
     if (a.length() != 17)
         return false;
     const char *cstr = a.c_str();
@@ -192,12 +192,12 @@ bool Mac::set(std::string a) {
 
 std::hash<app::Ip>::result_type
 std::hash<app::Ip>::operator() (argument_type const& a) const {
-    return result_type(std::hash<std::string>()(a.str()));
+    return result_type(std::hash<std::string>()(a.Str()));
 }
 
 std::hash<app::Mac>::result_type
 std::hash<app::Mac>::operator() (argument_type const& a) const {
-    return result_type(std::hash<std::string>()(a.str()));
+    return result_type(std::hash<std::string>()(a.Str()));
 }
 
 std::hash<app::Rule>::result_type
@@ -206,12 +206,12 @@ std::hash<app::Rule>::operator() (argument_type const& a) const {
                        std::to_string(a.protocol) + "-" +
                        std::to_string(a.port_start) + "-" +
                        std::to_string(a.port_end) + "-" +
-                       a.cidr.str() + "-" +
+                       a.cidr.Str() + "-" +
                        a.security_group;
     return result_type(std::hash<std::string>()(rule));
 }
 
 std::hash<app::Cidr>::result_type
 std::hash<app::Cidr>::operator() (argument_type const& a) const {
-    return result_type(std::hash<std::string>()(a.str()));
+    return result_type(std::hash<std::string>()(a.Str()));
 }

@@ -35,30 +35,30 @@ class Ip {
 
     Ip();
     explicit Ip(std::string ip_string);
-    type_t type() const;
-    std::string str() const;
-    bool bytes(uint8_t *data) const;
+    type_t Type() const;
+    std::string Str() const;
+    bool Bytes(uint8_t *data) const;
     bool operator== (const Ip& a) const;
     Ip operator= (const std::string &a);
  private:
     std::string ip_;
     type_t type_;
     uint8_t data_[16];
-    bool set(std::string i);
+    bool Set(std::string i);
 };
 
 class Mac {
  public:
     Mac();
     explicit Mac(std::string mac_string);
-    std::string str() const;
-    bool bytes(uint8_t *data) const;
+    std::string Str() const;
+    bool Bytes(uint8_t *data) const;
     bool operator== (const Mac& a) const;
     Mac operator= (const std::string &a);
  private:
     std::string mac_;
     uint8_t data_[6];
-    bool set(std::string mac);
+    bool Set(std::string mac);
 };
 
 struct Cidr {
@@ -66,7 +66,7 @@ struct Cidr {
     Ip address;
     uint32_t mask_size;
     bool operator== (const Cidr& a) const;
-    std::string str() const;
+    std::string Str() const;
 };
 
 struct Nic {

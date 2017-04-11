@@ -34,7 +34,7 @@ GlobalOptions::GlobalOptions() {
     help = false;
 }
 
-void GlobalOptions::parse(int argc, char **argv) {
+void GlobalOptions::Parse(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (i + 1 < argc &&
             (string(argv[i]) == "--endpoint" ||
@@ -52,7 +52,7 @@ void GlobalOptions::parse(int argc, char **argv) {
     }
 }
 
-void global_parameter_help(void) {
+void GlobalParameterHelp(void) {
         cout << endl <<
         "global options:" << endl <<
         "    --endpoint, -e  endpoint to use (default: " <<
@@ -60,7 +60,7 @@ void global_parameter_help(void) {
         "    --verbose, -v   show details of each operation" << endl;
 }
 
-static void help(void) {
+static void Help(void) {
     cout <<
         "usage: butterfly [subcommands] [options...]" << endl << endl <<
         "butterfly subcommands:" << endl <<
@@ -73,12 +73,12 @@ static void help(void) {
         "options:" << endl <<
         "    --version, -V   show butterfly version" << endl <<
         "    --help, -h      show this help" << endl;
-        global_parameter_help();
+        GlobalParameterHelp();
 }
 
 int main(int argc, char **argv) {
     GlobalOptions options;
-    options.parse(argc, argv);
+    options.Parse(argc, argv);
 
     if (options.version) {
         cout << VERSION_INFO << endl;
@@ -86,29 +86,29 @@ int main(int argc, char **argv) {
     }
 
     if (options.help) {
-        help();
+        Help();
         return 0;
     }
 
     if (argc < 2) {
-        help();
+        Help();
         return 1;
     }
 
     string cmd = string(argv[1]);
     if (cmd == "nic") {
-        return sub_nic(argc, argv, options);
+        return SubNic(argc, argv, options);
     } else if (cmd == "sg") {
-        return sub_sg(argc, argv, options);
+        return SubSg(argc, argv, options);
     } else if (cmd == "status") {
         return sub_status(argc, argv, options);
     } else if (cmd == "shutdown") {
         return sub_shutdown(argc, argv, options);
     } else if (cmd == "request") {
-        return sub_request(argc, argv, options);
+        return SubRequest(argc, argv, options);
     } else {
         cerr << "invalid subcommand " << cmd << endl;
-        help();
+        Help();
         return 1;
     }
 }
