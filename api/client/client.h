@@ -54,7 +54,7 @@ using std::hash;
 
 struct GlobalOptions {
     GlobalOptions();
-    void parse(int argc, char **argv);
+    void Parse(int argc, char **argv);
     string endpoint;
     bool version;
     bool verbose;
@@ -63,19 +63,19 @@ struct GlobalOptions {
 
 struct RequestOptions {
     RequestOptions();
-    void parse(int argc, char **argv);
+    void Parse(int argc, char **argv);
     bool to_stdout;
 };
 
 struct StatusOptions {
     StatusOptions();
-    void parse(int argc, char **argv);
+    void Parse(int argc, char **argv);
     bool all;
 };
 
 struct NicAddOptions {
     NicAddOptions();
-    int parse(int argc, char **argv);
+    int Parse(int argc, char **argv);
     vector<string> ips;
     vector<string> sgs;
     string mac;
@@ -87,7 +87,7 @@ struct NicAddOptions {
 
 struct RuleAddOptions {
     RuleAddOptions();
-    int parse(int argc, char **argv);
+    int Parse(int argc, char **argv);
     string sg;
     string direction;
     bool has_proto;
@@ -100,21 +100,21 @@ struct RuleAddOptions {
     string sg_members;
 };
 
-void global_parameter_help(void);
-int sub_sg(int argc, char **argv, const GlobalOptions &options);
-int sub_nic(int argc, char **argv, const GlobalOptions &options);
+void GlobalParameterHelp(void);
+int SubSg(int argc, char **argv, const GlobalOptions &options);
+int SubNic(int argc, char **argv, const GlobalOptions &options);
 int sub_status(int argc, char **argv, const GlobalOptions &options);
 int sub_shutdown(int argc, char **argv, const GlobalOptions &options);
-int sub_request(int argc, char **argv, const GlobalOptions &options);
+int SubRequest(int argc, char **argv, const GlobalOptions &options);
 int sub_status(int argc, char **argv, const GlobalOptions &options);
-int request(const proto::Messages &request,
+int Request(const proto::Messages &request,
             proto::Messages *response,
             const GlobalOptions &options,
             bool response_to_stdout);
-int request(const string &req,
+int Request(const string &req,
             proto::Messages *res,
             const GlobalOptions &options,
             bool response_to_stdout);
-int check_request_result(const proto::Messages &res);
+int CheckRequestResult(const proto::Messages &res);
 
 #endif  // API_CLIENT_CLIENT_H_

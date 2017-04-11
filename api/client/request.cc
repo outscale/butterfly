@@ -21,29 +21,29 @@ RequestOptions::RequestOptions() {
     to_stdout = false;
 }
 
-void RequestOptions::parse(int argc, char **argv) {
+void RequestOptions::Parse(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (string(argv[i]) == "--stdout")
             to_stdout = true;
     }
 }
 
-static void help(void) {
+static void Help(void) {
     cout <<
         "usage: butterfly request REQUEST_FILE [options...]" << endl << endl <<
         "options:" << endl <<
         "    --stdout   prints protobuf response to stdout" << endl;
-        global_parameter_help();
+        GlobalParameterHelp();
 }
 
-int sub_request(int argc, char **argv, const GlobalOptions &options) {
+int SubRequest(int argc, char **argv, const GlobalOptions &options) {
     if (argc <= 2) {
-        help();
+        Help();
         return 1;
     }
     string request_file_path = string(argv[2]);
     RequestOptions r_options;
-    r_options.parse(argc, argv);
+    r_options.Parse(argc, argv);
 
     ifstream input_file(request_file_path);
     stringstream ss;
@@ -55,10 +55,10 @@ int sub_request(int argc, char **argv, const GlobalOptions &options) {
         return 1;
     }
     proto::Messages res;
-    return request(input_text, &res, options, r_options.to_stdout);
+    return Request(input_text, &res, options, r_options.to_stdout);
 }
 
-int request(const proto::Messages &req,
+int Request(const proto::Messages &req,
             proto::Messages *res,
             const GlobalOptions &options,
             bool response_to_stdout) {
@@ -119,7 +119,7 @@ int request(const proto::Messages &req,
     return 0;
 }
 
-int request(const string &req,
+int Request(const string &req,
             proto::Messages *res,
             const GlobalOptions &options,
             bool response_to_stdout) {
@@ -129,10 +129,10 @@ int request(const string &req,
         cerr <<  "Error while encoding input to protobuf" << endl;
         return 1;
     }
-    return request(proto_req, res, options, response_to_stdout);
+    return Request(proto_req, res, options, response_to_stdout);
 }
 
-int check_request_result(const proto::Messages &res) {
+int CheckRequestResult(const proto::Messages &res) {
     if (res.messages_size() == 0) {
         cerr << "error: no message in response" << endl;
         return 1;

@@ -22,17 +22,17 @@
 #include <string>
 #include <memory>
 
-class APIServer {
+class ApiServer {
  public:
-    APIServer(std::string zmq_endpoint, bool *end_trigger);
-    void run();
-    void run_threaded();
+    ApiServer(std::string zmq_endpoint, bool *end_trigger);
+    void Run();
+    void RunThreaded();
 
  private:
-    inline void prepare();
-    inline void loop();
-    inline void process(const zmqpp::message &req, zmqpp::message *res);
-    static void static_loop(APIServer *me);
+    inline void Prepare();
+    inline void Loop();
+    inline void Process(const zmqpp::message &req, zmqpp::message *res);
+    static void StaticLoop(ApiServer *me);
     std::string endpoint_;
     zmqpp::context context_;
     std::shared_ptr <zmqpp::socket> socket_;

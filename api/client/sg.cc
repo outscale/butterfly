@@ -17,15 +17,15 @@
 
 #include "api/client/client.h"
 
-static void sub_sg_list_help(void) {
+static void SubSgListHelp(void) {
     cout << "usage: butterfly sg list [options...]" << endl << endl;
     cout << "List all available security groups" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 static int sub_sg_list(int argc, char **argv, const GlobalOptions &options) {
     if (argc >= 4 && string(argv[3]) == "help") {
-        sub_sg_list_help();
+        SubSgListHelp();
         return 0;
     }
 
@@ -40,7 +40,8 @@ static int sub_sg_list(int argc, char **argv, const GlobalOptions &options) {
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -51,23 +52,23 @@ static int sub_sg_list(int argc, char **argv, const GlobalOptions &options) {
     return 0;
 }
 
-static void sub_sg_add_help(void) {
+static void SubSgAddHelp(void) {
     cout << "usage: butterfly sg add SG [SG...] [options...]" << endl << endl;
     cout << "Create a new security group" << endl;
     cout <<
     "Note that creating a new security group when it already " << endl <<
     "exists will overwrite the existing SG with an empty one." << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 static int sub_sg_add(int argc, char **argv, const GlobalOptions &options) {
     if (argc >= 4 && string(argv[3]) == "help") {
-        sub_sg_add_help();
+        SubSgAddHelp();
         return 0;
     }
 
     if (argc <= 3) {
-        sub_sg_add_help();
+        SubSgAddHelp();
         return 1;
     }
 
@@ -79,7 +80,7 @@ static int sub_sg_add(int argc, char **argv, const GlobalOptions &options) {
         sgs.push_back(a);
     }
     if (!sgs.size()) {
-        sub_sg_add_help();
+        SubSgAddHelp();
         return 1;
     }
 
@@ -99,23 +100,23 @@ static int sub_sg_add(int argc, char **argv, const GlobalOptions &options) {
     }
 
     proto::Messages res;
-    return request(req, &res, options, false) || check_request_result(res);
+    return Request(req, &res, options, false) || CheckRequestResult(res);
 }
 
-static void sub_sg_del_help(void) {
+static void SubSgDelHelp(void) {
     cout << "usage: butterfly sg del SG [SG...] [options...]" << endl << endl;
     cout << "Delete one or more security group" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 static int sub_sg_del(int argc, char **argv, const GlobalOptions &options) {
     if (argc >= 4 && string(argv[3]) == "help") {
-        sub_sg_del_help();
+        SubSgDelHelp();
         return 0;
     }
 
     if (argc <= 3) {
-        sub_sg_del_help();
+        SubSgDelHelp();
         return 1;
     }
 
@@ -127,7 +128,7 @@ static int sub_sg_del(int argc, char **argv, const GlobalOptions &options) {
         sgs.push_back(a);
     }
     if (!sgs.size()) {
-        sub_sg_del_help();
+        SubSgDelHelp();
         return 1;
     }
 
@@ -145,10 +146,10 @@ static int sub_sg_del(int argc, char **argv, const GlobalOptions &options) {
     }
 
     proto::Messages res;
-    return request(req, &res, options, false) || check_request_result(res);
+    return Request(req, &res, options, false) || CheckRequestResult(res);
 }
 
-static string rule_hash(const MessageV0_Rule &r) {
+static string RuleHash(const MessageV0_Rule &r) {
     string human_message;
     google::protobuf::TextFormat::PrintToString(r, &human_message);
     hash<string> fn;
@@ -158,8 +159,8 @@ static string rule_hash(const MessageV0_Rule &r) {
     return out.str();
 }
 
-static void rule_print(const MessageV0_Rule &r) {
-    cout << rule_hash(r) << " | " <<
+static void RulePrint(const MessageV0_Rule &r) {
+    cout << RuleHash(r) << " | " <<
         "direction: " <<
             MessageV0_Rule_Direction_Name(r.direction()) << " - " <<
         "IP protocol: " << to_string(r.protocol()) << " - " <<
@@ -174,21 +175,21 @@ static void rule_print(const MessageV0_Rule &r) {
             (r.has_security_group() ? r.security_group() : "Ø") << endl;
 }
 
-static void sub_sg_rule_list_help(void) {
+static void SubSgRuleListHelp(void) {
     cout << "usage: butterfly sg rule list SG [options...]" << endl << endl;
     cout << "List all firewalling rules of a security group" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 static int sub_sg_rule_list(int argc, char **argv,
                             const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_sg_rule_list_help();
+        SubSgRuleListHelp();
         return 0;
     }
 
     if (argc <= 4) {
-        sub_sg_rule_list_help();
+        SubSgRuleListHelp();
         return 1;
     }
 
@@ -204,13 +205,14 @@ static int sub_sg_rule_list(int argc, char **argv,
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
     int size = res_0.sg_rule_list_size();
     for (int i = 0; i < size; i++) {
-        rule_print(res_0.sg_rule_list(i));
+        RulePrint(res_0.sg_rule_list(i));
     }
     return 0;
 }
@@ -222,7 +224,7 @@ RuleAddOptions::RuleAddOptions() {
     has_port_end = false;
 }
 
-static int cidr_to_protobuf(const string &in, string *out) {
+static int CidrToProtobuf(const string &in, string *out) {
     string address;
     string mask;
     string *w = &address;
@@ -242,7 +244,7 @@ static int cidr_to_protobuf(const string &in, string *out) {
     return 0;
 }
 
-int RuleAddOptions::parse(int argc, char **argv) {
+int RuleAddOptions::Parse(int argc, char **argv) {
     if (argc <= 7) {
         return 1;
     }
@@ -318,7 +320,7 @@ int RuleAddOptions::parse(int argc, char **argv) {
             }
         } else if (i + 1 < argc && (string(argv[i]) == "--cidr")) {
             string tmp = string(argv[i + 1]);
-            if (cidr_to_protobuf(tmp, &cidr)) {
+            if (CidrToProtobuf(tmp, &cidr)) {
                 cerr << "--cidr format not recognized" << endl;
                 return 1;
             }
@@ -347,7 +349,7 @@ int RuleAddOptions::parse(int argc, char **argv) {
     return 0;
 }
 
-static void sub_sg_rule_add_help(void) {
+static void SubSgRuleAddHelp(void) {
     cout << "usage: butterfly sg rule add SG [options...]" << endl << endl;
     cout << "Add a new firewalling rule inside a security group" << endl;
     cout << "options:" << endl <<
@@ -369,19 +371,19 @@ static void sub_sg_rule_add_help(void) {
         "if you set udp or tcp in protocol, you can set a port between"
         " 0 and 65535" << endl << endl <<
         "Notes: you MUST set either --cidr or --sg-members" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 static int sub_sg_rule_add(int argc, char **argv,
                             const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_sg_rule_add_help();
+        SubSgRuleAddHelp();
         return 0;
     }
 
     RuleAddOptions o;
-    if (o.parse(argc, argv)) {
-        sub_sg_rule_add_help();
+    if (o.Parse(argc, argv)) {
+        SubSgRuleAddHelp();
         return 1;
     }
 
@@ -410,27 +412,28 @@ static int sub_sg_rule_add(int argc, char **argv,
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
     return 0;
 }
 
-static void sub_sg_rule_del_help(void) {
+static void SubSgRuleDelHelp(void) {
     cout << "usage: butterfly sg rule del SG RULE_HASH [options...]" << endl;
     cout << endl << "Remove a firewalling rule from a security group" << endl;
     cout << "You can get RULE_HASH from sg rule list subcommand" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 static int sub_sg_rule_del(int argc, char **argv,
                             const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_sg_rule_add_help();
+        SubSgRuleAddHelp();
         return 0;
     }
 
     if (argc <= 5) {
-        sub_sg_rule_del_help();
+        SubSgRuleDelHelp();
         return 1;
     }
 
@@ -447,14 +450,15 @@ static int sub_sg_rule_del(int argc, char **argv,
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
     int size = res_0.sg_rule_list_size();
     string delete_req;
     for (int i = 0; i < size; i++) {
-        if (hash == rule_hash(res_0.sg_rule_list(i))) {
+        if (hash == RuleHash(res_0.sg_rule_list(i))) {
             string rule_string;
             google::protobuf::TextFormat::PrintToString(res_0.sg_rule_list(i),
                                                         &rule_string);
@@ -480,22 +484,22 @@ static int sub_sg_rule_del(int argc, char **argv,
     }
 
     proto::Messages delete_res;
-    return request(delete_req, &delete_res, options, false) ||
-        check_request_result(delete_res);
+    return Request(delete_req, &delete_res, options, false) ||
+        CheckRequestResult(delete_res);
 }
 
-static void sub_sg_rule_help(void) {
+static void SubSgRuleHelp(void) {
     cout <<
         "butterfly sg rule subcommands:" << endl <<
         "    list  list security group rules" << endl <<
         "    add   create a new rule" << endl <<
         "    del   remove rule" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_sg_rule(int argc, char **argv, const GlobalOptions &options) {
+static int SubSgRule(int argc, char **argv, const GlobalOptions &options) {
     if (argc <= 3) {
-        sub_sg_rule_help();
+        SubSgRuleHelp();
         return 1;
     }
     string cmd = string(argv[3]);
@@ -506,30 +510,30 @@ static int sub_sg_rule(int argc, char **argv, const GlobalOptions &options) {
     } else if (cmd == "del") {
         return sub_sg_rule_del(argc, argv, options);
     } else if (cmd == "help") {
-        sub_sg_rule_help();
+        SubSgRuleHelp();
         return 0;
     } else {
         cerr << "invalid sg rule subcommand " << cmd << endl;
-        sub_sg_rule_help();
+        SubSgRuleHelp();
         return 1;
     }
 }
 
-static void sub_sg_member_list_help(void) {
+static void SubSgMemberListHelp(void) {
     cout << "usage: butterfly sg member list SG [options...]" << endl << endl;
     cout << "List members of a security group" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 static int sub_sg_member_list(int argc, char **argv,
                               const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_sg_member_list_help();
+        SubSgMemberListHelp();
         return 0;
     }
 
     if (argc <= 5) {
-        sub_sg_member_list_help();
+        SubSgMemberListHelp();
         return 1;
     }
 
@@ -545,7 +549,8 @@ static int sub_sg_member_list(int argc, char **argv,
        "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -556,21 +561,21 @@ static int sub_sg_member_list(int argc, char **argv,
     return 0;
 }
 
-static void sub_sg_member_add_help(void) {
+static void SubSgMemberAddHelp(void) {
     cout << "usage: butterfly sg member add SG IP [options...]" << endl << endl;
     cout << "Add an member (IP) to a security group" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 static int sub_sg_member_add(int argc, char **argv,
                              const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_sg_member_add_help();
+        SubSgMemberAddHelp();
         return 0;
     }
 
     if (argc <= 6) {
-        sub_sg_member_add_help();
+        SubSgMemberAddHelp();
         return 1;
     }
     string sg = string(argv[4]);
@@ -588,24 +593,24 @@ static int sub_sg_member_add(int argc, char **argv,
         "  }"
         "}";
     proto::Messages res;
-    return request(req, &res, options, false) || check_request_result(res);
+    return Request(req, &res, options, false) || CheckRequestResult(res);
 }
 
-static void sub_sg_member_del_help(void) {
+static void SubSgMemberDelHelp(void) {
     cout << "usage: butterfly sg member del SG IP [options...]" << endl << endl;
     cout << "Remove a member (IP) from a security group" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 static int sub_sg_member_del(int argc, char **argv,
                              const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_sg_member_del_help();
+        SubSgMemberDelHelp();
         return 0;
     }
 
     if (argc <= 6) {
-        sub_sg_member_del_help();
+        SubSgMemberDelHelp();
         return 1;
     }
     string sg = string(argv[4]);
@@ -623,21 +628,21 @@ static int sub_sg_member_del(int argc, char **argv,
         "  }"
         "}";
     proto::Messages res;
-    return request(req, &res, options, false) || check_request_result(res);
+    return Request(req, &res, options, false) || CheckRequestResult(res);
 }
 
-static void sub_sg_member_help(void) {
+static void SubSgMemberHelp(void) {
     cout <<
         "butterfly sg member subcommands:" << endl <<
         "    list  list members of a security group" << endl <<
         "    add   add member to a security group" << endl <<
         "    del   remove member of a security group" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_sg_member(int argc, char **argv, const GlobalOptions &options) {
+static int SubSgMember(int argc, char **argv, const GlobalOptions &options) {
     if (argc <= 3) {
-        sub_sg_member_help();
+        SubSgMemberHelp();
         return 1;
     }
     string cmd = string(argv[3]);
@@ -648,16 +653,16 @@ static int sub_sg_member(int argc, char **argv, const GlobalOptions &options) {
     } else if (cmd == "del") {
         return sub_sg_member_del(argc, argv, options);
     } else if (cmd == "help") {
-        sub_sg_member_help();
+        SubSgMemberHelp();
         return 0;
     } else {
         cerr << "invalid sg member subcommand " << cmd << endl;
-        sub_sg_member_help();
+        SubSgMemberHelp();
         return 1;
     }
 }
 
-static void sub_sg_help(void) {
+static void SubSgHelp(void) {
     cout <<
         "butterfly sg subcommands:" << endl <<
         "    list    list security groups" << endl <<
@@ -665,12 +670,12 @@ static void sub_sg_help(void) {
         "    del     remove one or more security groups" << endl <<
         "    rule    manage security group rules" << endl <<
         "    member  manage security group members" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-int sub_sg(int argc, char **argv, const GlobalOptions &options) {
+int SubSg(int argc, char **argv, const GlobalOptions &options) {
     if (argc <= 2) {
-        sub_sg_help();
+        SubSgHelp();
         return 1;
     }
     string cmd = string(argv[2]);
@@ -681,15 +686,15 @@ int sub_sg(int argc, char **argv, const GlobalOptions &options) {
     } else if (cmd == "del") {
         return sub_sg_del(argc, argv, options);
     } else if (cmd == "rule") {
-        return sub_sg_rule(argc, argv, options);
+        return SubSgRule(argc, argv, options);
     } else if (cmd == "member") {
-        return sub_sg_member(argc, argv, options);
+        return SubSgMember(argc, argv, options);
     } else if (cmd == "help") {
-        sub_sg_help();
+        SubSgHelp();
         return 0;
     } else {
         cerr << "invalid sg subcommand " << cmd << endl;
-        sub_sg_help();
+        SubSgHelp();
         return 1;
     }
 }
