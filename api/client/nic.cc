@@ -17,15 +17,15 @@
 
 #include "api/client/client.h"
 
-static void sub_nic_list_help(void) {
+static void SubNicListHelp(void) {
     cout << "usage: butterfly nic list [options...]" << endl << endl;
     cout << "Show all created nics in butterfly" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_nic_list(int argc, char **argv, const GlobalOptions &options) {
+static int SubNicList(int argc, char **argv, const GlobalOptions &options) {
     if (argc >= 4 && string(argv[3]) == "help") {
-        sub_nic_list_help();
+        SubNicListHelp();
         return 0;
     }
 
@@ -40,7 +40,7 @@ static int sub_nic_list(int argc, char **argv, const GlobalOptions &options) {
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -51,20 +51,20 @@ static int sub_nic_list(int argc, char **argv, const GlobalOptions &options) {
     return 0;
 }
 
-static void sub_nic_stats_help(void) {
+static void SubNicStatsHelp(void) {
     cout << "usage: butterfly nic stats NIC [options...]" << endl << endl;
     cout << "Show some statistics of a vnic (in bytes)" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_nic_stats(int argc, char **argv, const GlobalOptions &options) {
+static int SubNicStats(int argc, char **argv, const GlobalOptions &options) {
     if (argc >= 4 && string(argv[3]) == "help") {
-        sub_nic_stats_help();
+        SubNicStatsHelp();
         return 0;
     }
 
     if (argc <= 3) {
-        sub_nic_stats_help();
+        SubNicStatsHelp();
         return 1;
     }
     string nic = string(argv[3]);
@@ -79,7 +79,8 @@ static int sub_nic_stats(int argc, char **argv, const GlobalOptions &options) {
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -94,21 +95,21 @@ static int sub_nic_stats(int argc, char **argv, const GlobalOptions &options) {
     return 0;
 }
 
-static void sub_nic_details_help(void) {
+static void SubNicDetailsHelp(void) {
     cout << "usage: butterfly details NIC [options...]" << endl << endl;
     cout << "Show vnic details" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_nic_details(int argc, char **argv,
+static int SubNicDetails(int argc, char **argv,
                            const GlobalOptions &options) {
     if (argc >= 4 && string(argv[3]) == "help") {
-        sub_nic_details_help();
+        SubNicDetailsHelp();
         return 0;
     }
 
     if (argc <= 3) {
-        sub_nic_details_help();
+        SubNicDetailsHelp();
         return 1;
     }
     string nic = string(argv[3]);
@@ -123,7 +124,8 @@ static int sub_nic_details(int argc, char **argv,
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -146,7 +148,7 @@ static int sub_nic_details(int argc, char **argv,
     return 0;
 }
 
-static int sg_list(string nic, vector<string> *list,
+static int SgList(string nic, vector<string> *list,
                    const GlobalOptions &options) {
     string req =
         "messages {"
@@ -159,7 +161,8 @@ static int sg_list(string nic, vector<string> *list,
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -175,7 +178,7 @@ static int sg_list(string nic, vector<string> *list,
     return 0;
 }
 
-int sg_update(string nic, const vector<string> &list,
+int SgUpdate(string nic, const vector<string> &list,
               const GlobalOptions &options) {
     string req =
         "messages {"
@@ -193,50 +196,50 @@ int sg_update(string nic, const vector<string> &list,
         "}";
 
     proto::Messages res;
-    return request(req, &res, options, false) || check_request_result(res);
+    return Request(req, &res, options, false) || CheckRequestResult(res);
 }
 
-static void sub_nic_sg_list_help(void) {
+static void SubNicSgListHelp(void) {
     cout << "usage: butterfly nic sg list NIC [options...]" << endl << endl;
     cout <<  "List security groups applied to a vnic" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_nic_sg_list(int argc, char **argv,
+static int SubNicSgList(int argc, char **argv,
                            const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_nic_sg_list_help();
+        SubNicSgListHelp();
         return 0;
     }
 
     if (argc <= 4) {
-        sub_nic_sg_list_help();
+        SubNicSgListHelp();
         return 1;
     }
     string nic = string(argv[4]);
     vector<string> all_sg;
-    if (sg_list(nic, &all_sg, options))
+    if (SgList(nic, &all_sg, options))
         return 1;
     for (string sg : all_sg)
         cout << sg << endl;
     return 0;
 }
 
-static void sub_nic_sg_add_help(void) {
+static void SubNicSgAddHelp(void) {
     cout << "usage: butterfly nic sg add NIC SG [SG...] [options...]" << endl <<
         endl << "Add a security group to a vnic" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_nic_sg_add(int argc, char **argv,
+static int SubNicSgAdd(int argc, char **argv,
                           const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_nic_sg_add_help();
+        SubNicSgAddHelp();
         return 0;
     }
 
     if (argc <= 5) {
-        sub_nic_sg_add_help();
+        SubNicSgAddHelp();
         return 1;
     }
 
@@ -249,12 +252,12 @@ static int sub_nic_sg_add(int argc, char **argv,
         to_add.push_back(a);
     }
     if (!to_add.size()) {
-        sub_nic_sg_add_help();
+        SubNicSgAddHelp();
         return 1;
     }
 
     vector<string> all_sg;
-    if (sg_list(nic, &all_sg, options))
+    if (SgList(nic, &all_sg, options))
         return 1;
 
     // merge existing list with new list
@@ -268,24 +271,24 @@ static int sub_nic_sg_add(int argc, char **argv,
         return 0;
     }
 
-    return sg_update(nic, all_sg, options);
+    return SgUpdate(nic, all_sg, options);
 }
 
-static void sub_nic_sg_set_help(void) {
+static void SubNicSgSetHelp(void) {
     cout << "usage: butterfly nic sg set NIC SG [SG...] [options...]" << endl;
     cout << endl << "Overwrite security group listing of a vnic" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_nic_sg_set(int argc, char **argv,
+static int SubNicSgSet(int argc, char **argv,
                           const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_nic_sg_set_help();
+        SubNicSgSetHelp();
         return 0;
     }
 
     if (argc <= 5) {
-        sub_nic_sg_set_help();
+        SubNicSgSetHelp();
         return 1;
     }
     string nic = string(argv[4]);
@@ -300,23 +303,24 @@ static int sub_nic_sg_set(int argc, char **argv,
         to_set.push_back("");
     }
 
-    return sg_update(nic, to_set, options);
-}
-static void sub_nic_sg_del_help(void) {
-    cout << "usage: butterfly nic sg del NIC SG [SG...] [options...]" << endl;
-    cout << endl << "Remove a security group from a vnic" << endl;
-    global_parameter_help();
+    return SgUpdate(nic, to_set, options);
 }
 
-static int sub_nic_sg_del(int argc, char **argv,
+static void SubNicSgDelHelp(void) {
+    cout << "usage: butterfly nic sg del NIC SG [SG...] [options...]" << endl;
+    cout << endl << "Remove a security group from a vnic" << endl;
+    GlobalParameterHelp();
+}
+
+static int SubNicSgDel(int argc, char **argv,
                           const GlobalOptions &options) {
     if (argc >= 5 && string(argv[4]) == "help") {
-        sub_nic_sg_del_help();
+        SubNicSgDelHelp();
         return 0;
     }
 
     if (argc <= 5) {
-        sub_nic_sg_del_help();
+        SubNicSgDelHelp();
         return 1;
     }
 
@@ -329,12 +333,12 @@ static int sub_nic_sg_del(int argc, char **argv,
         to_del.push_back(a);
     }
     if (!to_del.size()) {
-        sub_nic_sg_del_help();
+        SubNicSgDelHelp();
         return 1;
     }
 
     vector<string> all_sg;
-    if (sg_list(nic, &all_sg, options))
+    if (SgList(nic, &all_sg, options))
         return 1;
 
     vector<string> new_sg;
@@ -347,39 +351,39 @@ static int sub_nic_sg_del(int argc, char **argv,
     if (new_sg.size() == all_sg.size()) {
         return 0;
     }
-    return sg_update(nic, new_sg, options);
+    return SgUpdate(nic, new_sg, options);
 }
 
-static void sub_nic_sg_help(void) {
+static void SubNicSgHelp(void) {
     cout <<
         "butterfly nic sg subcommands:" << endl <<
         "    list  list security groups attached to a nic" << endl <<
         "    add   add one or more security group to a nic" << endl <<
         "    del   removes one or more security group of a nic" << endl <<
         "    set   update all security groups of a nic" << endl;
-        global_parameter_help();
+        GlobalParameterHelp();
 }
 
-static int sub_nic_sg(int argc, char **argv, const GlobalOptions &options) {
+static int SubNicSg(int argc, char **argv, const GlobalOptions &options) {
     if (argc <= 3) {
-        sub_nic_sg_help();
+        SubNicSgHelp();
         return 1;
     }
     string cmd = string(argv[3]);
     if (cmd == "list") {
-        return sub_nic_sg_list(argc, argv, options);
+        return SubNicSgList(argc, argv, options);
     } else if (cmd == "add") {
-        return sub_nic_sg_add(argc, argv, options);
+        return SubNicSgAdd(argc, argv, options);
     } else if (cmd == "del") {
-        return sub_nic_sg_del(argc, argv, options);
+        return SubNicSgDel(argc, argv, options);
     } else if (cmd == "set") {
-        return sub_nic_sg_set(argc, argv, options);
+        return SubNicSgSet(argc, argv, options);
     } else if (cmd == "help") {
-        sub_nic_sg_help();
+        SubNicSgHelp();
         return 0;
     } else {
         cerr << "invalid nic sg subcommand " << cmd << endl;
-        sub_nic_sg_help();
+        SubNicSgHelp();
         return 1;
     }
 }
@@ -389,7 +393,7 @@ NicAddOptions::NicAddOptions() {
     bypass_filtering = "false";
 }
 
-int NicAddOptions::parse(int argc, char **argv) {
+int NicAddOptions::Parse(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (i + 1 < argc && (string(argv[i]) == "--ip"))
             ips.push_back(string(argv[i + 1]));
@@ -409,7 +413,7 @@ int NicAddOptions::parse(int argc, char **argv) {
     return !mac.length() || !id.length() || !vni.length();
 }
 
-static void sub_nic_add_help(void) {
+static void SubNicAddHelp(void) {
     cout << "usage: butterfly nic add [options...]" << endl;
     cout  << endl <<
         "options:" << endl <<
@@ -422,18 +426,18 @@ static void sub_nic_add_help(void) {
         "    --enable-antispoof  enable antispoof protection (default: off)"
             << endl <<
         "    --bypass-filtering  remove all filters and protection" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_nic_add(int argc, char **argv, const GlobalOptions &options) {
+static int SubNicAdd(int argc, char **argv, const GlobalOptions &options) {
     if (argc >= 4 && string(argv[3]) == "help") {
-        sub_nic_add_help();
+        SubNicAddHelp();
         return 0;
     }
 
     NicAddOptions o;
-    if (o.parse(argc, argv)) {
-        sub_nic_add_help();
+    if (o.Parse(argc, argv)) {
+        SubNicAddHelp();
         return 1;
     }
 
@@ -459,7 +463,8 @@ static int sub_nic_add(int argc, char **argv, const GlobalOptions &options) {
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -471,21 +476,21 @@ static int sub_nic_add(int argc, char **argv, const GlobalOptions &options) {
     return 0;
 }
 
-static void sub_nic_del_help(void) {
+static void SubNicDelHelp(void) {
     cout << "usage: butterfly nic del NIC [NIC...] [options...]" << endl;
     cout << endl << "Destroy one or more vnic" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
-static int sub_nic_del(int argc, char **argv,
+static int SubNicDel(int argc, char **argv,
                        const GlobalOptions &options) {
     if (argc >= 4 && string(argv[3]) == "help") {
-        sub_nic_details_help();
+        SubNicDetailsHelp();
         return 0;
     }
 
     if (argc <= 3) {
-        sub_nic_del_help();
+        SubNicDelHelp();
         return 1;
     }
 
@@ -497,7 +502,7 @@ static int sub_nic_del(int argc, char **argv,
         nics.push_back(a);
     }
     if (!nics.size()) {
-        sub_nic_del_help();
+        SubNicDelHelp();
         return 1;
     }
 
@@ -515,10 +520,10 @@ static int sub_nic_del(int argc, char **argv,
     }
 
     proto::Messages res;
-    return request(req, &res, options, false) || check_request_result(res);
+    return Request(req, &res, options, false) || CheckRequestResult(res);
 }
 
-static void sub_nic_help(void) {
+static void SubNicHelp(void) {
     cout <<
         "butterfly nic subcommands:" << endl <<
         "    list     list all nics id" << endl <<
@@ -527,33 +532,33 @@ static void sub_nic_help(void) {
         "    sg       manage security groups attached to a nic " << endl <<
         "    add      create a new nic" << endl <<
         "    del      remove nic(s)" << endl;
-        global_parameter_help();
+        GlobalParameterHelp();
 }
 
-int sub_nic(int argc, char **argv, const GlobalOptions &options) {
+int SubNic(int argc, char **argv, const GlobalOptions &options) {
     if (argc <= 2) {
-        sub_nic_help();
+        SubNicHelp();
         return 1;
     }
     string cmd = string(argv[2]);
     if (cmd == "list") {
-        return sub_nic_list(argc, argv, options);
+        return SubNicList(argc, argv, options);
     } else if (cmd == "stats") {
-        return sub_nic_stats(argc, argv, options);
+        return SubNicStats(argc, argv, options);
     } else if (cmd == "details") {
-        return sub_nic_details(argc, argv, options);
+        return SubNicDetails(argc, argv, options);
     } else if (cmd == "sg") {
-        return sub_nic_sg(argc, argv, options);
+        return SubNicSg(argc, argv, options);
     } else if (cmd == "add") {
-        return sub_nic_add(argc, argv, options);
+        return SubNicAdd(argc, argv, options);
     } else if (cmd == "del") {
-        return sub_nic_del(argc, argv, options);
+        return SubNicDel(argc, argv, options);
     } else if (cmd == "help") {
-        sub_nic_help();
+        SubNicHelp();
         return 0;
     } else {
         cerr << "invalid nic subcommand " << cmd << endl;
-        sub_nic_help();
+        SubNicHelp();
         return 1;
     }
 }

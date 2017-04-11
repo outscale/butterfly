@@ -31,10 +31,10 @@ extern "C" {
 #define LOG_PRINT_(str, method, args...) \
     (method("(%s, %s, %d): " str, __FILE__, \
             __PRETTY_FUNCTION__, __LINE__, ## args))
-#define LOG_DEBUG_(str, args...) LOG_PRINT_(str, app::log.debug, ## args)
-#define LOG_INFO_(str, args...) LOG_PRINT_(str, app::log.info, ## args)
-#define LOG_WARNING_(str, args...) LOG_PRINT_(str, app::log.warning, ## args)
-#define LOG_ERROR_(str, args...) LOG_PRINT_(str, app::log.error, ## args)
+#define LOG_DEBUG_(str, args...) LOG_PRINT_(str, app::log.Debug, ## args)
+#define LOG_INFO_(str, args...) LOG_PRINT_(str, app::log.Info, ## args)
+#define LOG_WARNING_(str, args...) LOG_PRINT_(str, app::log.Warning, ## args)
+#define LOG_ERROR_(str, args...) LOG_PRINT_(str, app::log.Error, ## args)
 #define PG_ERROR_(error) do {                                           \
         LOG_ERROR_("%s",                                                \
                    (error) ? (error)->message : "error is NULL");       \
@@ -60,7 +60,7 @@ namespace app {
 struct Config {
     Config();
     bool parse_cmd(int argc, char **argv);
-    bool missing_mandatory();
+    bool MissingMandatory();
     std::string external_ip;
     std::string config_path;
     std::string api_endpoint;
@@ -84,16 +84,16 @@ class Log {
  public:
     Log();
     ~Log();
-    bool set_log_level(std::string level);
-    void debug(const char *message, ...);
-    void debug(const std::string &message, ...);
-    void info(const char *message, ...);
-    void info(const std::string &message, ...);
-    void warning(const char *message, ...);
-    void warning(const std::string &message, ...);
-    void error(const char *message, ...);
-    void error(const std::string &message, ...);
-    static void open();
+    bool SetLogLevel(std::string level);
+    void Debug(const char *message, ...);
+    void Debug(const std::string &message, ...);
+    void Info(const char *message, ...);
+    void Info(const std::string &message, ...);
+    void Warning(const char *message, ...);
+    void Warning(const std::string &message, ...);
+    void Error(const char *message, ...);
+    void Error(const std::string &message, ...);
+    static void Open();
 
  private:
     std::string build_details(const char *message, const char *file,
@@ -101,17 +101,17 @@ class Log {
 };
 
 // Manage signals
-void signal_register();
-void signal_handler(int signum);
+void SignalRegister();
+void SignalHandler(int signum);
 
 // Manage configuration file
-bool load_config_file(std::string config_path);
+bool LoadConfigFile(std::string config_path);
 
-void destroy_cgroup();
-void set_cgroup();
+void DestroyCgroup();
+void SetCgroup();
 
-std::string graph_dot(struct pg_brick *brick);
-bool pg_start(std::string dpdk_args);
+std::string GraphDot(struct pg_brick *brick);
+bool PgStart(std::string dpdk_args);
 
 // Some global app:: variables
 extern bool request_exit;
