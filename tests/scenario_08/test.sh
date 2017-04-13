@@ -9,8 +9,9 @@ server_start 0
 nic_add 0 1 42 sg-1
 nic_add 0 2 1337 sg-1
 sg_rule_add_all_open 0 sg-1
-qemu_start 1
-qemu_start 2
+qemu_start_async 1
+qemu_start_async 2
+qemus_wait 1 2
 ssh_no_connection_test udp 2 1 2345
 ssh_no_connection_test udp 1 2 4523
 qemu_stop 1
