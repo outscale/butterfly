@@ -359,24 +359,9 @@ std::string graph_dot(struct pg_brick *brick) {
 }
 
 bool pg_start(std::string dpdk_args) {
-    gint dpdk_argc;
-    char **dpdk_argv;
-    GError *err;
-
-    dpdk_args.insert(0, "dpdk ");
-    log.debug(dpdk_args);
-    if (!g_shell_parse_argv(dpdk_args.c_str(),
-                            &dpdk_argc, &dpdk_argv, &err)) {
-        log.error("dpdk arguments parsing failed: %s", err->message);
-        g_error_free(err);
-        return false;
-    }
-    if (pg_start(dpdk_argc, dpdk_argv, &pg_error) < 0) {
-        PG_ERROR_(pg_error);
-        return false;
-    }
     pg_npf_nworkers = 0;
-    return true;
+    log.debug(dpdk_args);
+    return pg_start_str(dpdk_args.c_str()) >= 0;
 }
 
 // Global instances in app namespace
