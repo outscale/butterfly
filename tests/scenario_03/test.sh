@@ -13,10 +13,11 @@ nic_add 1 3 1337 sg-1
 nic_add 1 4 42 sg-1
 sg_rule_add_all_open 0 sg-1
 sg_rule_add_all_open 1 sg-1
-qemu_start 1
-qemu_start 2
-qemu_start 3
-qemu_start 4
+qemu_start_async 1
+qemu_start_async 2
+qemu_start_async 3
+qemu_start_async 4
+qemus_wait 1 2 3 4
 ssh_no_ping 1 2
 ssh_no_ping 1 3
 ssh_ping 1 4

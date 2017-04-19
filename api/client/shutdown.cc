@@ -17,15 +17,15 @@
 
 #include "api/client/client.h"
 
-static void sub_sg_shutdown_help(void) {
+static void SubSgShutdownHelp(void) {
     cout << "usage: butterfly shutdown [options...]" << endl << endl;
     cout << "Ask butterfly to quit" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 int sub_shutdown(int argc, char **argv, const GlobalOptions &options) {
     if (argc >= 3 && string(argv[2]) == "help") {
-        sub_sg_shutdown_help();
+        SubSgShutdownHelp();
         return 0;
     }
 
@@ -40,7 +40,8 @@ int sub_shutdown(int argc, char **argv, const GlobalOptions &options) {
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
     return 0;
 }

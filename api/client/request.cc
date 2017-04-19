@@ -21,29 +21,29 @@ RequestOptions::RequestOptions() {
     to_stdout = false;
 }
 
-void RequestOptions::parse(int argc, char **argv) {
+void RequestOptions::Parse(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (string(argv[i]) == "--stdout")
             to_stdout = true;
     }
 }
 
-static void help(void) {
+static void Help(void) {
     cout <<
         "usage: butterfly request REQUEST_FILE [options...]" << endl << endl <<
         "options:" << endl <<
         "    --stdout   prints protobuf response to stdout" << endl;
-        global_parameter_help();
+        GlobalParameterHelp();
 }
 
-int sub_request(int argc, char **argv, const GlobalOptions &options) {
+int SubRequest(int argc, char **argv, const GlobalOptions &options) {
     if (argc <= 2) {
-        help();
+        Help();
         return 1;
     }
     string request_file_path = string(argv[2]);
     RequestOptions r_options;
-    r_options.parse(argc, argv);
+    r_options.Parse(argc, argv);
 
     ifstream input_file(request_file_path);
     stringstream ss;
@@ -55,10 +55,10 @@ int sub_request(int argc, char **argv, const GlobalOptions &options) {
         return 1;
     }
     proto::Messages res;
-    return request(input_text, &res, options, r_options.to_stdout);
+    return Request(input_text, &res, options, r_options.to_stdout);
 }
 
-int request(const proto::Messages &req,
+int Request(const proto::Messages &req,
             proto::Messages *res,
             const GlobalOptions &options,
             bool response_to_stdout) {
@@ -119,7 +119,7 @@ int request(const proto::Messages &req,
     return 0;
 }
 
-int request(const string &req,
+int Request(const string &req,
             proto::Messages *res,
             const GlobalOptions &options,
             bool response_to_stdout) {
@@ -129,10 +129,31 @@ int request(const string &req,
         cerr <<  "Error while encoding input to protobuf" << endl;
         return 1;
     }
-    return request(proto_req, res, options, response_to_stdout);
+    return Request(proto_req, res, options, response_to_stdout);
 }
 
-int check_request_result(const proto::Messages &res) {
+static void PrintMessage(MessageV0_Error error) {
+    if (error.has_description()) {
+        cerr << endl << "description: " << error.description() << endl;
+    } else if (error.has_err_no()) {
+        cerr << endl << "errno: " << to_string(error.err_no()) <<
+            endl;
+    } else if (error.has_file()) {
+        cerr << endl << "file: " << error.file() << endl;
+    } else if (error.has_line()) {
+        cerr << endl << "errno: " << to_string(error.line()) <<
+            endl;
+    } else if (error.has_curs_pos()) {
+        cerr << endl << "curs_pos: " <<
+            to_string(error.curs_pos()) << endl;
+    } else if (error.has_function()) {
+        cerr << endl << "function: " << error.function() << endl;
+    } else {
+        cerr << " no details provided" << endl;
+    }
+}
+
+int CheckRequestResult(const proto::Messages &res) {
     if (res.messages_size() == 0) {
         cerr << "error: no message in response" << endl;
         return 1;
@@ -156,25 +177,7 @@ int check_request_result(const proto::Messages &res) {
         } else if (!res_0.response().status().status()) {
             cerr << "error in response";
             if (res_0.response().status().has_error()) {
-                MessageV0_Error e = res_0.response().status().error();
-                if (e.has_description()) {
-                    cerr << endl << "description: " << e.description() << endl;
-                } else if (e.has_err_no()) {
-                    cerr << endl << "errno: " << to_string(e.err_no()) <<
-                        endl;
-                } else if (e.has_file()) {
-                    cerr << endl << "file: " << e.file() << endl;
-                } else if (e.has_line()) {
-                    cerr << endl << "errno: " << to_string(e.line()) <<
-                        endl;
-                } else if (e.has_curs_pos()) {
-                    cerr << endl << "curs_pos: " <<
-                        to_string(e.curs_pos()) << endl;
-                } else if (e.has_function()) {
-                    cerr << endl << "function: " << e.function() << endl;
-                } else {
-                    cerr << " no details provided" << endl;
-                }
+                PrintMessage(res_0.response().status().error());
             }
             return 1;
         }

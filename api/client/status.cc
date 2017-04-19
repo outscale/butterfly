@@ -17,15 +17,15 @@
 
 #include "api/client/client.h"
 
-static void sub_sg_status_help(void) {
+static void SubSgStatusHelp(void) {
     cout << "usage: butterfly status [options...]" << endl << endl;
     cout << "Show butterfly status informations" << endl;
-    global_parameter_help();
+    GlobalParameterHelp();
 }
 
 int sub_status(int argc, char **argv, const GlobalOptions &options) {
     if (argc >= 3 && string(argv[2]) == "help") {
-        sub_sg_status_help();
+        SubSgStatusHelp();
         return 0;
     }
 
@@ -40,7 +40,7 @@ int sub_status(int argc, char **argv, const GlobalOptions &options) {
         "}";
 
     proto::Messages res;
-    if (request(req, &res, options, false) || check_request_result(res))
+    if (Request(req, &res, options, false) || CheckRequestResult(res))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
