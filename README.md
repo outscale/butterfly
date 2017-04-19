@@ -227,12 +227,12 @@ Machines:
 - CPU: AMD Opteron(tm) Processor 3350 HE
 - All details for [host 1](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_1.txt) and [host 2](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_2.txt) (same)
 
-Results (feb 2017, 60 seconds per tests):
+Results (april 2017, 60 seconds per tests):
 ```
                          |   VMs on same host  |  VMs on remote host |
  ------------------------+---------------------+---------------------|
-| Ping (min/average/max) | 0.060/0.109/0.201ms | 0.167/0.179/0.222ms |
-| TCP                    |     19.2 Gbits/s    |     3.3 Gbits/s     |
+| Ping (min/average/max) | 0.046/0.69/0.115ms | 0.158/0.179/0.220ms |
+| TCP                    |     18.9 Gbits/s    |     5.0 Gbits/s     |
 | UDP                    |     1.6  Gbits/s    |     1.6 Gbits/s     |
 ```
 
