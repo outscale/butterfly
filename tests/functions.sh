@@ -488,7 +488,6 @@ function qemu_start {
     # Configure IP on vhost interface
     ssh_run $id ip link set ens4 up
     if [ "$ip" == "dhcp-server" ]; then
-        ssh_run $id pacman --noconfirm -Sy dhcp &> /dev/null
         qemu_add_ipv4 $id 42.0.0.$id/24
         qemu_add_ipv6 $id 2001:db8:2000:aff0::$id/64
         echo -e "
@@ -525,8 +524,6 @@ function qemu_start {
         qemu_add_ipv6 $id 2001:db8:2000:aff0::$id/64
     fi
 
-    ssh_run $id pacman -Sy nmap --noconfirm &>/dev/null
-    ssh_run $id pacman -Sy lksctp-tools --noconfirm &>/dev/null
     echo $pid > $BUTTERFLY_BUILD_ROOT/qemu_pids$id
 }
 
