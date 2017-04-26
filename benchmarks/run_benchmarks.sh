@@ -18,9 +18,9 @@ function usage {
     echo "    -b | --build   : Butterfly build directoty (mandatory)"
     echo "    -o | --output  : file where to write benchmark"
     echo "                     (optional, default: output.csv)"
-    echo "    --ip-a         : IP address of first machine (mandatory)"
+    echo "    --ip-a         : IP address of first machine (optional, default: 127.0.0.1)"
     echo "    --port-a       : SSH port of first machine (optional, default: 22)"
-    echo "    --ip-b         : IP address of second machine (mandatory)"
+    echo "    --ip-b         : IP address of second machine (optional, default: 127.0.0.1)"
     echo "    --port-b       : SSH port of second machine (optional, default: 22)"
     echo "    --package      : 'rpm' or 'deb' (optional, default: rpm)"
     echo "    --fat          : use fat package instead of clasique one"
@@ -35,9 +35,9 @@ function usage {
 source_dir=""
 build_dir=""
 run_dir=$(pwd)
-ip_a=""
+ip_a="127.0.0.1"
 port_a=22
-ip_b=""
+ip_b="127.0.0.1"
 port_b=22
 package='rpm'
 output="$(pwd)/output.csv"
@@ -90,18 +90,6 @@ fi
 
 if [ -z "$build_dir" ]; then
     echo -e "Error: Butterfly build dir not set\n"
-    usage
-    exit 1
-fi
-
-if [ -z "$ip_a" ]; then
-    echo -e "Error: IP of machine A not set\n"
-    usage
-    exit 1
-fi
-
-if [ -z "$ip_b" ]; then
-    echo -e "Error: IP of machine B not set\n"
     usage
     exit 1
 fi
