@@ -50,6 +50,11 @@ function butterfly_start {
     ssh_run $ip $port pgrep -f butterflyd
 }
 
+function perf_start {
+    sleep 1
+    ssh_run $1 $2 'perf record -e cycles,instructions,cache-misses -t $(cat /sys/fs/cgroup/cpu/butterfly/tasks) -o ~/perf.data sleep' $((bench_duration - 2))
+}
+
 function nic_add {
     local ip=$1
     local port=$2

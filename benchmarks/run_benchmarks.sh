@@ -215,6 +215,8 @@ icmp_bench $output $ip_a $port_a 1 3
 tcp_bench $output $ip_a $port_a 1 $ip_a $port_a 2
 
 # launch TCP test between two machines on different host
+perf_start $ip_a $port_a &
+perf_start $ip_b $port_b &
 tcp_bench $output $ip_a $port_a 1 $ip_b $port_b 3
 
 # launch UDP test between two machines on the same host
