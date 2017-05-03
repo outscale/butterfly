@@ -310,7 +310,6 @@ void *Graph::Poller(void *graph) {
                 PG_ERROR_(app::pg_error);
             }
         }
-        sched_yield();
 
         /* Call firewall garbage callector. */
         if (FIREWALL_GC(cnt)) {
