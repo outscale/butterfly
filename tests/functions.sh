@@ -657,6 +657,7 @@ function request {
     if [ ! "$ret" == "0" ]; then
         fail "client failed to send message to butterfly $but_id"
     fi
+    sleep 0.5
 }
 
 function cli {
@@ -669,6 +670,7 @@ function cli {
     if [ ! "$?" == "$excepted_result" ]; then
         fail "cli run failed, check cli_output file"
     fi
+    sleep 0.5
 }
 
 function nic_add_noip {

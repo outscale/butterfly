@@ -269,7 +269,7 @@ exit:
         }
 }
 
-#define POLLER_CHECK(c) ((c) & 1023)
+#define POLLER_CHECK(c) (!((c) & 1023))
 #define FIREWALL_GC(c) ((c) == 100000)
 void *Graph::Poller(void *graph) {
     Graph *g = reinterpret_cast<Graph *>(graph);
