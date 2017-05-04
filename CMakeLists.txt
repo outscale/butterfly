@@ -31,7 +31,7 @@ set(ZMQPP_LIBRARIES ${ZMQPP_INSTALL_DIR}/libzmqpp-static.a)
 set(ZMQPP_INCLUDE_DIR ${3RDPARTY_DIR}/zmqpp/src)
 set(PG_LIBRARIES
   -L${DPDK_INSTALL_DIR}/build/lib -Wl,--start-group
-    ${DPDK_INSTALL_DIR}/build/lib//libdpdk.a
+    ${DPDK_INSTALL_DIR}/build/lib/libdpdk.a
     ${PG_INSTALL_DIR}/.libs/libbpfjit.a
     ${PG_INSTALL_DIR}/.libs/libcdb.a
     ${PG_INSTALL_DIR}/.libs/libnpf.a
