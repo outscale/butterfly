@@ -61,10 +61,17 @@ ExternalProject_Add(packetgraph
 	INSTALL_COMMAND true
 	LOG_BUILD 1 Building packetgraph)
 
-# clean target
+# clean targets
 add_custom_target(dependency-cleanup CLEAN
 	rm -rf ${3RDPARTY_INSTALL_DIR}
 	COMMENT Deleting dependencies)
+
+add_custom_target(clean-pg
+                  COMMAND rm -rf ${PROJECT_BINARY_DIR}/3rdparty/packetgraph-prefix/ ${PG_INSTALL_DIR})
+
+add_custom_target(clean-dpdk
+                  COMMAND rm -rf ${PROJECT_BINARY_DIR}/3rdparty/dpdk-prefix/ ${DPDK_INSTALL_DIR}
+                  DEPENDS clean-pg)
 
 add_custom_target(3rdparty)
 
