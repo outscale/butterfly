@@ -48,6 +48,7 @@ Config::Config() {
     tid = 0;
     nic_mtu = "";
     dpdk_port = 0;
+    no_offload = 0;
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
@@ -94,6 +95,8 @@ bool Config::parse_cmd(int argc, char **argv) {
          "set MTU your physical NIC, may fail if not supported. Parameter can"
          " be set to 'max' and butterfly will try to find the maximal MTU.",
          "MTU"},
+        {"no-offload", 0, 0, G_OPTION_ARG_NONE, &config.no_offload,
+         "block all offloadind features", nullptr},
         {"dpdk-port", 0, 0, G_OPTION_ARG_STRING, &dpdk_port_cmd,
          "choose which dpdk port to use (default=0)", "PORT"},
         { nullptr }

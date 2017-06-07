@@ -72,6 +72,7 @@ struct Config {
     int tid;
     std::string nic_mtu;
     int dpdk_port;
+    bool no_offload;
 };
 
 struct Stats {

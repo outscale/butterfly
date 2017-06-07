@@ -169,8 +169,12 @@ bool Graph::start(std::string dpdk_args) {
         pg_nic_get_mac(nic_.get(), &mac);
     }
     pg_nic_capabilities(nic_.get(), &useless, &nic_capa_tx);
-    if (!(nic_capa_tx & PG_NIC_TX_OFFLOAD_TCP_TSO)) {
-        app::log.info("no offloading available");
+    if (app::config.no_offload ||
+        !(nic_capa_tx & PG_NIC_TX_OFFLOAD_TCP_TSO)) {
+        if (app::config.no_offload)
+            app::log.info("offloading manually desactivated");
+        else
+            app::log.info("no offloading available");
         pg_vhost_disable(VIRTIO_NET_F_HOST_TSO4);
         pg_vhost_disable(VIRTIO_NET_F_HOST_TSO6);
     } else {
