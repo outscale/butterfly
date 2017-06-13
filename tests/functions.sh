@@ -251,11 +251,11 @@ function ssh_connection_tests_internal {
 
     if [ "$proto_cmd" == "sctp" ]; then
         ssh_run_background $id2 "sctp_test -H 0 -P $port -l > /tmp/test"
-        sleep 0.4
+        sleep 5
         ssh_run_background $id1 "sctp_test -H 0 -P 8142 -h 42.0.0.$id2 -p $port -s"
     else
         ssh_run_background $id2 "ncat $proto_cmd -lp $port > /tmp/test"
-        sleep 0.4
+        sleep 5
         if [ "$protocol" == "udp6" ] || [ "$protocol" == "tcp6" ]; then
             ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 2001:db8:2000:aff0::$id2 $port"
         else
