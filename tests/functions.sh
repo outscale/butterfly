@@ -227,6 +227,28 @@ function ssh_iperf3_udp {
     kill -9 $server_pid &> /dev/null
     rm /tmp/iperf3_tmp_results
 }
+function ssh_connection_tests_send {
+    protocol=$1
+    if [ "$protocol" == "udp" ]; then
+        proto_cmd="-4 -u"
+    elif [ "$protocol" == "tcp" ]; then
+        proto_cmd="-4"
+    elif [ "$protocol" == "udp6" ]; then
+        proto_cmd="-6 -u"
+    elif [ "$protocol" == "tcp6" ]; then
+        proto_cmd="-6"
+    elif [ "$protocol" == "sctp" ]; then
+        proto_cmd="sctp"
+    else
+        fail "protocol $protocol not supported by nic_add_port_open"
+    fi
+
+    if [ "$1" == "udp6" ] || [ "$1" == "tcp6" ]; then
+        ssh_run_background $2 "echo 'this message is from vm $2' | ncat $proto_cmd 2001:db8:2000:aff0::$3 $4"
+    else
+        ssh_run_background $2 "echo 'this message is from vm $2' | ncat $proto_cmd 42.0.0.$3 $4"
+    fi
+}
 
 function ssh_connection_tests_internal {
     protocol=$1
@@ -234,12 +256,15 @@ function ssh_connection_tests_internal {
     id2=$3
     port=$4
     proto_cmd=""
+    is_udp=0
 
     if [ "$protocol" == "udp" ]; then
         proto_cmd="-4 -u"
+        is_udp=1
     elif [ "$protocol" == "tcp" ]; then
         proto_cmd="-4"
     elif [ "$protocol" == "udp6" ]; then
+        is_udp=1
         proto_cmd="-6 -u"
     elif [ "$protocol" == "tcp6" ]; then
         proto_cmd="-6"
@@ -255,12 +280,12 @@ function ssh_connection_tests_internal {
         ssh_run_background $id1 "sctp_test -H 0 -P 8142 -h 42.0.0.$id2 -p $port -s"
     else
         ssh_run_background $id2 "ncat $proto_cmd -lp $port > /tmp/test"
-        sleep 0.4
-        if [ "$protocol" == "udp6" ] || [ "$protocol" == "tcp6" ]; then
-            ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 2001:db8:2000:aff0::$id2 $port"
+        if [ $is_udp -eq 1 ]; then
+            sleep 0.4
         else
-            ssh_run_background $id1 "echo 'this message is from vm $id1' | ncat $proto_cmd 42.0.0.$id2 $port"
+            sleep 5
         fi
+        ssh_connection_tests_send $protocol $id1 $id2 $port
     fi
     return 0
 }
@@ -283,11 +308,16 @@ function ssh_connection_test_file {
 
     if [ "$protocol" != "sctp" ]; then
         while [ $it -ne $timeout ]; do
-            ssh_run $id [ -s "/tmp/test" ]
+            ssh_run $1 "cat /tmp/test"
+            ssh_run $1 [ -s "/tmp/test" ]
             if [ "$?" == "0" ]; then
                 return 0
             fi
-            sleep 0.1
+            if [ "$protocol" == "udp" ] || [ "$protocol" == "udp6" ] ; then
+                # as udp can fail, we retry every time
+               ssh_connection_tests_send $protocol $3 $1 $4
+            fi
+            sleep 1
             it=$(( $it + 1 ))
         done
     else
@@ -314,7 +344,7 @@ function ssh_connection_test {
         fail "$protocol test VM $id1 ---> VM $id2 FAIL (1)"
     fi
 
-    ssh_connection_test_file $id2 $protocol
+    ssh_connection_test_file $id2 $protocol $id1 $port
     if [ "$?" == "0" ]; then
         echo -e "$protocol test VM $id1 ---> VM $id2 OK"
     else
@@ -336,7 +366,7 @@ function ssh_no_connection_test {
         fail "$protocol test VM $id1 -/-> VM $id2 FAIL (1)"
     fi
     if [ "$protocol" == "sctp" ]; then
-        ssh_connection_test_file $id2 $protocol
+        ssh_connection_test_file $id2 $protocol $id1 $port
         if [ "$?" == "0" ]; then
             fail "$protocol test VM $id1 -/-> VM $id2 FAIL"
         else
@@ -556,6 +586,7 @@ function server_start_options {
 
     exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options -t &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
     pid=$!
+    sleep 1
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
         fail "failed to start butterfly, check butterflyd_${id}_output file"
