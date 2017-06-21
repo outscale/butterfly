@@ -57,7 +57,8 @@ Note that revision number is just an identifier of the current used protocol.
 It does not mean anything except tracing the different evolutions of the
 protocol (like a document has several revisions).
 
-To increment revision number, just edit scripts/genHdrVersion.sh file.
+To increment revision number, just increment `PROTO_REVISION` in
+`api/protocol/version` file.
 
 # Changelog
 
@@ -66,4 +67,6 @@ To increment revision number, just edit scripts/genHdrVersion.sh file.
 First release of the protocol:
 - MessageV0 is created, please refer to 'message_0.proto' file
 
+## Revision 1
 
+- Add bypass filtering option in vnic creation of Message0
