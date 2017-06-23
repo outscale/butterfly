@@ -19,6 +19,7 @@ syntax = "proto2";
 package proto;
 
 import "message_0.proto";
+import "encrypted.proto";
 
 message Message {
   // Revision indicator of the protocol
@@ -30,6 +31,8 @@ message Message {
 // Messages is the only message sent to the API.
 message Messages {
   repeated Message messages = 1;
+  // Contains encrypted Messages
+  optional Encrypted encrypted = 2;
 }
 
 message Error {
@@ -40,6 +43,7 @@ message Error {
     INTERNAL_ERROR = 1;
     VERSION_NOT_MANAGED = 2;
     EMPTY_REQUEST = 3;
+    REJECTED = 4;
   }
 }
 

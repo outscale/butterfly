@@ -70,3 +70,7 @@ First release of the protocol:
 ## Revision 1
 
 - Add bypass filtering option in vnic creation of Message0
+
+## Revision 2
+
+- Add encrypted messages support
