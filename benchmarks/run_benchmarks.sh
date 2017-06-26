@@ -24,6 +24,7 @@ function usage {
     echo "    --port-b       : SSH port of second machine (optional, default: 22)"
     echo "    --package      : 'rpm' or 'deb' (optional, default: rpm)"
     echo "    --fat          : use fat package instead of clasique one"
+    echo "    --tso-on       : force usage of tso"
     echo "    -t | --time    : duration (seconds) of each benchmark"
     echo "                     (optional, default: 100)"
     echo "    --keep-running : launch endless TCP iperf before leaving"
@@ -32,6 +33,7 @@ function usage {
 
 # read arguments
 
+tso_on=0
 source_dir=""
 build_dir=""
 run_dir=$(pwd)
@@ -45,7 +47,7 @@ bench_duration=100
 keep_running=0
 fat=""
 
-args=`getopt -o s:b:o:t:h:: --long sources:,build:,output:,ip-a:,ip-b:,port-a:,port-b:,package:,time:,keep-running,fat,help:: -- "$@"`
+args=`getopt -o s:b:o:t:h:: --long sources:,build:,output:,ip-a:,ip-b:,port-a:,port-b:,package:,time:,keep-running,fat,tso-on,help:: -- "$@"`
 eval set -- "$args"
 while true ; do
     case "$1" in
@@ -71,6 +73,8 @@ while true ; do
             keep_running=1 ; shift 1 ;;
         --fat)
             fat="fat-" ; shift 1 ;;
+        --tso-on)
+            tso_on=1 ; shift 1 ;;
         -h|--help)
             usage; exit 0 ;;
         --)
@@ -194,11 +198,11 @@ ssh_run $ip_b $port_b chmod 600 /var/tmp/image.rsa
 # VM 2 is on host A
 # VM 3 is on host B
 declare -a pids;
-vm_start $ip_a $port_a 1 &
+vm_start $ip_a $port_a 1 $tso_on &
 pids[$!]=$!
-vm_start $ip_a $port_a 2 &
+vm_start $ip_a $port_a 2 $tso_on &
 pids[$!]=$!
-vm_start $ip_b $port_b 3 &
+vm_start $ip_b $port_b 3 $tso_on &
 pids[$!]=$!
 wait ${pids[*]};
 unset $pids;
