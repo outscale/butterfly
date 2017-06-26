@@ -1,4 +1,4 @@
-set(SOURCES client.cc nic.cc request.cc sg.cc status.cc shutdown.cc)
+set(SOURCES client.cc nic.cc request.cc sg.cc status.cc shutdown.cc ../common/crypto.cc)
 set (SOURCES_P)
 foreach (_s ${SOURCES})
     set (SOURCES_P ${SOURCES_P} ${PROJECT_SOURCE_DIR}/api/client/${_s})
@@ -22,6 +22,7 @@ include_directories(${GLIB2_INCLUDE_DIR} ${GLIB2_INTERNAL_INCLUDE_DIR}
 target_link_libraries(api_client
                       api_protocol
                       pthread
+                      crypto
                       ${PROTOBUF_LIBRARIES}
                       ${LIBZEROMQPP_LIBRARY}
                       ${GLIB2_LIBRARIES}
