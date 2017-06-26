@@ -59,6 +59,7 @@ struct GlobalOptions {
     bool version;
     bool verbose;
     bool help;
+    string encryption_key;
 };
 
 struct RequestOptions {

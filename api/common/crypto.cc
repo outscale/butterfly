@@ -228,7 +228,7 @@ exit:
 
 /* Simple unit test.
  * Build with:
- * g++ -std=c++11 -lcrypto -DUNIT_TESTS crypto.cc -o crypto
+ * g++ -std=c++11 -lcrypto -DUNIT_TESTS -I ../../ crypto.cc -o crypto
  */
 #ifdef UNIT_TESTS
 static int CheckAes256CbcSha512(const std::string msg) {
