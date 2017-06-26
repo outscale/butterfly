@@ -309,10 +309,17 @@ Butterfly is licensed under [GPLv3](http://gplv3.fsf.org/).
 
 ## Is There Any Authentication on the API or Protection?
 
-The network API is currently not protected at all.
+By default, there is no protection on the API but you can configure Butterfly
+in order to have all it's messages encrypted using AES-256.
 
-For now, it's up to you to secure your administration network where the Butterfly
-API listens.
+For this, you will need to generate a 32 Bytes key (encoded in base 64) in a file and share this file:
+```
+dd if=/dev/urandom bs=32 count=1 | base64 > api-key
+```
+Then you will need to provide the path to this file using `--key --k` in the command line or `encryption_key_path` option in `butterflyd.ini`.
+Once a key is correctly loaded, all clear messages will be rejected.
+
+For encryption format details, check [api/protocol/encrypted.proto](https://github.com/outscale/butterfly/blob/develop/api/protocol/encrypted.proto).
 
 ## On Which Port Does Butterfly Listen?
 
