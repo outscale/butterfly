@@ -11,7 +11,7 @@ ExternalProject_Add(dpdk
 	PATCH_COMMAND make config T=x86_64-native-linuxapp-gcc
 	CONFIGURE_COMMAND sed -i -- "s/CONFIG_RTE_LIBRTE_PMD_PCAP=n/CONFIG_RTE_LIBRTE_PMD_PCAP=y/" build/.config && sed -i -- "s/CONFIG_RTE_EAL_IGB_UIO=y/CONFIG_RTE_EAL_IGB_UIO=n/" build/.config  && sed -i -- "s/CONFIG_RTE_KNI_KMOD=y/CONFIG_RTE_KNI_KMOD=n/" build/.config
 	BINARY_DIR ${DPDK_SOURCE_DIR}
-	BUILD_COMMAND make EXTRA_CFLAGS='-fPIC'
+	BUILD_COMMAND make EXTRA_CFLAGS+='-fPIC' EXTRA_CFLAGS+='-Werror=implicit-fallthrough=0' EXTRA_CFLAGS+='-Werror=format-truncation=0' EXTRA_CFLAGS+='-Wno-bool-operation' EXTRA_CFLAGS+='-Wno-error=maybe-uninitialized'
 	INSTALL_DIR ${DPDK_INSTALL_DIR}
 	INSTALL_COMMAND  touch ${DPDK_INSTALL_DIR}/build && rm -rvf ${DPDK_INSTALL_DIR}/build && touch ${DPDK_INSTALL_DIR}/lib && rm  ${DPDK_INSTALL_DIR}/lib  && mv -vf ${DPDK_SOURCE_DIR}/build ${DPDK_INSTALL_DIR} && ln -s ${DPDK_SOURCE_DIR}/lib ${DPDK_INSTALL_DIR}/lib
 	LOG_BUILD 1 Building dpdk)
