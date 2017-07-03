@@ -3,7 +3,9 @@ set(SOURCES app.cc
             model.cc
             api.cc
             api_0.cc
-            graph.cc)
+            graph.cc
+            encrypted.cc
+            ../common/crypto.cc)
 
 set (SOURCES_P)
 foreach (_s ${SOURCES})
@@ -33,6 +35,7 @@ target_link_libraries(api_server
                       pthread
                       pcap
                       dl
+                      crypto
                       ${PROTOBUF_LIBRARIES}
                       ${GLIB2_LIBRARIES}
                       ${LIBZMQ_LIBRARIES}
