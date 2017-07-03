@@ -90,7 +90,7 @@ ApiServer::Process(const zmqpp::message &req, zmqpp::message *res) {
     // Process request
     std::string response_string;
     try {
-        Api::ProcessRequest(request_string, &response_string);
+        Api::ProcessRequest(request_string, &response_string, false);
     } catch (std::exception &e) {
         LOG_ERROR_("internal error: %s", e.what());
         Api::BuildInternalError(&response_string);

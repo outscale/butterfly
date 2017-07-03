@@ -28,7 +28,8 @@
 #include "api/protocol/message.pb.h"
 #include "api/version.h"
 
-void Api::ProcessRequest(const std::string &request, std::string *response) {
+void Api::ProcessRequest(const std::string &request, std::string *response,
+                         bool sub) {
     if (response == nullptr)
         return;
     // Increment request counter
@@ -56,26 +57,56 @@ void Api::ProcessRequest(const std::string &request, std::string *response) {
     printer.PrintToString(reqs, &human_message);
     app::log.Debug(human_message);
 
-    // Check empty request
-    if (reqs.messages_size() == 0) {
-        LOG_WARNING_("received empty message");
-        proto::Message rep;
-        rep.set_revision(PROTOS_REVISION);
-        rep.set_allocated_error(new proto::Error);
-        rep.mutable_error()->set_code(proto::Error_Code_EMPTY_REQUEST);
-        rep.SerializeToString(response);
-        printer.PrintToString(rep, &human_message);
-        app::log.Debug(human_message);
-        return;
+    proto::Messages reps;
+
+    if (app::config.encryption_key.length() > 0) {
+        if (reqs.has_encrypted() && sub) {
+            LOG_WARNING_("encryption inside encryption, reject");
+            proto::Message *rep = reps.add_messages();
+            rep->set_revision(PROTOS_REVISION);
+            rep->set_allocated_error(new proto::Error);
+            rep->mutable_error()->set_code(proto::Error_Code_REJECTED);
+        } else if (reqs.has_encrypted() && !sub) {
+            app::log.Debug("encrypted message(s) received");
+            reps.set_allocated_encrypted(new Encrypted);
+            auto req_enc = reqs.encrypted();
+            auto rep_enc = reps.mutable_encrypted();
+            ApiEncrypted::Process(req_enc, rep_enc);
+        } else if (!reqs.has_encrypted() && sub) {
+            app::log.Debug("dispatch decrypted messages");
+            for (int i = 0; i < reqs.messages_size(); i++) {
+                auto rep = reps.add_messages();
+                auto req = reqs.messages(i);
+                Dispatch(req, rep);
+            }
+         } else {  // !reqs.has_encrypted() && !sub
+            LOG_WARNING_("unencrypted message received, reject");
+            proto::Message *rep = reps.add_messages();
+            rep->set_revision(PROTOS_REVISION);
+            rep->set_allocated_error(new proto::Error);
+            rep->mutable_error()->set_code(proto::Error_Code_REJECTED);
+        }
+    } else if (reqs.messages_size() > 0) {
+        app::log.Debug("dispatch clear messages");
+        for (int i = 0; i < reqs.messages_size(); i++) {
+            auto rep = reps.add_messages();
+            auto req = reqs.messages(i);
+            Dispatch(req, rep);
+        }
+    } else if (reqs.has_encrypted()) {
+        LOG_WARNING_("received encrypted message, cannot decrypt");
+        proto::Message *rep = reps.add_messages();
+        rep->set_revision(PROTOS_REVISION);
+        rep->set_allocated_error(new proto::Error);
+        rep->mutable_error()->set_code(proto::Error_Code_REJECTED);
+    } else {
+        LOG_WARNING_("received empty message ?");
+        proto::Message *rep = reps.add_messages();
+        rep->set_revision(PROTOS_REVISION);
+        rep->set_allocated_error(new proto::Error);
+        rep->mutable_error()->set_code(proto::Error_Code_REJECTED);
     }
 
-    // Dispatch all messages
-    proto::Messages reps;
-    for (int i = 0; i < reqs.messages_size(); i++) {
-        auto rep = reps.add_messages();
-        auto req = reqs.messages(i);
-        Dispatch(req, rep);
-    }
     reps.SerializeToString(response);
 
     // Log response
