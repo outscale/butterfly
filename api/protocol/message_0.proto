@@ -143,6 +143,14 @@ message MessageV0 {
   }
 
   message Nic {
+    enum Type {
+      // A nic of type vhost-user acting as a server
+      // Butterfly will create a unix socket
+      // "path" in Nic object is set when requesting Nic details
+      // but it will be ignored at nic creation at the moment
+      VHOST_USER_SERVER = 0;
+    }
+
     // Network Interface Card identifier
     required string id = 1;
     // MAC-48 address separated by colons (:) in transmission order
@@ -171,6 +179,10 @@ message MessageV0 {
     // - antispoof protection won't operate
     // - VM can send any packet, any mac, any ip
     optional bool bypass_filtering = 8 [default = false];
+    // Nic type
+    optional Type type = 9 [default = VHOST_USER_SERVER];
+    // Nic path may be set depending of NIC's type
+    optional string path = 10;
   }
 
   // NIC statistics
