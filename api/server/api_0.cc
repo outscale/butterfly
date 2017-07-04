@@ -100,14 +100,13 @@ void Api0::NicAdd(const MessageV0_Request &req, MessageV0_Response *res) {
     }
 
     app::Error error;
-    std::string path;
-    if (!ActionNicAdd(nic, &path, &error)) {
+    if (!ActionNicAdd(&nic, &error)) {
         BuildNokRes(res, error);
         return;
     }
 
     res->set_allocated_nic_add(new MessageV0_NicAddRes);
-    res->mutable_nic_add()->set_path(path);
+    res->mutable_nic_add()->set_path(nic.path);
     BuildOkRes(res);
 }
 
@@ -734,6 +733,11 @@ bool Api0::Convert(const app::Nic &nic_model, MessageV0_Nic *nic_message) {
         nic_message->set_sniff_target_nic_id(nic_model.sniff_target_nic_id);
     // Bypass filterfing
     nic_message->set_bypass_filtering(nic_model.bypass_filtering);
+    // Type
+    nic_message->set_type(MessageV0_Nic_Type_VHOST_USER_SERVER);
+    // Path
+    if (nic_model.path.length() > 0)
+        nic_message->set_path(nic_model.path);
     return true;
 }
 
@@ -780,6 +784,12 @@ bool Api0::Convert(const MessageV0_Nic &nic_message, app::Nic *nic_model) {
     nic_model->bypass_filtering = false;
     if (nic_message.has_bypass_filtering())
         nic_model->bypass_filtering = nic_message.bypass_filtering();
+    // Nic type
+    if (nic_message.has_type())
+        nic_model->type = static_cast<enum app::NicType>(nic_message.type());
+    // Path
+    if (nic_message.has_path())
+        nic_model->path = nic_message.path();
     return true;
 }
 

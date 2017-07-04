@@ -69,6 +69,10 @@ struct Cidr {
     std::string Str() const;
 };
 
+enum NicType {
+    VHOST_USER_SERVER = 0,
+};
+
 struct Nic {
     Nic();
     explicit Nic(std::string id);
@@ -80,6 +84,8 @@ struct Nic {
     bool ip_anti_spoof;
     std::string sniff_target_nic_id;
     bool bypass_filtering;
+    enum NicType type;
+    std::string path;
 };
 
 struct Rule {
