@@ -146,27 +146,30 @@ void Api::Dispatch(const proto::Message &req, proto::Message *rep) {
     }
 }
 
-bool Api::ActionNicAdd(const app::Nic &nic, std::string *path,
-    app::Error *error) {
-    auto it = app::model.nics.find(nic.id);
+bool Api::ActionNicAdd(app::Nic *nic, app::Error *error) {
+    auto it = app::model.nics.find(nic->id);
     // Do we already have this NIC ?
     if (it != app::model.nics.end()) {
-        std::string m = "NIC already exists with id " + nic.id;
+        std::string m = "NIC already exists with id " + nic->id;
         app::log.Warning(m);
         // Disable NIC in packetgraph
         app::graph.NicDel(it->second);
         // Remove NIC from model
-        app::model.nics.erase(nic.id);
+        app::model.nics.erase(nic->id);
         // Retry !
-        return Api::ActionNicAdd(nic, path, error);
+        return Api::ActionNicAdd(nic, error);
     }
 
-    *path = app::graph.NicAdd(nic);
+    // Create Nic in graph
+    if (!app::graph.NicAdd(nic)) {
+        app::log.Error("NIC creation failed");
+        return false;
+    }
 
     // Add NIC in model
-    std::pair<std::string, app::Nic> p(nic.id, nic);
+    std::pair<std::string, app::Nic> p(nic->id, *nic);
     app::model.nics.insert(p);
-    return !!path->size();
+    return true;
 }
 
 bool Api::ActionNicUpdate(const Api::NicUpdate &update,
