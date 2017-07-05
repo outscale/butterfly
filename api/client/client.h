@@ -107,6 +107,7 @@ int SubNic(int argc, char **argv, const GlobalOptions &options);
 int sub_status(int argc, char **argv, const GlobalOptions &options);
 int sub_shutdown(int argc, char **argv, const GlobalOptions &options);
 int SubRequest(int argc, char **argv, const GlobalOptions &options);
+int SubDump(int argc, char **argv, const GlobalOptions &options);
 int sub_status(int argc, char **argv, const GlobalOptions &options);
 int Request(const proto::Messages &request,
             proto::Messages *response,
