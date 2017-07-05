@@ -638,7 +638,7 @@ static int SubSgMemberAdd(int argc, char **argv,
         return 0;
     }
 
-    if (argc <= 6) {
+    if (argc < 6) {
         SubSgMemberAddHelp();
         return 1;
     }
