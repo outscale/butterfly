@@ -238,6 +238,8 @@ class Api0: public Api {
                          MessageV0_Response *res);
     static void AppConfig(const MessageV0_Request &req,
                            MessageV0_Response *res);
+    static void SgDetails(const MessageV0_Request &req,
+                          MessageV0_Response *res);
     /* Methods below pre-format some standard response */
     inline static void BuildOkRes(MessageV0_Response *res);
     inline static void BuildNokRes(MessageV0_Response *res);
