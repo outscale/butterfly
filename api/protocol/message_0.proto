@@ -109,6 +109,12 @@ message MessageV0 {
 
     // Ask to configure some parameters in application
     optional AppConfigReq app_config = 19;
+
+    // List details of a specific SG or all SGs
+    // Ask details of a specific SG by passing it's id
+    // Ask details of all SGs by passing an empty string
+    // Reponse MUST have sg_details filled
+    optional string sg_details = 20;
   }
 
   message Response {
@@ -132,6 +138,8 @@ message MessageV0 {
     repeated string sg_member_list = 9;
     // Status informations
     optional AppStatusRes app_status = 10;
+    // Details of one SG or all SGs
+    repeated Sg sg_details = 11;
   }
 
   message Nic {
