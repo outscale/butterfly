@@ -10,6 +10,7 @@ $BUTTERFLY_ROOT/api/client/request.cc \
 $BUTTERFLY_ROOT/api/client/sg.cc \
 $BUTTERFLY_ROOT/api/client/shutdown.cc \
 $BUTTERFLY_ROOT/api/client/status.cc \
+$BUTTERFLY_ROOT/api/client/dump.cc \
 $BUTTERFLY_ROOT/api/server/app.cc \
 $BUTTERFLY_ROOT/api/server/app.h \
 $BUTTERFLY_ROOT/api/server/server.cc \
