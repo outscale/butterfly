@@ -77,6 +77,8 @@ void Api0::Process(const MessageV0 &req, MessageV0 *res) {
         AppQuit(rq, rs);
     else if (rq.has_app_config())
         AppConfig(rq, rs);
+    else if (rq.has_sg_details())
+        SgDetails(rq, rs);
     else
         BuildNokRes(rs, "MessageV0 appears to not have any request");
 }
@@ -483,6 +485,41 @@ void Api0::AppConfig(const MessageV0_Request &req, MessageV0_Response *res) {
         err = "Application configuration failed: " + err;
         BuildNokRes(res, err);
     }
+}
+
+void Api0::SgDetails(const MessageV0_Request &req,
+                     MessageV0_Response *res) {
+    if (res == nullptr)
+        return;
+    app::log.Info("Sg details");
+    app::Model &m = app::model;
+    std::string id = req.sg_details();
+    // Details of one Sg only
+    if (id.length() > 0) {
+        auto it = m.security_groups.find(id);
+        if (it == m.security_groups.end()) {
+            BuildNokRes(res, "Sg not found");
+            return;
+        }
+
+        auto n = res->add_sg_details();
+        if (!Convert(it->second, n)) {
+            BuildNokRes(res, "Internal error");
+            return;
+        }
+        BuildOkRes(res);
+        return;
+    }
+    // Details of all SGs
+    for (auto it=m.security_groups.begin();
+        it != m.security_groups.end(); it++) {
+        auto n = res->add_sg_details();
+        if (!Convert(it->second, n)) {
+            BuildNokRes(res, "Internal error");
+            return;
+        }
+    }
+    BuildOkRes(res);
 }
 
 void Api0::BuildOkRes(MessageV0_Response *res) {
