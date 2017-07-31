@@ -73,6 +73,8 @@ struct Config {
     std::string nic_mtu;
     int dpdk_port;
     bool no_offload;
+    std::string encryption_key_path;
+    std::string encryption_key;
 };
 
 struct Stats {

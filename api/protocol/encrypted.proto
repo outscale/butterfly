@@ -1,0 +1,48 @@
+/* Copyright 2017 Outscale SAS
+ *
+ * This file is part of Butterfly.
+ *
+ * Butterfly is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as published
+ * by the Free Software Foundation.
+ *
+ * Butterfly is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+// The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+// "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+// document are to be interpreted as described in RFC 2119
+
+syntax = "proto2";
+
+message Encrypted {
+  message Error {
+    optional Code code = 1;
+    enum Code {
+      // Encryption is not supported for this format or key is not set
+      NOT_SUPPORTED = 0;
+      // Encryption process cannot end successfully, incorrect key ?
+      REJECTED = 1;
+      // An internal error occured during this message processing
+      INTERNAL_ERROR = 2;
+    }
+  }
+  // Server MAY respond an error related to encryption
+  optional Error error = 1;
+  // Format description:
+  //
+  // - 16B: Initialization Vector (this information does not need to be secret)
+  //
+  // All the following data is encrypted using AES-256 in CBC mode:
+  //
+  // - 64B: SHA-512 of message content (to check content integrity)
+  // - XB: message content
+  // - Byte-padding in [PKCS7](https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS7)
+  optional bytes aes256cbc_sha512 = 2;
+}

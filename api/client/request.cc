@@ -16,6 +16,7 @@
  */
 
 #include "api/client/client.h"
+#include "api/common/crypto.h"
 
 RequestOptions::RequestOptions() {
     to_stdout = false;
@@ -80,6 +81,34 @@ int Request(const proto::Messages &req,
         return 1;
     }
 
+    // Encrypt request if key is provided
+    const string &key = options.encryption_key;
+    if (key.length()) {
+        // Encrypt Messages to send
+        string encrypted;
+        if (!Crypto::EncAes256CbcSha512(key, str_request, &encrypted)) {
+            cerr << "Error, cannot encrypt message" << endl;
+            return 1;
+        }
+        // Encapsulate result
+        proto::Messages enc_req;
+        enc_req.set_allocated_encrypted(new Encrypted);
+        auto enc = enc_req.mutable_encrypted();
+        enc->set_aes256cbc_sha512(encrypted);
+        // Convert new message to string (data)
+        str_request.clear();
+        if (!str_request.empty()) {
+             cerr << "DAFUK" << endl;
+             return 1;
+        }
+        if (!enc_req.SerializeToString(&str_request)) {
+            cerr << "Error, cannot convert protobuf to string" << endl;
+            return 1;
+        }
+        if (options.verbose)
+            cout << "Request is encrypted" << endl;
+    }
+
     // Make ZeroMQ request
     zmqpp::context context;
     zmqpp::socket socket(context, zmqpp::socket_type::request);
@@ -98,9 +127,33 @@ int Request(const proto::Messages &req,
     }
 
     // Convert response to protobuf
-    if (!res->ParseFromString(str_response)) {
+    proto::Messages response;
+    if (!response.ParseFromString(str_response)) {
         cerr << "Error while decoding response" << endl;
         return 1;
+    }
+
+    // Decrypt if encrypted
+    if (response.has_encrypted()) {
+        if (options.verbose)
+            cout << "Received encrypted response" << endl;
+        if (CheckRequestResult(response))
+            return 1;
+        string decrypted;
+        const string enc = response.encrypted().aes256cbc_sha512();
+        if (!Crypto::DecAes256CbcSha512(key, enc, &decrypted)) {
+            cerr << "Error, cannot decrypt message" << endl;
+            return 1;
+        }
+        // Convert response to protobuf
+        if (!res->ParseFromString(decrypted)) {
+            cerr << "Error while decoding response" << endl;
+            return 1;
+        }
+    } else {
+        if (options.verbose)
+            cout << "Received clear response" << endl;
+        *res = response;
     }
 
     // Convert protobuf to human readable string
@@ -150,35 +203,42 @@ static void PrintError(MessageV0_Error error) {
 }
 
 int CheckRequestResult(const proto::Messages &res) {
-    if (res.messages_size() == 0) {
-        cerr << "error: no message in response" << endl;
-        return 1;
-    }
-
-    if (res.messages(0).has_error()) {
-        cerr << "error in response: ";
-        if (!res.messages(0).error().has_code())
-            cerr << "no error code";
-        else
-            cerr << Error_Code_Name(res.messages(0).error().code());
-        cerr << endl;
-        return 1;
-    }
-
-    if (res.messages(0).has_message_0()) {
-        MessageV0 res_0 = res.messages(0).message_0();
-        if (!res_0.has_response()) {
-            cerr << "error: no response in MessageV0" << endl;
+    if (res.messages_size()) {
+        if (res.messages(0).has_error()) {
+            cerr << "error in response: ";
+            if (!res.messages(0).error().has_code())
+                cerr << "no error code";
+            else
+                cerr << Error_Code_Name(res.messages(0).error().code());
+            cerr << endl;
             return 1;
-        } else if (!res_0.response().status().status()) {
-            cerr << "error in response";
-            if (res_0.response().status().has_error()) {
-                PrintError(res_0.response().status().error());
+        } else if (res.messages(0).has_message_0()) {
+            MessageV0 res_0 = res.messages(0).message_0();
+            if (!res_0.has_response()) {
+                cerr << "error: no response in MessageV0" << endl;
+                return 1;
+            } else if (!res_0.response().status().status()) {
+                cerr << "error in response";
+                if (res_0.response().status().has_error()) {
+                    PrintError(res_0.response().status().error());
+                }
+                cerr << endl;
+                return 1;
             }
+        }
+    } else if (res.has_encrypted()) {
+        if (res.encrypted().has_error()) {
+            cerr << "Encrypted message error: " <<
+                Encrypted_Error_Code_Name(res.encrypted().error().code()) <<
+                endl;
+            return 1;
+        } else if (!res.encrypted().has_aes256cbc_sha512()) {
+            cerr << "error: no message recognized in encrypted response"
+                << endl;
             return 1;
         }
     } else {
-        cerr << "error: no message recognized in response" << endl;
+        cerr << "error: no message detected in response" << endl;
         return 1;
     }
     return 0;

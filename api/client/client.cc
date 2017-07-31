@@ -26,6 +26,7 @@
 #include "api/client/client.h"
 #include "api/protocol/message.pb.h"
 #include "api/version.h"
+#include "api/common/crypto.h"
 
 GlobalOptions::GlobalOptions() {
     endpoint = DEFAULT_ENDPOINT;
@@ -49,6 +50,14 @@ void GlobalOptions::Parse(int argc, char **argv) {
         else if (string(argv[i]) == "-h" ||
                  string(argv[i]) == "--help")
             help = true;
+        if (i + 1 < argc &&
+            (string(argv[i]) == "--key" ||
+             string(argv[i]) == "-k")) {
+            string path = string(argv[i + 1]);
+            if (!Crypto::KeyFromPath(path, &encryption_key)) {
+                cerr << "cannot load encryption key" << endl;
+            }
+        }
     }
 }
 
@@ -57,7 +66,8 @@ void GlobalParameterHelp(void) {
         "global options:" << endl <<
         "    --endpoint, -e  endpoint to use (default: " <<
         DEFAULT_ENDPOINT << ")" << endl <<
-        "    --verbose, -v   show details of each operation" << endl;
+        "    --verbose, -v   show details of each operation" << endl <<
+        "    --key, -k       path to encryption key (32 raw bytes)" << endl;
 }
 
 static void Help(void) {

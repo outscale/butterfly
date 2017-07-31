@@ -1,5 +1,6 @@
 set (protocol_descriptions message.proto
-                           message_0.proto)
+                           message_0.proto
+                           encrypted.proto)
 
 set(API_PROTOCOL_SOURCE_DIR ${PROJECT_SOURCE_DIR}/api/protocol)
 

@@ -32,6 +32,7 @@ extern "C" {
 #include "api/server/server.h"
 #include "api/server/simpleini/SimpleIni.hpp"
 #include "api/version.h"
+#include "api/common/crypto.h"
 
 namespace app {
 Stats::Stats() {
@@ -66,6 +67,7 @@ bool Config::parse_cmd(int argc, char **argv) {
     std::unique_ptr<gchar, decltype(gfree)> dpdk_args_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> nic_mtu_cmd(nullptr, gfree);
     std::unique_ptr<gchar, decltype(gfree)> dpdk_port_cmd(nullptr, gfree);
+    std::unique_ptr<gchar, decltype(gfree)> key_path_cmd(nullptr, gfree);
 
     static GOptionEntry entries[] = {
         {"config", 'c', 0, G_OPTION_ARG_FILENAME, &config_path_cmd,
@@ -99,6 +101,8 @@ bool Config::parse_cmd(int argc, char **argv) {
          "block all offloadind features", nullptr},
         {"dpdk-port", 0, 0, G_OPTION_ARG_STRING, &dpdk_port_cmd,
          "choose which dpdk port to use (default=0)", "PORT"},
+        {"key", 'k', 0, G_OPTION_ARG_STRING, &key_path_cmd,
+         "path to encryption key (raw randomized 32B)", "PATH"},
         { nullptr }
     };
     std::shared_ptr<GOptionContext> context(g_option_context_new(""),
@@ -151,12 +155,29 @@ bool Config::parse_cmd(int argc, char **argv) {
         nic_mtu = std::string(&*nic_mtu_cmd);
     if (dpdk_port_cmd != nullptr)
         nic_mtu = std::atoi(&*dpdk_port_cmd);
+    if (key_path_cmd != nullptr)
+        encryption_key_path = std::string(&*key_path_cmd);
 
     // Load from configuration file if provided
     if (config_path.length() > 0 && !LoadConfigFile(config_path)) {
         std::cerr << "Failed to open configuration file" << std::endl;
         app::log.Error("Failed to open configuration file");
         return false;
+    }
+
+    // Load encryption key from file if provided
+    if (encryption_key_path.length()) {
+        if (Crypto::KeyFromPath(encryption_key_path, &encryption_key)) {
+            std::cerr << "Encryption key loaded" << std::endl;
+            app::log.Debug("Encryption key loaded");
+        } else {
+            std::cerr << "Cannot load encryption key" << std::endl;
+            app::log.Error("Failed to open encryption key");
+            return false;
+        }
+    } else {
+        std::cerr << "No encryption configured" << std::endl;
+        app::log.Warning("No encryption configured");
     }
 
     if (!ret) {
@@ -331,6 +352,12 @@ bool LoadConfigFile(std::string config_path) {
         std::string m = "LoadConfig: get dpdk-port from config: " +
             config.dpdk_port;
         log.Debug(m);
+    }
+
+    v = ini.GetValue("security", "encryption_key_path", "_");
+    if (std::string(v) != "_") {
+        config.encryption_key_path = v;
+        log.Debug("LoadConfig: get encryption key path from config");
     }
 
     return true;

@@ -33,9 +33,10 @@ class Api {
      * @param  request request data from the client
      * @param  response response in which the function will write the response
                         to send to the client
+     * @param  sub indicate if it is an encapsulated (encrypted) request or not
      */
     static void ProcessRequest(const std::string &request,
-        std::string *response);
+        std::string *response, bool sub);
     /* Build a standard internal error.
      * @param  response response containing internal error
      */
@@ -280,5 +281,9 @@ class Api0: public Api {
     static bool Convert(const app::Error &error_model,
                         MessageV0_Error *error_message);
 };
+
+namespace ApiEncrypted {
+    void Process(const Encrypted &req, Encrypted *res);
+}
 
 #endif  // API_SERVER_API_H_
