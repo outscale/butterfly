@@ -28,7 +28,7 @@ OUTPUT=$1
 DATE=`git log -1 | grep Date | awk -F "   " '{ print $2 }' | awk -F '+' '{ print $1 }'`
 NAME=`git log --oneline -1 | awk -F ' ' '{print $1}'`
 
-PROJECT_ROOT=$(git rev-parse --show-toplevel)
+PROJECT_ROOT=$(cd "$(dirname $0)/.." && pwd)
 source $PROJECT_ROOT/api/protocol/version
 
 tmp=version_tmp.h
