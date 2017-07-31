@@ -118,9 +118,9 @@ same result.
 # Installing Butterfly
 
 The easiest way to install Butterfly is to download and install a package from [github releases](https://github.com/outscale/butterfly/releases).
-You can also build Butterfly yourself (as shown in the next section) and run `make install` .
+You can also build Butterfly yourself (as shown in the next section).
 
-# Building Butterfly
+# Building Butterfly without docker
 
 This building procedure has been tested on a fresh Centos7.
 
@@ -141,6 +141,11 @@ $ cd butterfly/build
 $ cmake ..
 $ make
 ```
+
+# Build Butterfly with docker:
+
+You can also use Docker in order to build Butterfly. It is based on a Centos7.
+For developpment, we love to have different Linux distros in order to detect some issues. We could also build for several distro using docker in the future.
 
 # Preparing Your Machine
 
