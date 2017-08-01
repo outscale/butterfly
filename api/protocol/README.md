@@ -74,3 +74,9 @@ First release of the protocol:
 ## Revision 2
 
 - Add encrypted messages support
+
+## Revision 3
+
+- Add Sg Details request
+- Add Nic type
+- Add Nic path
