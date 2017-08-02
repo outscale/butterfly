@@ -40,7 +40,7 @@ int sub_status(int argc, char **argv, const GlobalOptions &options) {
         "}";
 
     proto::Messages res;
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();

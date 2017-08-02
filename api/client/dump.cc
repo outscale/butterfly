@@ -64,7 +64,7 @@ int SubDump(int argc, char **argv, const GlobalOptions &options) {
         "  }"
         "}";
     proto::Messages res;
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     // Find responses for nics and sg
