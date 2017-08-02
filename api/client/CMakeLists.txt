@@ -1,4 +1,4 @@
-set(SOURCES client.cc nic.cc request.cc sg.cc status.cc shutdown.cc ../common/crypto.cc)
+set(SOURCES client.cc nic.cc request.cc sg.cc status.cc shutdown.cc ../common/crypto.cc dump.cc)
 set (SOURCES_P)
 foreach (_s ${SOURCES})
     set (SOURCES_P ${SOURCES_P} ${PROJECT_SOURCE_DIR}/api/client/${_s})

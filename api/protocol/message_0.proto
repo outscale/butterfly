@@ -109,6 +109,12 @@ message MessageV0 {
 
     // Ask to configure some parameters in application
     optional AppConfigReq app_config = 19;
+
+    // List details of a specific SG or all SGs
+    // Ask details of a specific SG by passing it's id
+    // Ask details of all SGs by passing an empty string
+    // Reponse MUST have sg_details filled
+    optional string sg_details = 20;
   }
 
   message Response {
@@ -132,9 +138,19 @@ message MessageV0 {
     repeated string sg_member_list = 9;
     // Status informations
     optional AppStatusRes app_status = 10;
+    // Details of one SG or all SGs
+    repeated Sg sg_details = 11;
   }
 
   message Nic {
+    enum Type {
+      // A nic of type vhost-user acting as a server
+      // Butterfly will create a unix socket
+      // "path" in Nic object is set when requesting Nic details
+      // but it will be ignored at nic creation at the moment
+      VHOST_USER_SERVER = 0;
+    }
+
     // Network Interface Card identifier
     required string id = 1;
     // MAC-48 address separated by colons (:) in transmission order
@@ -163,6 +179,10 @@ message MessageV0 {
     // - antispoof protection won't operate
     // - VM can send any packet, any mac, any ip
     optional bool bypass_filtering = 8 [default = false];
+    // Nic type
+    optional Type type = 9 [default = VHOST_USER_SERVER];
+    // Nic path may be set depending of NIC's type
+    optional string path = 10;
   }
 
   // NIC statistics

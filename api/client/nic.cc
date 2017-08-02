@@ -40,7 +40,7 @@ static int SubNicList(int argc, char **argv, const GlobalOptions &options) {
         "}";
 
     proto::Messages res;
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -80,7 +80,7 @@ static int SubNicStats(int argc, char **argv, const GlobalOptions &options) {
 
     proto::Messages res;
 
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -125,7 +125,7 @@ static int SubNicDetails(int argc, char **argv,
 
     proto::Messages res;
 
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -162,7 +162,7 @@ static int SgList(string nic, vector<string> *list,
 
     proto::Messages res;
 
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -196,7 +196,7 @@ int SgUpdate(string nic, const vector<string> &list,
         "}";
 
     proto::Messages res;
-    return Request(req, &res, options, false) || CheckRequestResult(res);
+    return Request(req, &res, options, false);
 }
 
 static void SubNicSgListHelp(void) {
@@ -469,7 +469,7 @@ static int SubNicAdd(int argc, char **argv, const GlobalOptions &options) {
 
     proto::Messages res;
 
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -525,7 +525,7 @@ static int SubNicDel(int argc, char **argv,
     }
 
     proto::Messages res;
-    return Request(req, &res, options, false) || CheckRequestResult(res);
+    return Request(req, &res, options, false);
 }
 
 static void SubNicHelp(void) {

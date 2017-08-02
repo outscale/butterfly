@@ -41,7 +41,7 @@ static int SubSgList(int argc, char **argv, const GlobalOptions &options) {
 
     proto::Messages res;
 
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -100,7 +100,7 @@ static int SubSgAdd(int argc, char **argv, const GlobalOptions &options) {
     }
 
     proto::Messages res;
-    return Request(req, &res, options, false) || CheckRequestResult(res);
+    return Request(req, &res, options, false);
 }
 
 static void SubSgDelHelp(void) {
@@ -146,7 +146,7 @@ static int SubSgDel(int argc, char **argv, const GlobalOptions &options) {
     }
 
     proto::Messages res;
-    return Request(req, &res, options, false) || CheckRequestResult(res);
+    return Request(req, &res, options, false);
 }
 
 static string RuleHash(const MessageV0_Rule &r) {
@@ -206,7 +206,7 @@ static int SubSgRuleList(int argc, char **argv,
 
     proto::Messages res;
 
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -413,7 +413,7 @@ static int SubSgRuleAdd(int argc, char **argv,
 
     proto::Messages res;
 
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
     return 0;
 }
@@ -465,7 +465,7 @@ static int SubSgHashedRuleDel(int argc, char **argv,
 
     proto::Messages res;
 
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -498,8 +498,7 @@ static int SubSgHashedRuleDel(int argc, char **argv,
     }
 
     proto::Messages delete_res;
-    return Request(delete_req, &delete_res, options, false) ||
-            CheckRequestResult(delete_res);
+    return Request(delete_req, &delete_res, options, false);
 }
 
 static int SubSgParamRuleDel(int argc, char **argv,
@@ -536,7 +535,7 @@ static int SubSgParamRuleDel(int argc, char **argv,
         "}";
 
     proto::Messages res;
-    return Request(req, &res, options, false) || CheckRequestResult(res);
+    return Request(req, &res, options, false);
 }
 static int SubSgRuleDel(int argc, char **argv,
                             const GlobalOptions &options) {
@@ -614,7 +613,7 @@ static int sub_sg_member_list(int argc, char **argv,
 
     proto::Messages res;
 
-    if (Request(req, &res, options, false) || CheckRequestResult(res))
+    if (Request(req, &res, options, false))
         return 1;
 
     MessageV0_Response res_0 = res.messages(0).message_0().response();
@@ -638,7 +637,7 @@ static int SubSgMemberAdd(int argc, char **argv,
         return 0;
     }
 
-    if (argc <= 6) {
+    if (argc < 6) {
         SubSgMemberAddHelp();
         return 1;
     }
@@ -657,7 +656,7 @@ static int SubSgMemberAdd(int argc, char **argv,
         "  }"
         "}";
     proto::Messages res;
-    return Request(req, &res, options, false) || CheckRequestResult(res);
+    return Request(req, &res, options, false);
 }
 
 static void SubSgMemberDelHelp(void) {
@@ -692,7 +691,7 @@ static int sub_sg_member_del(int argc, char **argv,
         "  }"
         "}";
     proto::Messages res;
-    return Request(req, &res, options, false) || CheckRequestResult(res);
+    return Request(req, &res, options, false);
 }
 
 static void SubSgMemberHelp(void) {

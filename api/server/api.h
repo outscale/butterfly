@@ -60,14 +60,13 @@ class Api {
     static void Dispatch(const proto::Message &req, proto::Message *rep);
     /* Create a NIC and add it in model
      * This method centralize NIC creation for all API versions
-     * @param  nic the NIC to create
-     * @param  path string path corresponding to the newly created NIC
+     * @param  nic the NIC to create, the object may completed during it's
+     *             creation.
      * @param  error provide an app::Error object to fill in case of error
      *               can be NULL to ommit it.
      * @return  true if NIC has been created, false otherwise
      */
-    static bool ActionNicAdd(const app::Nic &nic, std::string *path,
-        app::Error *error);
+    static bool ActionNicAdd(app::Nic *nic, app::Error *error);
     /* Update a NIC by replacing provided NIC parameters
      * This method centralize NIC update for all API versions
      * @param  id NIC id to update
@@ -238,6 +237,8 @@ class Api0: public Api {
                          MessageV0_Response *res);
     static void AppConfig(const MessageV0_Request &req,
                            MessageV0_Response *res);
+    static void SgDetails(const MessageV0_Request &req,
+                          MessageV0_Response *res);
     /* Methods below pre-format some standard response */
     inline static void BuildOkRes(MessageV0_Response *res);
     inline static void BuildNokRes(MessageV0_Response *res);
