@@ -169,7 +169,8 @@ int Request(const proto::Messages &req,
     } else if (response_to_stdout) {
         cout << human_message;
     }
-    return 0;
+
+    return CheckRequestResult(*res);
 }
 
 int Request(const string &req,
