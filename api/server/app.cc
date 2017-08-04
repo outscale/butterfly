@@ -54,8 +54,8 @@ Config::Config() {
 
 bool Config::parse_cmd(int argc, char **argv) {
     bool ret = true;
-    bool showversion;
-    bool dpdkhelp;
+    bool showversion = false;
+    bool dpdkhelp = false;
 
     auto gfree = [](gchar *p) { g_free(p); };
     std::unique_ptr<gchar, decltype(gfree)> config_path_cmd(nullptr, gfree);
