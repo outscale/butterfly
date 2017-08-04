@@ -47,8 +47,11 @@ class Graph {
     void Stop(void);
     /** Inject a NIC in packetgraph including all needed bricks
      * @param  nic model and informations of the NIC.
+     *         the object may be modified to add creation informations
+     *         like vhost-user path and so.
+     * @return  true if Nic has been well created, false otherwise.
      */
-    std::string NicAdd(const app::Nic &nic);
+    bool NicAdd(app::Nic *nic);
     /** Remove a NIC from the graph with related dependencies.
      * @param  id NIC id to delete.
      */

@@ -54,6 +54,8 @@ messages {
         security_group: "sg-4"
         ip_anti_spoof: false
         bypass_filtering: false
+        type: VHOST_USER_SERVER
+        path: "/tmp/qemu-vhost-nic-2"
       }
     }
   }
@@ -76,6 +78,8 @@ messages {
         security_group: "sg-2"
         ip_anti_spoof: true
         bypass_filtering: false
+        type: VHOST_USER_SERVER
+        path: "/tmp/qemu-vhost-nic-1"
       }
       nic_details {
         id: "nic-2"
@@ -88,6 +92,8 @@ messages {
         security_group: "sg-4"
         ip_anti_spoof: false
         bypass_filtering: false
+        type: VHOST_USER_SERVER
+        path: "/tmp/qemu-vhost-nic-2"
       }
     }
   }

@@ -79,7 +79,9 @@ static void Help(void) {
         "    status    show informations about butterfly" << endl <<
         "    shutdown  ask butterflyd to stop" << endl <<
         "    request   send a protobuf request to butterfly" << endl <<
+        "    dump      extract Butterfly configuration" << endl <<
         endl <<
+
         "options:" << endl <<
         "    --version, -V   show butterfly version" << endl <<
         "    --help, -h      show this help" << endl;
@@ -116,6 +118,8 @@ int main(int argc, char **argv) {
         return sub_shutdown(argc, argv, options);
     } else if (cmd == "request") {
         return SubRequest(argc, argv, options);
+    } else if (cmd == "dump") {
+        return SubDump(argc, argv, options);
     } else {
         cerr << "invalid subcommand " << cmd << endl;
         Help();

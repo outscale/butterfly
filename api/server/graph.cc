@@ -427,12 +427,13 @@ bool Graph::PollerUpdate(struct RpcQueue **list) {
     return true;
 }
 
-std::string Graph::NicAdd(const app::Nic &nic) {
+bool Graph::NicAdd(app::Nic *nic_) {
+    app::Nic &nic = *nic_;
     std::string name;
 
     if (!started) {
         LOG_ERROR_("Graph has not been started");
-        return "";
+        return false;
     }
 
     // Create VNI if it does not exists
@@ -444,7 +445,7 @@ std::string Graph::NicAdd(const app::Nic &nic) {
         vnis_.insert(p);
         it = vnis_.find(nic.vni);
         if (it == vnis_.end())
-            return "";
+            return false;
     }
     struct GraphVni &vni = it->second;
 
@@ -459,7 +460,7 @@ std::string Graph::NicAdd(const app::Nic &nic) {
     WaitEmptyQueue();
     if (tmp_fw == NULL) {
         LOG_ERROR_("Firewall creation failed");
-        return "";
+        return false;
     }
 
     gn.firewall = BrickShrPtr(tmp_fw, PgfakeDestroy);
@@ -471,7 +472,7 @@ std::string Graph::NicAdd(const app::Nic &nic) {
                          pg_brick_destroy);
     if (!gn.antispoof) {
         PG_ERROR_(app::pg_error);
-        return "";
+        return false;
     }
 
     if (nic.ip_anti_spoof) {
@@ -491,7 +492,7 @@ std::string Graph::NicAdd(const app::Nic &nic) {
                            pg_brick_destroy);
     if (!gn.vhost) {
         PG_ERROR_(app::pg_error);
-        return "";
+        return false;
     }
     if (app::config.packet_trace) {
         name = "sniffer-" + gn.id;
@@ -504,7 +505,7 @@ std::string Graph::NicAdd(const app::Nic &nic) {
                        pg_brick_destroy);
         if (!gn.sniffer) {
             PG_ERROR_(app::pg_error);
-            return "";
+            return false;
         }
     }
 
@@ -515,7 +516,7 @@ std::string Graph::NicAdd(const app::Nic &nic) {
             if (pg_brick_link(gn.sniffer.get(), gn.vhost.get(),
                               &app::pg_error) < 0) {
                 PG_ERROR_(app::pg_error);
-                return "";
+                return false;
             }
         } else {
             gn.head = gn.vhost;
@@ -525,7 +526,7 @@ std::string Graph::NicAdd(const app::Nic &nic) {
         if (pg_brick_link(gn.firewall.get(),
                           gn.antispoof.get(), &app::pg_error) < 0) {
             PG_ERROR_(app::pg_error);
-            return "";
+            return false;
         }
         LinkAndStalk(gn.antispoof, gn.vhost, gn.sniffer);
     }
@@ -547,14 +548,14 @@ std::string Graph::NicAdd(const app::Nic &nic) {
                                            &app::pg_error), pg_brick_destroy);
         if (!vni.sw) {
             PG_ERROR_(app::pg_error);
-            return "";
+            return false;
         }
 
         BrickShrPtr head1 = vni.nics.begin()->second.head;
         if (pg_brick_unlink_edge(vtep_.get(), head1.get(),
                                  &app::pg_error) < 0) {
             PG_ERROR_(app::pg_error);
-            return "";
+            return false;
         }
         link(vtep_, vni.sw);
         add_vni(vtep_, vni.sw, nic.vni);
@@ -579,7 +580,8 @@ std::string Graph::NicAdd(const app::Nic &nic) {
     const char *ret = pg_vhost_socket_path(gn.vhost.get(), &app::pg_error);
     if (!ret)
         PG_ERROR_(app::pg_error);
-    return std::string(ret);
+    nic.path = std::string(ret);
+    return true;
 }
 
 Graph::GraphNic *Graph::FindNic(const app::Nic &nic) {
