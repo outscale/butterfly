@@ -175,8 +175,8 @@ bool Graph::Start(std::string dpdk_args) {
             app::log.Info("offloading manually desactivated");
         else
             app::log.Info("no offloading available");
-        pg_vhost_disable(VIRTIO_NET_F_HOST_TSO4);
-        pg_vhost_disable(VIRTIO_NET_F_HOST_TSO6);
+        pg_vhost_global_disable(VIRTIO_NET_F_HOST_TSO4 |
+                                VIRTIO_NET_F_HOST_TSO6);
     } else {
         app::log.Info("some offloading is available");
     }
@@ -576,9 +576,7 @@ std::string Graph::NicAdd(const app::Nic &nic) {
     FwUpdate(nic);
     app::SetCgroup();
 
-    const char *ret = pg_vhost_socket_path(gn.vhost.get(), &app::pg_error);
-    if (!ret)
-        PG_ERROR_(app::pg_error);
+    const char *ret = pg_vhost_socket_path(gn.vhost.get());
     return std::string(ret);
 }
 
