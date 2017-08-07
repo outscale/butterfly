@@ -111,6 +111,7 @@ function vm_start {
     local ip=$1
     local port=$2
     local id=$3
+    local tso_on=$4
     SOCKET_PATH=/tmp/qemu-vhost-nic-$id
     IMG_PATH=/var/tmp/image.qcow
     KEY_PATH=/var/tmp/image.rsa
@@ -128,6 +129,11 @@ function vm_start {
     # Configure IP on vhost interface
     ssh_vm $ip $port $id ip link set ens4 up
     ssh_vm $ip $port $id ip addr add 42.0.0.$id/16 dev ens4
+    echo tso : $tso_on
+    if [ $tso_on -eq 1 ]; then
+	ssh_vm $ip $port $id pacman -Sy --noconfirm ethtool
+	ssh_vm $ip $port $id ethtool -K ens4 tso on
+    fi
     #ssh_vm $ip $port $id ip link set dev ens4 mtu 1400
 }
 
