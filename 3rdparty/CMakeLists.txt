@@ -9,7 +9,7 @@ ExternalProject_Add(dpdk
 	DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
 	DOWNLOAD_COMMAND git submodule update --init ${DPDK_SOURCE_DIR}
 	PATCH_COMMAND make config T=x86_64-native-linuxapp-gcc
-	CONFIGURE_COMMAND sed -i -- "s/CONFIG_RTE_EAL_IGB_UIO=y/CONFIG_RTE_EAL_IGB_UIO=n/" build/.config && sed -i -- "s/CONFIG_RTE_LIBRTE_PMD_PCAP=n/CONFIG_RTE_LIBRTE_PMD_PCAP=y/" build/.config && sed -i -- "s/CONFIG_RTE_KNI_KMOD=y/CONFIG_RTE_KNI_KMOD=n/" build/.config && sed -i -- "s/CONFIG_RTE_MACHINE=\"native\"/CONFIG_RTE_MACHINE=\"snb\"/" build/.config
+	CONFIGURE_COMMAND sed -i -- "s/CONFIG_RTE_LIBRTE_PMD_PCAP=n/CONFIG_RTE_LIBRTE_PMD_PCAP=y/" build/.config && sed -i -- "s/CONFIG_RTE_EAL_IGB_UIO=y/CONFIG_RTE_EAL_IGB_UIO=n/" build/.config  && sed -i -- "s/CONFIG_RTE_KNI_KMOD=y/CONFIG_RTE_KNI_KMOD=n/" build/.config
 	BINARY_DIR ${DPDK_SOURCE_DIR}
 	BUILD_COMMAND make EXTRA_CFLAGS='-fPIC'
 	INSTALL_DIR ${DPDK_INSTALL_DIR}
