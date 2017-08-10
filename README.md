@@ -227,22 +227,31 @@ Machines:
 - CPU: AMD Opteron(tm) Processor 3350 HE
 - All details for [host 1](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_1.txt) and [host 2](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_2.txt) (same)
 
-Results (april 2017, 60 seconds per tests):
+Results (august 2017, 60 seconds per tests):
+
+### Without TSO on VMs
 ```
                          |   VMs on same host  |  VMs on remote host |
  ------------------------+---------------------+---------------------|
-| Ping (min/average/max) | 0.046/0.69/0.115ms | 0.158/0.179/0.220ms |
-| TCP                    |     18.9 Gbits/s    |     5.0 Gbits/s     |
-| UDP                    |     1.6  Gbits/s    |     1.6 Gbits/s     |
+| Ping (min/average/max) | 0.072/0.090/0.160ms | 0.106/0.162/0.236ms |
+| TCP                    |     6.00 Gbits/s    |     6.70 Gbits/s    |
+| UDP                    |     2.99 Gbits/s    |     1.41 Gbits/s    |
 ```
 
-Notes:
+### With TSO enabled on VMs (--tso-on)
+```
+                         |   VMs on same host  |  VMs on remote host |
+ ------------------------+---------------------+---------------------|
+| Ping (min/average/max) | 0.077/0.101/0.447ms | 0.059/0.96/0.203ms  |
+| TCP                    |     15.9 Gbits/s    |     3.2 Gbits/s     |
+| UDP                    |     2.99 Gbits/s    |     1.4 Gbits/s     |
+```
+
+### Notes
 - UDP is really _bad_ at the moment, we are working on it
 - We can get even faster with zero copy in vhost-user
 - We can get faster by embedding a more recent libc (`make package-fat`)
 - If you try to run some benchmarks, you may want to configure your [CPU throttling](https://en.wikipedia.org/wiki/Dynamic_frequency_scaling). On Centos7, check [cpufreq governors page](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Power_Management_Guide/cpufreq_governors.html)
-
-Well, we still have a good margin for improvements :)
 
 ## How to Connect a Virtual Machine to Butterfly?
 
