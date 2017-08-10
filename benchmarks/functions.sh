@@ -117,7 +117,7 @@ function vm_start {
     KEY_PATH=/var/tmp/image.rsa
     MAC=52:54:00:12:34:0$id
 
-    CMD="qemu-system-x86_64 -cpu host -smp 1 -netdev user,id=network0,hostfwd=tcp::600${id}-:22 -device e1000,netdev=network0 -m 256M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1,gso=off -object memory-backend-file,id=mem,size=256M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
+    CMD="qemu-system-x86_64 -cpu host -smp 1 -netdev user,id=network0,hostfwd=tcp::600${id}-:22 -device e1000,netdev=network0 -m 256M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=256M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
     ssh_run $ip $port $CMD &
 
     sleep 5
