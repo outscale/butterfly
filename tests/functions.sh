@@ -450,15 +450,15 @@ function qemus_start {
 }
 
 function qemu_wait_pid {
-    if [ ! -f "$BUTTERFLY_BUILD_ROOT/qemu_pids$id" ]; then
-        if [ $2 == 0 ]; then
-            return 0
-        fi
-        sleep 1
-        num=$(($2 - 1))
-        qemu_wait_pid $1 $num
-        return $ret
-    fi
+    id=$1
+    timeleft=$2
+    while [ $timeleft -gt 0 ]; do
+       if [ -f "$BUTTERFLY_BUILD_ROOT/qemu_pids$id" ]; then
+        return 0
+       fi
+       sleep 1
+       timeleft=$((timeleft - 1))
+    done
     return 1
 }
 
