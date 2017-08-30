@@ -430,18 +430,33 @@ static const char *SrcCgroup() {
 }
 
 static int InitCgroup(int multiplier) {
-    if (!SrcCgroup())
+    const char *cgroupPath = SrcCgroup();
+
+    if (!cgroupPath)
         return -1;
-    std::string create_dir("mkdir " + std::string(SrcCgroup()) + "/butterfly");
+    std::string create_dir("mkdir " + std::string(cgroupPath) + "/butterfly");
 
     BASH(create_dir) {
         LOG_WARNING_("can't create butterfly cgroup, fail cmd '%s'",
                      create_dir.c_str());
     }
-    BASH("echo $(( `cat " + std::string(SrcCgroup()) + "/cpu.shares` * " +
+    BASH("echo $(( `cat " + std::string(cgroupPath) + "/cpu.shares` * " +
          std::to_string(multiplier) + " )) > " +
-         SrcCgroup() + "/butterfly/cpu.shares") {
+         cgroupPath + "/butterfly/cpu.shares") {
         LOG_WARNING_("can't set cgroup priority");
+    }
+
+    // new cgroup use a diferent directory for cpushare and cpu
+    // if not, we need to initilize some files
+    BASH(std::string("! cat ") + cgroupPath + "/cpuset.mems >> /dev/null") {
+            BASH("echo `cat " + std::string(cgroupPath) + "/cpuset.mems` > " +
+                 cgroupPath + "/butterfly/cpuset.mems") {
+                    LOG_WARNING_("can't set cgroup cpuset.mems");
+            }
+            BASH("echo `cat " + std::string(cgroupPath) + "/cpuset.cpus` > " +
+                 cgroupPath + "/butterfly/cpuset.cpus") {
+                    LOG_WARNING_("can't set cgroup cpuset.cpus");
+            }
     }
     return 0;
 }
