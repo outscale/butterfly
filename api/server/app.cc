@@ -52,10 +52,18 @@ Config::Config() {
     no_offload = 0;
 }
 
+void (*logger)(int, const char *, va_list);
+
+void print_log(int l, const char *format, va_list av) {
+    vdprintf(2, format, av);
+    dprintf(2, "\n");
+}
+
 bool Config::parse_cmd(int argc, char **argv) {
     bool ret = true;
     bool showversion = false;
     bool dpdkhelp = false;
+    bool silentlog = false;
 
     auto gfree = [](gchar *p) { g_free(p); };
     std::unique_ptr<gchar, decltype(gfree)> config_path_cmd(nullptr, gfree);
@@ -89,6 +97,8 @@ bool Config::parse_cmd(int argc, char **argv) {
          "ID"},
         {"packet-trace", 't', 0, G_OPTION_ARG_NONE, &config.packet_trace,
          "Trace packets going through Butterfly", nullptr},
+        {"no-syslog", 0, 0, G_OPTION_ARG_NONE, &silentlog,
+         "use printf instead of syslog for login", nullptr},
         {"dpdk-help", 0, 0, G_OPTION_ARG_NONE, &dpdkhelp,
          "print DPDK help", nullptr},
         {"dpdk-args", 0, 0, G_OPTION_ARG_STRING, &dpdk_args_cmd,
@@ -135,6 +145,11 @@ bool Config::parse_cmd(int argc, char **argv) {
         std::cout << VERSION_INFO << std::endl;
         return false;
     }
+
+    if (silentlog)
+        logger = print_log;
+    else
+        logger = vsyslog;
 
     // Get back gchar to config in std::string
     if (config_path_cmd != nullptr)
@@ -243,8 +258,8 @@ bool Log::SetLogLevel(std::string level) {
         va_list ap;                                                     \
                                                                         \
         va_start(ap, message);                                          \
-        vsyslog(LOG_##TYPE, \
-            (std::string("<"#TYPE"> ") + message).c_str(), ap);         \
+        logger(LOG_##TYPE,                                              \
+               (std::string("<"#TYPE"> ") + message).c_str(), ap);      \
         va_end(ap);                                                     \
     } while (0)
 
