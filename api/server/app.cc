@@ -60,10 +60,10 @@ void print_log(int l, const char *format, va_list av) {
 }
 
 bool Config::parse_cmd(int argc, char **argv) {
-    bool ret = true;
-    bool showversion = false;
-    bool dpdkhelp = false;
-    bool silentlog = false;
+    int ret = true;
+    int silentlog = false;
+    int dpdkhelp = false;
+    int showversion = false;
 
     auto gfree = [](gchar *p) { g_free(p); };
     std::unique_ptr<gchar, decltype(gfree)> config_path_cmd(nullptr, gfree);
