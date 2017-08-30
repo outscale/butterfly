@@ -391,15 +391,13 @@ void SignalHandler(int signum) {
 }
 
 std::string GraphDot(struct pg_brick *brick) {
-    char buf[10000];
-    FILE *fd = fmemopen(buf, 10000, "w+");
-    if (pg_brick_dot(brick, fd, &pg_error) < 0) {
-        PG_ERROR_(pg_error);
+    char *buf = pg_brick_dot(brick);
+    if (!buf) {
+        LOG_ERROR_("can't generate dot");
         return std::string("");
     }
-    fflush(fd);
     std::string ret(buf);
-    fclose(fd);
+    free(buf);
     return ret;
 }
 
