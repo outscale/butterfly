@@ -259,7 +259,10 @@ bool Api::ActionNicExport(std::string id, std::string *data,
 
 bool Api::ActionNicStats(std::string id, uint64_t *in, uint64_t *out,
     app::Error *error) {
-    if (in == nullptr || out == nullptr)
+    //|| out == nullptr)
+    if (in == nullptr)
+        return false;
+    if (out == nullptr)
         return false;
 
     auto nic = app::model.nics.find(id);
