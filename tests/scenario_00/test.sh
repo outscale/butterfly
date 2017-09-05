@@ -15,6 +15,7 @@ sg_rule_add_all_open 0 sg-1
 ssh_ping 1 2
 ssh_ping 2 1
 sg_rule_del_all_open 0 sg-1
+sg_rule_del_all_open 0 sg-1
 ssh_no_ping 1 2
 ssh_no_ping 2 1
 sg_rule_add_icmp 0 sg-1
