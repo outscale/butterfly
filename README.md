@@ -118,29 +118,12 @@ same result.
 # Installing Butterfly
 
 The easiest way to install Butterfly is to download and install a package from [github releases](https://github.com/outscale/butterfly/releases).
-You can also build Butterfly yourself (as shown in the next section) and run `make install` .
+You can also build Butterfly yourself (see next section).
 
 # Building Butterfly
 
-This building procedure has been tested on a fresh Centos7.
-
-First, install some dependencies (jemalloc needs manual installation:
-```
-$ sudo yum update -y
-$ sudo yum install -y gcc-c++ glibc-devel glib2-devel libtool libpcap-devel automake kernel-headers make git cmake kernel-devel unzip zlib-devel wget libstdc++-static
-$ wget http://cbs.centos.org/kojifiles/packages/jemalloc/3.6.0/8.el7.centos/x86_64/jemalloc-devel-3.6.0-8.el7.centos.x86_64.rpm
-$ wget http://cbs.centos.org/kojifiles/packages/jemalloc/3.6.0/8.el7.centos/x86_64/jemalloc-3.6.0-8.el7.centos.x86_64.rpm
-$ sudo rpm -i jemalloc-devel-3.6.0-8.el7.centos.x86_64.rpm jemalloc-3.6.0-8.el7.centos.x86_64.rpm
-```
-
-Build Butterfly:
-```
-$ git clone https://github.com/outscale/butterfly.git
-$ mkdir butterfly/build
-$ cd butterfly/build
-$ cmake ..
-$ make
-```
+We use Docker in order to build Butterfly when releasing. It is based on a Centos7 but you can have a look at [docker/Dockerfile](Dockerfile) and see what packages are installed.
+For developpment, we love to have different Linux distros in order to detect some issues. We could also build for several distro using docker in the future.
 
 # Preparing Your Machine
 
