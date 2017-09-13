@@ -83,6 +83,7 @@ struct NicAddOptions {
     string enable_antispoof;
     string id;
     string vni;
+    string type;
     string bypass_filtering;
 };
 

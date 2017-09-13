@@ -149,6 +149,7 @@ message MessageV0 {
       // "path" in Nic object is set when requesting Nic details
       // but it will be ignored at nic creation at the moment
       VHOST_USER_SERVER = 0;
+      TAP = 1;
     }
 
     // Network Interface Card identifier

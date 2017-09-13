@@ -71,6 +71,7 @@ struct Cidr {
 
 enum NicType {
     VHOST_USER_SERVER = 0,
+    TAP = 1,
 };
 
 struct Nic {

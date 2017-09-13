@@ -391,6 +391,7 @@ static int SubNicSg(int argc, char **argv, const GlobalOptions &options) {
 NicAddOptions::NicAddOptions() {
     enable_antispoof = "false";
     bypass_filtering = "false";
+    type = "VHOST_USER_SERVER";
 }
 
 static inline bool CheckOption(int count, int argc, char **argv,
@@ -410,11 +411,15 @@ int NicAddOptions::Parse(int argc, char **argv) {
             enable_antispoof = "true";
         else if (CheckOption(i, argc, argv, "--id"))
             id = string(argv[i + 1]);
+        else if (CheckOption(i, argc, argv, "--type"))
+            type = string(argv[i + 1]);
         else if (CheckOption(i, argc, argv, "--vni"))
             vni = string(argv[i + 1]);
         else if (string(argv[i]) == "--bypass-filtering")
             bypass_filtering = "true";
     }
+    if (type != "VHOST_USER_SERVER" && type != "TAP")
+        return 1;
     return !mac.length() || !id.length() || !vni.length();
 }
 
@@ -426,6 +431,8 @@ static void SubNicAddHelp(void) {
             << endl <<
         "    --mac MAC           virtual interface's mac (mandatory)" << endl <<
         "    --id ID             interface's id (mandatory)" << endl <<
+            "    --type TYPE         nic type (VHOST_USER_SERVER or " <<
+            "TAP default: VHOST_USER_SERVER)" << endl <<
         "    --vni VNI           virtual network id < 2^26 (mandatory)"
             << endl <<
         "    --enable-antispoof  enable antispoof protection (default: off)"
@@ -461,6 +468,7 @@ static int SubNicAdd(int argc, char **argv, const GlobalOptions &options) {
         req += " security_group: \"" + sg + "\"";
     req +=
         "        ip_anti_spoof: " + o.enable_antispoof +
+        "        type: " + o.type +
         "        bypass_filtering: " + o.bypass_filtering +
         "      }"
         "    }"

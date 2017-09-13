@@ -487,10 +487,26 @@ bool Graph::NicAdd(app::Nic *nic_) {
         pg_antispoof_arp_enable(gn.antispoof.get());
     }
 
-    name = "vhost-" + gn.id;
-    gn.vhost = BrickShrPtr(pg_vhost_new(name.c_str(), 0,
-                                        &app::pg_error),
-                           pg_brick_destroy);
+    LOG_INFO_("new nic now !\n");
+    if (nic.type == app::VHOST_USER_SERVER) {
+        name = "vhost-" + gn.id;
+        gn.vhost = BrickShrPtr(pg_vhost_new(name.c_str(), 0,
+                                            &app::pg_error),
+                               pg_brick_destroy);
+    } else if (nic.type == app::TAP) {
+        name = gn.id;
+        gn.vhost = BrickShrPtr(pg_tap_new(name.c_str(), name.c_str(),
+                                            &app::pg_error),
+                               pg_brick_destroy);
+        if (!gn.vhost) {
+            PG_ERROR_(app::pg_error);
+            return false;
+        }
+    } else {
+        LOG_ERROR_("unknow vhost type");
+        return false;
+    }
+
     if (!gn.vhost) {
         PG_ERROR_(app::pg_error);
         return false;
@@ -578,10 +594,20 @@ bool Graph::NicAdd(app::Nic *nic_) {
     FwUpdate(nic);
     app::SetCgroup();
 
-    const char *ret = pg_vhost_socket_path(gn.vhost.get());
+    const char *ret = NicPath(gn.vhost);
     nic.path = std::string(ret);
     return true;
 }
+
+const char *Graph::NicPath(BrickShrPtr nic) {
+    struct pg_brick * b = nic.get();
+
+    if (!strcmp(pg_brick_type(b), "vhost"))
+        return pg_vhost_socket_path(b);
+    else
+        return pg_tap_ifname(b);
+}
+
 
 Graph::GraphNic *Graph::FindNic(const app::Nic &nic) {
     auto vni_it = app::graph.vnis_.find(nic.vni);
