@@ -12,6 +12,7 @@ nic_add 0 2 42 sg-1
 nic_add 1 3 42 sg-1
 nic_add 1 4 42 sg-1
 sg_rule_add_all_open 0 sg-1
+sg_rule_add_all_open 0 sg-1
 sg_rule_add_all_open 1 sg-1
 qemu_start_async 1
 qemu_start_async 2
