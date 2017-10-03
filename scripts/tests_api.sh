@@ -22,9 +22,7 @@ server=$BUTTERFLY_BUILD_ROOT/api/server/butterflyd
 expected=$BUTTERFLY_BUILD_ROOT/api_test_out
 err=false
 for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
-    tput setaf 2
     echo -n "$(basename $request) scenario: "
-    tput setaf 7
     expected_raw=$(echo $request | sed -e 's/_in$/_out/')
     cat $expected_raw |  sed -e "s/PROTO_REVISION/$PROTO_REVISION/" > $expected
     if [ ".$VERBOSE" == ".1" ]; then
@@ -34,15 +32,11 @@ for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
         sudo $run $client $server $request $expected
     fi
     if [ $? -ne 0 ]; then
-        tput setaf 1
         echo FAILED !
         err=true
-        tput setaf 7
         exit 1
     else
-        tput setaf 2
         echo OK
-        tput setaf 7
     fi
 done
 

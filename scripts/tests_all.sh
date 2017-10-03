@@ -24,14 +24,10 @@ echo "############################################################"
 # API style test
 $BUTTERFLY_ROOT/scripts/tests_api_style.sh
 if [ $? != 0 ]; then
-    tput setaf 1
     echo "API style test failed"
-    tput setaf 7
     exit 1
 else
-    tput setaf 2
     echo "API style test OK"
-    tput setaf 7
 fi
 
 sleep 1
@@ -39,14 +35,10 @@ sleep 1
 # API tests
 $BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
 if [ $? != 0 ]; then
-    tput setaf 1
     echo "API test failed"
-    tput setaf 7
     exit 1
 else
-    tput setaf 2
     echo "API test OK"
-    tput setaf 7
 fi
 
 sleep 5
@@ -54,14 +46,10 @@ sleep 5
 # Scenario test
 $BUTTERFLY_ROOT/scripts/tests_scenario.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
 if [ $? != 0 ]; then
-    tput setaf 1
     echo "API scenario test failed"
-    tput setaf 7
     exit 1
 else
-    tput setaf 2
     echo "API scenario test OK"
-    tput setaf 7
 fi
 
 # API coverage test
@@ -69,19 +57,13 @@ check_files=$(find $BUTTERFLY_BUILD_ROOT/api/ -name '*.gcda' | wc -l)
 if [ $check_files -gt 0 ]; then
     $BUTTERFLY_ROOT/scripts/tests_coverage.sh $BUTTERFLY_BUILD_ROOT
     if [ $? != 0 ]; then
-        tput setaf 1
         echo "API coverage test failed"
-        tput setaf 7
        exit 1
     else
-        tput setaf 2
         echo "API coverage test OK"
-        tput setaf 7
     fi
 fi
 
-tput setaf 2
 echo "All test succeded"
-tput setaf 7
 exit 0
 
