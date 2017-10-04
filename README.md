@@ -332,7 +332,7 @@ in order to have all it's messages encrypted using AES-256.
 
 For this, you will need to generate a 32 Bytes key (encoded in base 64) in a file and share this file:
 ```
-dd if=/dev/urandom bs=32 count=1 | base64 > api-key
+openssl rand  -base64 -out PlaintextKeyMaterial.bin 32
 ```
 Then you will need to provide the path to this file using `--key --k` in the command line or `encryption_key_path` option in `butterflyd.ini`.
 Once a key is correctly loaded, all clear messages will be rejected.
