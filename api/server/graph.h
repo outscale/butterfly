@@ -213,6 +213,7 @@ class Graph {
      */
     std::string FwBuildSg(const app::Sg &sg);
 
+    const char *NicPath(BrickShrPtr nic);
     /**
      * Try to link @eastBrick to @westBrick, and add @sniffer betwin those
      * bricks

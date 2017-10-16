@@ -584,7 +584,7 @@ function server_start_options {
     options=${@:2}
     echo "[butterfly-$id] starting"
 
-    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options -t &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
+    exec sudo   $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options -t &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
     pid=$!
     sleep 1
     sudo kill -s 0 $pid
@@ -613,7 +613,7 @@ function network_connect {
     sleep 0.2
     sudo kill -s 0 $pid
     if [ $? -ne 0 ]; then
-        fail "failed connect but$id1 and but$id2"
+        fail "failed connect but-$id1 and but-$id2"
     fi
     socat_pids["$id1$id2"]=$pid
     sudo ip link set dev but$id1 mtu 2000
@@ -710,6 +710,35 @@ function nic_update_ip {
 }
 " >> $f
     request $but_id $f
+}
+
+
+function tap_del {
+    nic_id=$1
+
+    sudo ip netns del ns$1
+}
+
+function tap_add {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    sg_list=${@:4}
+
+    echo "[butterfly-$but_id] add tap nic $nic_id with vni $vni"
+
+    cli $but_id 0 nic add --id "tap-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "42.0.0.$nic_id" --enable-antispoof --type TAP
+    sleep 1
+
+    sudo ip netns add ns$nic_id
+    sudo ip link set tap-$nic_id up netns ns$nic_id address "52:54:00:12:34:0$nic_id"
+    sudo ip netns exec ns$nic_id ip link set dev lo up
+    sudo ip netns exec ns$nic_id ip addr add 42.0.0.$nic_id/24 dev tap-$nic_id
+    for i in $sg_list; do
+        cli $but_id 0 nic sg add "tap-$nic_id" $i
+    done
+    ip netns list
+    sleep 1
 }
 
 function nic_add {
