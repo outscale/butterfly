@@ -3,10 +3,9 @@
 #connect 2 taps together on the same butterfly, and test connection
 
 #
-#		/ ---> [ tap 1 ]
+#             / ---> [ tap 1 ]
 # [Butterfly 0]
-#		\
-#		  ---> [ tap 2 ]
+#             \ ---> [ tap 2 ]
 
 BUTTERFLY_BUILD_ROOT=$1
 BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
