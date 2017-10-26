@@ -82,11 +82,39 @@ add_custom_target(tests-api
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(tests-scenario
-                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} "all" ${VERBOSE}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(tests-coverage
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_coverage.sh ${PROJECT_BINARY_DIR}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-firewall
+		  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} "firewall" ${VERBOSE}
+		  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-icmp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} "icmp" ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-udp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} "udp" ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-tcp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} "tcp" ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-sctp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} "sctp" ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-udp_tcp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} "udp_tcp" ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-other
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_scenario.sh ${PROJECT_BINARY_DIR} "other" ${VERBOSE}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_custom_target(package-rpm

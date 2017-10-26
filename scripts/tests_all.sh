@@ -52,7 +52,7 @@ fi
 sleep 5
 
 # Scenario test
-$BUTTERFLY_ROOT/scripts/tests_scenario.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+$BUTTERFLY_ROOT/scripts/tests_scenario.sh $BUTTERFLY_BUILD_ROOT all $VERBOSE
 if [ $? != 0 ]; then
     tput setaf 1
     echo "API scenario test failed"
