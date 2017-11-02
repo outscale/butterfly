@@ -29,6 +29,7 @@ Nic::Nic() {
     vni = 0;
     ip_anti_spoof = false;
     bypass_filtering = false;
+    type = VHOST_USER_SERVER;
 }
 
 Error::Error() {
