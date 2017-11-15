@@ -46,6 +46,18 @@ for request in $BUTTERFLY_ROOT/tests/api/*/*_in; do
     fi
 done
 
+#Test API
+echo verbose mode $VERBOSE
+for s in $BUTTERFLY_ROOT/tests/api/scenario_*; do
+    echo "=== running $(basename $s) ==="
+    if [ ".$VERBOSE" == ".1" ]; then
+        echo verbose mode
+        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
+    else
+        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
+    fi
+done
+
 sudo chown $USER out.txt
 
 if [ $err = true ]; then

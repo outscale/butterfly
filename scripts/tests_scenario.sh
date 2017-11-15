@@ -11,6 +11,19 @@ if [ ! -f $BUTTERFLY_BUILD_ROOT/CMakeCache.txt ]; then
     exit 1
 fi
 
+# API tests
+$BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "API test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "API test OK"
+    tput setaf 7
+fi
+
 #Test Protocol ICMP
 echo verbose mode $VERBOSE
 for s in $BUTTERFLY_ROOT/tests/network/bypass/icmp/scenario_*; do
