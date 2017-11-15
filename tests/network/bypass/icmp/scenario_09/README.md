@@ -1,21 +1,26 @@
 # Description
 
-```
-                      +-----------+      +-----------+
-(vni 42) [ VM 1 ]-----|           |      |           |-----[ VM 2 ] (vni 42)
-                      | Butterfly +======+ Butterfly |
-                      |           |      |           |
-                      +-----------+      +-----------+
+This scenario invert IP between two VM and test connectivity.
 
-```
+1. Initial setup:
+- VM1 has IPv4 a and Ipv6 A
+- VM2 has IPv4 b and Ipv6 B
 
-This scenario test ping communication through two butterfly.
+2. Test that:
+- ping @VM1 a -> b OK
+- ping @VM1 A -> B OK
 
-Initial setup:
-- VM1 configured on vni 42 with security group sg-1
-- VM2 configured on vni 42 with security group sg-1
-- sg-1 has one rule full opened
+3. Change setup:
+- Update VM1 Ips so VM1 has ony Ipv4 b and Ipv6 B
+- Update VM1 Ips so VM1 has ony Ipv4 a and Ipv6 A
 
-Test that:
-- ping communication VM1 -> VM2 is OK
-- ping communication VM2 -> VM1 is OK
+4. Test that:
+- ping @VM1 b -> a OK
+- ping @VM1 B -> A OK
+
+5. Change setup:
+- Update VM1 Ips so VM1 has ony Ipv4 a and Ipv6 A
+- Update VM1 Ips so VM1 has ony Ipv4 b and Ipv6 B
+
+6. Loop to 2. ten times
+

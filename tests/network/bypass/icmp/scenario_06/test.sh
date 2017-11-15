@@ -14,101 +14,37 @@ qemu_start_async 2 noip
 qemus_wait 1 2
 
 a1=42.0.0.1
-b1=42.0.0.2
-b2=42.0.0.3
-b3=42.0.0.4
-b4=42.0.0.5
-A1=2001:db8:2000:aff0::1
-B1=2001:db8:2000:aff0::2
-B2=2001:db8:2000:aff0::3
-B3=2001:db8:2000:aff0::4
-B4=2001:db8:2000:aff0::5
+a2=42.0.0.2
+a3=42.0.0.3
+b1=42.0.0.4
+b2=42.0.0.5
+b3=42.0.0.6
 
-qemu_add_ipv4 1 $a1/24
-qemu_add_ipv6 1 $A1/64
-nic_update_ip 0 1 $a1 $A1
-nic_update_ip 0 2 $b1 $b2
-qemu_add_ipv4 2 $b1/24 $b2/24
+qemu_add_ipv4 1 $a1/24 $a2/24 $a3/24
+nic_update_ip 0 1 $a1 $a2 $a3
+nic_update_ip 0 2 $b1 $b2 $b3
+qemu_add_ipv4 2 $b1/24 $b2/24 $b3/24
 sleep 1
 
 ssh_ping_ip 1 $a1 $b1
 ssh_ping_ip 1 $a1 $b2
-
-qemu_del_ipv4 2 $b1/24 $b2/24
-qemu_add_ipv4 2 $b3/24 $b4/24
-nic_update_ip 0 2 $b3 $b4
-sleep 1
-
-ssh_no_ping_ip 1 $a1 $b1
-ssh_no_ping_ip 1 $a1 $b2
 ssh_ping_ip 1 $a1 $b3
-ssh_ping_ip 1 $a1 $b4
+ssh_ping_ip 1 $a2 $b1
+ssh_ping_ip 1 $a2 $b2
+ssh_ping_ip 1 $a2 $b3
+ssh_ping_ip 1 $a3 $b1
+ssh_ping_ip 1 $a3 $b2
+ssh_ping_ip 1 $a3 $b3
 
-qemu_del_ipv4 2 $b3/24 $b4/24
-qemu_add_ipv4 2 $b1/24
-qemu_add_ipv6 2 $B1/64
-nic_update_ip 0 2 $b1 $B1
-sleep 1
-
-ssh_ping_ip 1 $a1 $b1
-ssh_no_ping_ip 1 $a1 $b2
-ssh_no_ping_ip 1 $a1 $b3
-ssh_no_ping_ip 1 $a1 $b4
-ssh_ping_ip6 1 $A1 $B1
-
-qemu_del_ipv4 2 $b1/24
-qemu_del_ipv6 2 $B1/64
-qemu_add_ipv4 2 $b3/24 $b4/24
-nic_update_ip 0 2 $b3 $b4
-sleep 1
-
-ssh_no_ping_ip 1 $a1 $b1
-ssh_no_ping_ip 1 $a1 $b2
-ssh_ping_ip 1 $a1 $b3
-ssh_ping_ip 1 $a1 $b4
-ssh_no_ping_ip6 1 $A1 $B1
-
-qemu_del_ipv4 2 $b3/24 $b4/24
-qemu_add_ipv4 2 $b2/24
-qemu_add_ipv6 2 $B2/64
-nic_update_ip 0 2 $b2 $B2
-sleep 1
-
-ssh_no_ping_ip 1 $a1 $b1
-ssh_ping_ip 1 $a1 $b2
-ssh_no_ping_ip 1 $a1 $b3
-ssh_no_ping_ip 1 $a1 $b4
-ssh_no_ping_ip6 1 $A1 $B1
-ssh_ping_ip6 1 $A1 $B2
-
-qemu_del_ipv4 2 $b2/24
-qemu_del_ipv6 2 $B2/64
-qemu_add_ipv6 2 $B3/64 $B4/64
-nic_update_ip 0 2 $B3 $B4
-sleep 1
-
-ssh_no_ping_ip 1 $a1 $b1
-ssh_no_ping_ip 1 $a1 $b2
-ssh_no_ping_ip 1 $a1 $b3
-ssh_no_ping_ip 1 $a1 $b4
-ssh_no_ping_ip6 1 $A1 $B1
-ssh_no_ping_ip6 1 $A1 $B2
-ssh_ping_ip6 1 $A1 $B3
-ssh_ping_ip6 1 $A1 $B4
-
-qemu_del_ipv6 2 $B3/64 $B4/64
-qemu_add_ipv6 2 $B1/64 $B2/64
-nic_update_ip 0 2 $B1 $B2
-sleep 1
-
-ssh_no_ping_ip 1 $a1 $b1
-ssh_no_ping_ip 1 $a1 $b2
-ssh_no_ping_ip 1 $a1 $b3
-ssh_no_ping_ip 1 $a1 $b4
-ssh_ping_ip6 1 $A1 $B1
-ssh_ping_ip6 1 $A1 $B2
-ssh_no_ping_ip6 1 $A1 $B3
-ssh_no_ping_ip6 1 $A1 $B4
+ssh_ping_ip 2 $b1 $a1
+ssh_ping_ip 2 $b1 $a2
+ssh_ping_ip 2 $b1 $a3
+ssh_ping_ip 2 $b2 $a1
+ssh_ping_ip 2 $b2 $a2
+ssh_ping_ip 2 $b2 $a3
+ssh_ping_ip 2 $b3 $a1
+ssh_ping_ip 2 $b3 $a2
+ssh_ping_ip 2 $b3 $a3
 
 server_stop 0
 network_disconnect 0 1

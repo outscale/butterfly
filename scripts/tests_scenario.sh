@@ -11,96 +11,119 @@ if [ ! -f $BUTTERFLY_BUILD_ROOT/CMakeCache.txt ]; then
     exit 1
 fi
 
-#Test Protocol ICMP
-echo verbose mode $VERBOSE
-for s in $BUTTERFLY_ROOT/tests/network/bypass/icmp/scenario_*; do
-    echo "=== running $(basename $s) ==="
-    if [ ".$VERBOSE" == ".1" ]; then
-        echo verbose mode
-        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    else
-        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    fi
-done
+# API tests
+$BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "API test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "API test OK"
+    tput setaf 7
+fi
 
-#Test Protocol TCP
-echo verbose mode $VERBOSE
-for s in $BUTTERFLY_ROOT/tests/network/bypass/tcp/scenario_*; do
-    echo "=== running $(basename $s) ==="
-    if [ ".$VERBOSE" == ".1" ]; then
-        echo verbose mode
-        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    else
-        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    fi
-done
+# Test Protocol ICMP
+$BUTTERFLY_ROOT/scripts/tests_icmp.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "ICMP test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "ICMP test OK"
+    tput setaf 7
+fi
 
-#Test Protocol UDP
-echo verbose mode $VERBOSE
-for s in $BUTTERFLY_ROOT/tests/network/bypass/udp/scenario_*; do
-    echo "=== running $(basename $s) ==="
-    if [ ".$VERBOSE" == ".1" ]; then
-        echo verbose mode
-        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    else
-        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    fi
-done
+# Test Protocol TCP
+$BUTTERFLY_ROOT/scripts/tests_tcp.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "TCP test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "TCP test OK"
+    tput setaf 7
+fi
 
-#Test Protocol SCTP
-echo verbose mode $VERBOSE
-for s in $BUTTERFLY_ROOT/tests/network/bypass/sctp/scenario_*; do
-    echo "=== running $(basename $s) ==="
-    if [ ".$VERBOSE" == ".1" ]; then
-        echo verbose mode
-        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    else
-        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    fi
-done
+# Test Protocol UDP
+$BUTTERFLY_ROOT/scripts/tests_udp.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "UDP test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "UDP test OK"
+    tput setaf 7
+fi
 
-#Test Protocol UDP & TCP
-echo verbose mode $VERBOSE
-for s in $BUTTERFLY_ROOT/tests/network/bypass/udp_tcp/scenario_*; do
-    echo "=== running $(basename $s) ==="
-    if [ ".$VERBOSE" == ".1" ]; then
-        echo verbose mode
-        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    else
-        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    fi
-done
+# Test Protocol SCTP
+$BUTTERFLY_ROOT/scripts/tests_sctp.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "SCTP test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "SCTP test OK"
+    tput setaf 7
+fi
 
-#Test Firewall
-echo verbose mode $VERBOSE
-for s in $BUTTERFLY_ROOT/tests/network/firewall/scenario_*; do
-    echo "=== running $(basename $s) ==="
-    if [ ".$VERBOSE" == ".1" ]; then
-        echo verbose mode
-        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    else
-        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    fi
-done
+# Test Protocol UDP & TCP
+$BUTTERFLY_ROOT/scripts/tests_udp_tcp.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "UDP & TCP test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "UDP & TCP test OK"
+    tput setaf 7
+fi
 
-#Test Other
-for s in $BUTTERFLY_ROOT/tests/other/scenario_*; do
-    echo "=== running $(basename $s) ==="
-    if [ ".$VERBOSE" == ".1" ]; then
-        echo verbose mode
-        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    else
-        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    fi
-done
+# Test Firewall
+$BUTTERFLY_ROOT/scripts/tests_firewall.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "Firewall test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "Firewall test OK"
+    tput setaf 7
+fi
 
-#Test List
-for s in $BUTTERFLY_ROOT/tests/other/tests_list/scenario_*; do
-    echo "=== running $(basename $s) ==="
-    if [ ".$VERBOSE" == ".1" ]; then
-        echo verbose mode
-        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    else
-        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
-    fi
-done
+# Test Other
+$BUTTERFLY_ROOT/scripts/tests_other.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "Other test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "Other test OK"
+    tput setaf 7
+fi
+
+# Test List
+$BUTTERFLY_ROOT/scripts/tests_list.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "List test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "List test OK"
+    tput setaf 7
+fi

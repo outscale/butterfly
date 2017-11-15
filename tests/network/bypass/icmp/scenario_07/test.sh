@@ -14,39 +14,31 @@ qemu_start_async 2 noip
 qemus_wait 1 2
 
 a1=42.0.0.1
-b1=42.0.0.2
+a2=42.0.0.2
+b1=42.0.0.3
+b2=42.0.0.4
 A1=2001:db8:2000:aff0::1
-B1=2001:db8:2000:aff0::2
+A2=2001:db8:2000:aff0::2
+B1=2001:db8:2000:aff0::3
+B2=2001:db8:2000:aff0::4
 
-for i in $(seq 1 10); do
-    qemu_add_ipv4 1 $a1/24
-    qemu_add_ipv6 1 $A1/64
-    qemu_add_ipv4 2 $b1/24
-    qemu_add_ipv6 2 $B1/64
-    nic_update_ip 0 1 $a1 $A1
-    nic_update_ip 0 2 $b1 $B1
-    sleep 2
-    ssh_ping_ip 1 $a1 $b1
-    ssh_ping_ip6 1 $A1 $B1
-    qemu_del_ipv4 1 $a1/24
-    qemu_del_ipv6 1 $A1/64
-    qemu_del_ipv4 2 $b1/24
-    qemu_del_ipv6 2 $B1/64
+qemu_add_ipv4 1 $a1/24 $a2/24
+qemu_add_ipv6 1 $A1/64 $A2/64
+nic_update_ip 0 1 $a1 $a2 $A1 $A2
+nic_update_ip 0 2 $b1 $b2 $B1 $B2
+qemu_add_ipv4 2 $b1/24 $b2/24
+qemu_add_ipv6 2 $B1/64 $B2/64
+sleep 1
 
-    qemu_add_ipv4 2 $a1/24
-    qemu_add_ipv6 2 $A1/64
-    qemu_add_ipv4 1 $b1/24
-    qemu_add_ipv6 1 $B1/64
-    nic_update_ip 0 2 $a1 $A1
-    nic_update_ip 0 1 $b1 $B1
-    sleep 2
-    ssh_ping_ip 1 $b1 $a1
-    ssh_ping_ip6 1 $B1 $A1
-    qemu_del_ipv4 2 $a1/24
-    qemu_del_ipv6 2 $A1/64
-    qemu_del_ipv4 1 $b1/24
-    qemu_del_ipv6 1 $B1/64
-done
+ssh_ping_ip 1 $a1 $b1
+ssh_ping_ip 1 $a1 $b2
+ssh_ping_ip 1 $a2 $b1
+ssh_ping_ip 1 $a2 $b2
+
+ssh_ping_ip6 1 $A1 $B1
+ssh_ping_ip6 1 $A1 $B2
+ssh_ping_ip6 1 $A2 $B1
+ssh_ping_ip6 1 $A2 $B2
 
 server_stop 0
 network_disconnect 0 1

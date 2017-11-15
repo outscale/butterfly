@@ -1,26 +1,15 @@
 # Description
 
-This scenario invert IP between two VM and test connectivity.
+This scenario will check that we can have several IP on an interface:
+- VM1 has 2 IPv4 (a1, a2) and 2 Ipv6(A1, A2)
+- VM3 has 2 IPv4 (b1, b2) and 2 Ipv6(B1, B2)
 
-1. Initial setup:
-- VM1 has IPv4 a and Ipv6 A
-- VM2 has IPv4 b and Ipv6 B
-
-2. Test that:
-- ping @VM1 a -> b OK
-- ping @VM1 A -> B OK
-
-3. Change setup:
-- Update VM1 Ips so VM1 has ony Ipv4 b and Ipv6 B
-- Update VM1 Ips so VM1 has ony Ipv4 a and Ipv6 A
-
-4. Test that:
-- ping @VM1 b -> a OK
-- ping @VM1 B -> A OK
-
-5. Change setup:
-- Update VM1 Ips so VM1 has ony Ipv4 a and Ipv6 A
-- Update VM1 Ips so VM1 has ony Ipv4 b and Ipv6 B
-
-6. Loop to 2. ten times
-
+Then test ping: 
+- a1 -> b1
+- a1 -> b2
+- a2 -> b1
+- a2 -> b2
+- A1 -> B1
+- A1 -> B2
+- A2 -> B1
+- A2 -> B2

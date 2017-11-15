@@ -1,20 +1,27 @@
 # Description
 
-This scenario try to create a NIC without IP and to add one through NicUpdateReq
-- VM1 has 1 Ipv4 a1
-- Nic of VM2 is created without IP
-- VM2 is launched and configured with Ipv4 b1
+```
+                      +-----------+      +-----------+
+(vni 42) [ VM 1 ]-----|           |      |           |-----[ VM 3 ] (vni 42)
+                      | Butterfly +======+ Butterfly |
+(vni 42) [ VM 2 ]-----|           |      |           |-----[ VM 4 ] (vni 42)
+                      +-----------+      +-----------+
 
-1. Test that:
-- ping a1 -> b1 KO
+```
 
-2. Change setup:
-- Add Ipv4 b1 to VM2 in butterfly using NicUpdateReq
+This scenario test cross ping communication through two butterfly.
 
-3. Test that:
-- ping a1 -> b1 OK
+Initial setup:
+- VM1 configured on vni 42 with security group sg-1
+- VM2 configured on vni 42 with security group sg-1
+- VM3 configured on vni 42 with security group sg-1
+- VM4 configured on vni 42 with security group sg-1
+- sg-1 has one rule full opened
 
-4. Change setup:
-- Remove Ipv4 b1 from VM2 in butterfly using NicUpdateReq
-
-5. Loop to 1. ten times
+Test that:
+- ping communication VM1 -> VM2 is OK
+- ping communication VM1 -> VM3 is OK
+- ping communication VM1 -> VM4 is OK
+- ping communication VM4 -> VM1 is OK
+- ping communication VM4 -> VM2 is OK
+- ping communication VM4 -> VM3 is OK

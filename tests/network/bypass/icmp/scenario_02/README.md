@@ -1,15 +1,37 @@
 # Description
 
-This scenario will check that we can have several IP on an interface:
-- VM1 has 3 IPv4 (a1, a2, a3)
-- VM2 has 3 IPv4 (b1, b2, b3)
+```
++-----------+
+|           |-----------[ VM 1 ] (vni 42)
+| Butterfly |
+|           |-----------[ VM 2 ] (vni 42)
++-----------+
 
-Then test ping: 
-- a1 -> b1
-- a1 -> b2
-- ...
-- a3 -> b3
-- b1 -> a1
-- b1 -> a2
-- ...
-- b3 -> a3
+```
+
+This scenario test ping communication through two butterfly.
+
+Initial setup:
+- VM1 configured on vni 42 with security group sg-1
+- VM2 configured on vni 42 with security group sg-1
+- sg-1 has one rule full opened
+
+Test that:
+- ping communication VM1 -> VM2 is OK
+- ping communication VM2 -> VM1 is OK
+
+Change setup:
+- Stopping VM1
+- restarting VM1
+
+Test that:
+- ping communication VM1 -> VM2 is OK
+- ping communication VM2 -> VM1 is OK
+
+Change setup:
+- Stopping VM1
+- restarting VM1
+
+Test that:
+- ping communication VM1 -> VM2 is OK
+- ping communication VM2 -> VM1 is OK

@@ -6,71 +6,86 @@ source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 
 network_connect 0 1
 server_start 0
-cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 1 --id nic01
-cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 2 --id nic02 --enable-antispoof
-cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 3 --id nic03 --bypass-filtering
+nic_add_noip 0 1 42 sg-1
+nic_add_noip 0 2 42 sg-1
+sg_rule_add_all_open 0 sg-1
+qemu_start_async 1 noip
+qemu_start_async 2 noip
+qemus_wait 1 2
 
-cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 4 --id nic04
-cli 0 0 nic add --ip 10.0.0.2 --mac 02:02:03:04:05:06 --vni 4 --id nic05
-cli 0 0 nic add --ip 10.0.0.3 --mac 03:02:03:04:05:06 --vni 4 --id nic06
-cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 5 --id nic07 --enable-antispoof
-cli 0 0 nic add --ip 10.0.0.2 --mac 02:02:03:04:05:06 --vni 5 --id nic08 --enable-antispoof
-cli 0 0 nic add --ip 10.0.0.3 --mac 03:02:03:04:05:06 --vni 5 --id nic09 --enable-antispoof
-cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 6 --id nic10 --bypass-filtering
-cli 0 0 nic add --ip 10.0.0.2 --mac 02:02:03:04:05:06 --vni 6 --id nic11 --bypass-filtering
-cli 0 0 nic add --ip 10.0.0.3 --mac 03:02:03:04:05:06 --vni 6 --id nic12 --bypass-filtering
+a1=42.0.0.1
+a2=42.0.0.2
+b1=42.0.0.3
+b2=42.0.0.4
+A1=2001:db8:2000:aff0::1
+A2=2001:db8:2000:aff0::2
+B1=2001:db8:2000:aff0::3
+B2=2001:db8:2000:aff0::4
 
-cli 0 0 sg add sg-a sg-b sg-c sg-d sg-e sg-f
+qemu_add_ipv4 1 $a1/24
+qemu_add_ipv6 1 $A1/64
+nic_update_ip 0 1 $a1 $A1
+nic_update_ip 0 2 $b1
+qemu_add_ipv4 2 $b1/24
+sleep 1
 
-cli 0 0 nic sg add nic01 sg-a
-cli 0 0 sg member add sg-a 10.0.0.1
+ssh_ping_ip 1 $a1 $b1
 
-cli 0 0 nic sg add nic02 sg-b
-cli 0 0 sg member add sg-b 10.0.0.1
+qemu_del_ipv4 2 $b1/24
+qemu_add_ipv4 2 $b2/24
+nic_update_ip 0 2 $b2
+sleep 1
 
-cli 0 0 nic sg add nic03 sg-c
-cli 0 0 sg member add sg-c 10.0.0.1
+ssh_no_ping_ip 1 $a1 $b1
+ssh_ping_ip 1 $a1 $b2
 
-cli 0 0 nic sg add nic04 sg-d
-cli 0 0 nic sg add nic05 sg-d
-cli 0 0 nic sg add nic06 sg-d
-cli 0 0 sg member add sg-d 10.0.0.1
-cli 0 0 sg member add sg-d 10.0.0.2
-cli 0 0 sg member add sg-d 10.0.0.3
+qemu_del_ipv4 2 $b2/24
+qemu_add_ipv4 2 $b1/24
+nic_update_ip 0 2 $b1
+sleep 1
 
-cli 0 0 nic sg add nic07 sg-e
-cli 0 0 nic sg add nic08 sg-e
-cli 0 0 nic sg add nic09 sg-e
-cli 0 0 sg member add sg-e 10.0.0.1
-cli 0 0 sg member add sg-e 10.0.0.2
-cli 0 0 sg member add sg-e 10.0.0.3
+ssh_ping_ip 1 $a1 $b1
+ssh_no_ping_ip 1 $a1 $b2
 
-cli 0 0 nic sg add nic10 sg-f
-cli 0 0 nic sg add nic11 sg-f
-cli 0 0 nic sg add nic12 sg-f
-cli 0 0 sg member add sg-f 10.0.0.1
-cli 0 0 sg member add sg-f 10.0.0.2
-cli 0 0 sg member add sg-f 10.0.0.3
+qemu_del_ipv4 2 $b1/24
+qemu_add_ipv6 2 $B1/64
+nic_update_ip 0 2 $B1
+sleep 1
 
-cli 0 0 sg rule add sg-a --ip-proto tcp --port-start 22 --port-end 80 --cidr 42.0.0.1/32
-cli 0 0 sg rule add sg-b --ip-proto all --cidr 0.0.0.0/0
-cli 0 0 sg rule add sg-c --ip-proto udp --port 8000 --cidr 0.0.0.0/0
-cli 0 0 sg rule add sg-c --ip-proto udp --port 8080 --cidr 0.0.0.0/0
-cli 0 0 sg rule add sg-c --ip-proto udp --port 8888 --cidr 0.0.0.0/0
-cli 0 0 sg rule add sg-d --ip-proto icmp --sg-members sg-d
-cli 0 0 sg rule add sg-d --ip-proto all --sg-members sg-d
+ssh_no_ping_ip 1 $a1 $b1
+ssh_no_ping_ip 1 $a1 $b2
+ssh_ping_ip6 1 $A1 $B1
 
-cli 0 0 dump
-cp $BUTTERFLY_BUILD_ROOT/cli_output $BUTTERFLY_BUILD_ROOT/dump1.req
-server_stop 0
-server_start 0
-cli 0 0 request $BUTTERFLY_BUILD_ROOT/dump1.req
-cli 0 0 dump
-cp $BUTTERFLY_BUILD_ROOT/cli_output $BUTTERFLY_BUILD_ROOT/dump2.req
-if ! diff $BUTTERFLY_BUILD_ROOT/dump1.req $BUTTERFLY_BUILD_ROOT/dump2.req ; then
-    fail "double dump test failed"
-fi
+qemu_del_ipv6 2 $B1/64
+qemu_add_ipv4 2 $b1/24
+nic_update_ip 0 2 $b1
+sleep 1
+
+ssh_ping_ip 1 $a1 $b1
+ssh_no_ping_ip 1 $a1 $b2
+ssh_no_ping_ip6 1 $A1 $B1
+
+qemu_del_ipv4 2 $b1/24
+qemu_add_ipv6 2 $B2/64
+nic_update_ip 0 2 $B2
+sleep 1
+
+ssh_no_ping_ip 1 $a1 $b1
+ssh_no_ping_ip 1 $a1 $b2
+ssh_no_ping_ip6 1 $A1 $B1
+ssh_ping_ip6 1 $A1 $B2
+
+qemu_del_ipv6 2 $B2/64
+qemu_add_ipv6 2 $B1/64
+nic_update_ip 0 2 $B1
+sleep 1
+
+ssh_no_ping_ip 1 $a1 $b1
+ssh_no_ping_ip 1 $a1 $b2
+ssh_ping_ip6 1 $A1 $B1
+ssh_no_ping_ip6 1 $A1 $B2
 
 server_stop 0
 network_disconnect 0 1
 return_result
+

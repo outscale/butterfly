@@ -1,28 +1,29 @@
 # Description
 
 ```
-                        +-----------+      +-----------+
-  (vni 42) [ VM 1 ]-----|           |      |           |-----[ VM 3 ] (vni 1337)
-                        | Butterfly +======+ Butterfly |
-(vni 1337) [ VM 2 ]-----|           |      |           |-----[ VM 4 ] (vni 42)
-                        +-----------+      +-----------+
++-----------+
+|           |-----------[ VM 1 ] (vni 42)
+| Butterfly |
+|           |-----------[ VM 2 ] (vni 42)
++-----------+
 
 ```
 
-This scenario test ping communication between VM
-on different VNI through two butterfly.
+This test check that we can delete and add again nics.
 
 Initial setup:
 - VM1 configured on vni 42 with security group sg-1
-- VM2 configured on vni 1337 with security group sg-1
-- VM3 configured on vni 1337 with security group sg-1
-- VM4 configured on vni 42 with security group sg-1
+- VM2 configured on vni 42 with security group sg-1
 - sg-1 has one rule full opened
 
+Loop to 10:
+
 Test that:
-- ping communication VM1 -> VM2 is KO
-- ping communication VM1 -> VM3 is KO
-- ping communication VM1 -> VM4 is OK
-- ping communication VM4 -> VM1 is OK
-- ping communication VM4 -> VM2 is KO
-- ping communication VM4 -> VM3 is KO
+- Add VM1 to butterfly server is OK
+- Add VM2 to butterfly server is OK
+- ping communication VM1 -> VM2 is OK
+- ping communication VM1 -> VM2 is OK
+- stop VM1
+- stop VM2
+- Delete VM1
+- Delete VM2
