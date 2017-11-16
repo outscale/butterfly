@@ -416,6 +416,8 @@ bool Graph::PollerUpdate(struct RpcQueue **list) {
             case BRICK_DESTROY:
                 pg_brick_destroy(a->brick_destroy.b);
                 break;
+            case NOTHING:
+                break;
 
             default:
                 LOG_ERROR_("brick poller has wrong RPC value");
@@ -1038,6 +1040,12 @@ void Graph::fw_new(const char *name,
     g_async_queue_push(queue_, a);
 }
 
+void Graph::nothing_new() {
+    struct RpcQueue *n = g_new(struct RpcQueue, 1);
+    n->action = NOTHING;
+    g_async_queue_push(queue_, n);
+}
+
 void Graph::brick_destroy(BrickShrPtr b) {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = BRICK_DESTROY;
@@ -1092,6 +1100,7 @@ void Graph::update_poll() {
 }
 
 void Graph::WaitEmptyQueue() {
+    nothing_new();
     while (g_async_queue_length_unlocked(queue_) > 0)
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }

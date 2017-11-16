@@ -106,6 +106,7 @@ class Graph {
         UPDATE_POLL,
         FW_RELOAD,
         FW_NEW,
+        NOTHING,
         BRICK_DESTROY,
     };
 
@@ -176,6 +177,7 @@ class Graph {
                 uint32_t east_max,
                 uint64_t flags,
                 struct pg_brick **result);
+    void nothing_new();
     void brick_destroy(BrickShrPtr b);
     void WaitEmptyQueue();
 
