@@ -14,7 +14,7 @@ fi
 #Test Protocol ICMP
 echo verbose mode $VERBOSE
 for s in $BUTTERFLY_ROOT/tests/network/bypass/icmp/scenario_*; do
-    echo "=== running $(basename $s) ==="
+    echo "=== running icmp $(basename $s) ==="
     if [ ".$VERBOSE" == ".1" ]; then
         echo verbose mode
         bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1

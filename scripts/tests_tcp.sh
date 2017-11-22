@@ -14,7 +14,7 @@ fi
 #Test Protocol tcp
 echo verbose mode $VERBOSE
 for s in $BUTTERFLY_ROOT/tests/network/bypass/tcp/scenario_*; do
-    echo "=== running $(basename $s) ==="
+    echo "=== running tcp $(basename $s) ==="
     if [ ".$VERBOSE" == ".1" ]; then
         echo verbose mode
         bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1

@@ -14,7 +14,7 @@ fi
 #Test Firewall
 echo verbose mode $VERBOSE
 for s in $BUTTERFLY_ROOT/tests/network/firewall/scenario_*; do
-    echo "=== running $(basename $s) ==="
+    echo "=== running firewall $(basename $s) ==="
     if [ ".$VERBOSE" == ".1" ]; then
         echo verbose mode
         bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1

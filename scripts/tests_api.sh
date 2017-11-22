@@ -49,7 +49,7 @@ done
 #Test API
 echo verbose mode $VERBOSE
 for s in $BUTTERFLY_ROOT/tests/api/scenario_*; do
-    echo "=== running $(basename $s) ==="
+    echo "=== running api $(basename $s) ==="
     if [ ".$VERBOSE" == ".1" ]; then
         echo verbose mode
         bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
