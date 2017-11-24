@@ -80,3 +80,6 @@ First release of the protocol:
 - Add Sg Details request
 - Add Nic type
 - Add Nic path
+
+## Revision 4
+- Add Tap Support
