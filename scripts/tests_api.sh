@@ -16,12 +16,12 @@ sudo rm out.txt
 
 source $BUTTERFLY_ROOT/api/protocol/version
 
-run=$BUTTERFLY_ROOT/api/tests/run_scenario.sh
+run=$BUTTERFLY_ROOT/tests/api/run_scenario.sh
 client=$BUTTERFLY_BUILD_ROOT/api/client/butterfly
 server=$BUTTERFLY_BUILD_ROOT/api/server/butterflyd
 expected=$BUTTERFLY_BUILD_ROOT/api_test_out
 err=false
-for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
+for request in $BUTTERFLY_ROOT/tests/api/*/*_in; do
     tput setaf 2
     echo -n "$(basename $request) scenario: "
     tput setaf 7
@@ -43,6 +43,18 @@ for request in $BUTTERFLY_ROOT/api/tests/*/*_in; do
         tput setaf 2
         echo OK
         tput setaf 7
+    fi
+done
+
+#Test API
+echo verbose mode $VERBOSE
+for s in $BUTTERFLY_ROOT/tests/api/scenario_*; do
+    echo "=== running api $(basename $s) ==="
+    if [ ".$VERBOSE" == ".1" ]; then
+        echo verbose mode
+        bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
+    else
+        $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
     fi
 done
 

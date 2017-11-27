@@ -89,6 +89,30 @@ add_custom_target(tests-coverage
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_coverage.sh ${PROJECT_BINARY_DIR}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
+add_custom_target(tests-firewall
+		  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_firewall.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
+		  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-icmp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_icmp.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-udp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_udp.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-tcp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_tcp.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-sctp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_sctp.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_custom_target(tests-udp_tcp
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_udp_tcp.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
 add_custom_target(package-rpm
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/build_package.sh ${PROJECT_BINARY_DIR} rpm
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
