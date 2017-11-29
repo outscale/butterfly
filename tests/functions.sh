@@ -595,6 +595,22 @@ function server_start_options {
     server_pids["$id"]=$pid
 }
 
+function server_start_bonding {
+    id=$1
+    mode=$2
+    echo "[butterfly-$id] starting"
+
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-port=3 --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --vdev=eth_pcap1_$id,iface=but$id --vdev=eth_pcap2_$id,iface=but$id  --vdev net_bonding$id,mode=$mode,slave=0,slave=1,slave=2 --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id -t &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
+    pid=$!
+    sleep 1
+    sudo kill -s 0 $pid
+    if [ $? -ne 0 ]; then
+        fail "failed to start butterfly, check butterflyd_${id}_output file"
+    fi
+
+    server_pids["$id"]=$pid
+}
+
 function server_stop {
     id=$1
     echo "[butterfly-$id] stopping"
