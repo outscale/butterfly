@@ -78,7 +78,7 @@ fpm -s dir \
     -t $TARGET \
     -n butterfly \
     -C $INSTALL_ROOT \
-    -p butterfly_VERSION_ARCH.$TARGET \
+    -p butterfly_VERSION_ARCH_fat.$TARGET \
     --url https://github.com/outscale/butterfly \
     --version $BUTTERFLY_VERSION \
     --iteration 1 \
