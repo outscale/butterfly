@@ -602,7 +602,7 @@ bool Graph::NicAdd(app::Nic *nic_) {
 }
 
 const char *Graph::NicPath(BrickShrPtr nic) {
-    struct pg_brick * b = nic.get();
+    struct pg_brick *b = nic.get();
 
     if (!strcmp(pg_brick_type(b), "vhost"))
         return pg_vhost_socket_path(b);
