@@ -202,8 +202,7 @@ For example, we can ask Butterfly to listen to the existing `eth0` interface:
 $ sudo butterflyd -i 192.168.0.1 -s /tmp --dpdk-args "-c1 -n1 --socket-mem 64 --vdev=eth_pcap0,iface=eth0"
 ```
 
-Alternatively, you can ask Butterfly to read a [configuration file]
-(https://github.com/outscale/butterfly/blob/master/api/server/butterflyd.ini)
+Alternatively, you can ask Butterfly to read a [configuration file](https://github.com/outscale/butterfly/blob/master/api/server/butterflyd.ini)
 at init:
 ```
 $ sudo butterflyd -c /etc/butterfly/butterfly.conf
@@ -239,7 +238,7 @@ Machines:
 - OS: Centos 7 (3.10.0-327.18.2.el7.x86_64)
 - NICs: Intel 82599ES 10-Gigabit SFI/SFP+ (DPDK compatible used with vfio-pci driver)
 - CPU: AMD Opteron(tm) Processor 3350 HE
-- All details for [host 1](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_1.txt) and [host 2](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly_2.txt) (same)
+
 
 Results (august 2017, 60 seconds per tests):
 
@@ -262,6 +261,7 @@ Results (august 2017, 60 seconds per tests):
 ```
 
 ### Notes
+- We get these results using iperf, so packets spend a lot of timer going inside VM's kernel, so these benchmarks are sadly not representative of the speed of Butterfly, we are working on new benchmarks
 - UDP is really _bad_ at the moment, we are working on it
 - We can get even faster with zero copy in vhost-user
 - We can get faster by embedding a more recent libc (`make package-fat`)
@@ -337,7 +337,7 @@ in order to have all it's messages encrypted using AES-256.
 
 For this, you will need to generate a 32 Bytes key (encoded in base 64) in a file and share this file:
 ```
-openssl rand  -base64 -out PlaintextKeyMaterial.bin 32
+openssl rand -base64 -out PlaintextKeyMaterial.bin 32
 ```
 Then you will need to provide the path to this file using `--key --k` in the command line or `encryption_key_path` option in `butterflyd.ini`.
 Once a key is correctly loaded, all clear messages will be rejected.
@@ -353,8 +353,7 @@ Butterfly uses ZeroMQ for message transport and allows you to bind in
 
 ## Questions? Problems? Contact Us!
 
-Butterfly is an open-source project, feel free to [chat with us on IRC]
-(https://webchat.freenode.net/?channels=betterfly&nick=butterfly_user), open
+Butterfly is an open-source project, feel free to [chat with us on IRC](https://webchat.freenode.net/?channels=betterfly&nick=butterfly_user), open
 a Github issue or propose a pull request.
 
 > server: irc.freenode.org
