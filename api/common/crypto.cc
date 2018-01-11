@@ -48,7 +48,7 @@ static void unbase64(const std::string &in, std::string *out) {
     len = BIO_read(mem, buffer, in.length());
     out->clear();
     out->insert(0, buffer, len);
-    free(buffer);
+    delete[] buffer;
     BIO_free_all(mem);
 }
 
@@ -98,8 +98,7 @@ bool EncAes256CbcSha512(const std::string &key,
 
     // Build last block content with padding
     memcpy(last_block, clear_last_block, clear.length() % AES_BLOCK_SIZE);
-    memset(last_block + AES_BLOCK_SIZE - pad_length, pad_length,
-           AES_BLOCK_SIZE);
+    memset(last_block + AES_BLOCK_SIZE - pad_length, pad_length, pad_length);
 
     // Compute hash of clear data
     EVP_CIPHER_CTX *aes = NULL;
@@ -170,7 +169,7 @@ bool DecAes256CbcSha512(const std::string &key,
     EVP_CIPHER_CTX *aes = NULL;
     EVP_MD_CTX *sha;
 
-    std::unique_ptr<uint8_t> clear_result(new uint8_t[blocks_len]);
+    std::unique_ptr<uint8_t[]> clear_result(new uint8_t[blocks_len]);
     uint8_t *clear_sha = clear_result.get();
     uint8_t *clear_payload = clear_sha + SHA512_SIZE;
     int clear_payload_len;
