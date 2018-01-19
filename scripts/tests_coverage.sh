@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Butterfly build root
 BUTTERFLY_BUILD_ROOT=$1
