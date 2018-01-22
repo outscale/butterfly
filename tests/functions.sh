@@ -171,7 +171,7 @@ function ssh_iperf_tcp {
     else
         echo "iperf tcp VM $id1 ---> VM $id2 OK"
     fi
-    kill -9 $server_pid &> /dev/null
+    kill -2 $server_pid &> /dev/null
 }
 
 function ssh_iperf_udp {
@@ -189,7 +189,7 @@ function ssh_iperf_udp {
     else
         echo "iperf udp VM $id1 ---> VM $id2 OK"
     fi
-    kill -9 server_pid &> /dev/null
+    kill -2 server_pid &> /dev/null
     rm /tmp/iperf_tmp_results
 }
 
@@ -206,7 +206,7 @@ function ssh_iperf3_tcp {
     else
         echo "iperf3 tcp VM $id1 ---> VM $id2 OK"
     fi
-    kill -9 $server_pid &> /dev/null
+    kill -2 $server_pid &> /dev/null
 }
 
 function ssh_iperf3_udp {
@@ -224,7 +224,7 @@ function ssh_iperf3_udp {
     else
         echo "iperf3 udp VM $id1 ---> VM $id2 OK"
     fi
-    kill -9 $server_pid &> /dev/null
+    kill -2 $server_pid &> /dev/null
     rm /tmp/iperf3_tmp_results
 }
 function ssh_connection_tests_send {
@@ -561,7 +561,7 @@ function qemu_stop {
     id=$1
     rm -f $BUTTERFLY_BUILD_ROOT/qemu_pids$id
     echo "[VM $id] stopping (pid ${qemu_pids[$id]})"
-    sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
+    sudo kill -2 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
     sleep 0.3
 }
 
@@ -660,7 +660,7 @@ function network_disconnect {
     id1=$1
     id2=$2
     echo "network disconnect butterfly-$id1 <--> butterfly-$id2"
-    sudo kill -9 $(ps --ppid ${socat_pids[$id1$id2]} -o pid=)
+    sudo kill -2 $(ps --ppid ${socat_pids[$id1$id2]} -o pid=)
 }
 
 function download {
@@ -1075,7 +1075,7 @@ function clean_pcaps {
 function clean_all {
     sudo killall butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sleep 0.5
-    sudo killall -9 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
+    sudo killall -2 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
     rm -rf $BUTTERFLY_BUILD_ROOT/qemu_pids*
