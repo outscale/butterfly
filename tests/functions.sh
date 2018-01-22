@@ -491,7 +491,7 @@ function qemu_start {
     IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
     MAC=52:54:00:12:34:0$id
 
-    CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
+    CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic -qmp unix:./qmp-butt-${id},server,nowait"
     exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
     pid=$!
 
@@ -509,6 +509,7 @@ function qemu_start {
     sudo kill -s 0 $pid &> /dev/null
     if [ $? -ne 0 ]; then
         fail "failed to start qemu, check qemu_${id}_output file"
+
     fi
     qemu_pids["$id"]=$pid
 
