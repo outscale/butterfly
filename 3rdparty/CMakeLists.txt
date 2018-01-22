@@ -54,7 +54,7 @@ ExternalProject_Add(packetgraph
 	SOURCE_DIR ${PG_SOURCE_DIR}
 	CONFIGURE_COMMAND export RTE_SDK=${DPDK_INSTALL_DIR} && ${PG_SOURCE_DIR}/autogen.sh ${PG_SOURCE_DIR} && ${PG_SOURCE_DIR}/configure_clang --prefix=${PG_INSTALL_DIR}
 	DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
-	DOWNLOAD_COMMAND git submodule update --init ${PG_SOURCE_DIR}
+	DOWNLOAD_COMMAND git submodule update --init ${PG_SOURCE_DIR} && cd ${PG_SOURCE_DIR} && git submodule update --init
 	BINARY_DIR ${PG_INSTALL_DIR}
 	BUILD_COMMAND make
 	INSTALL_DIR ${PG_INSTALL_DIR}
