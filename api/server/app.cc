@@ -382,6 +382,7 @@ void SignalRegister() {
     signal(SIGINT, SignalHandler);
     signal(SIGQUIT, SignalHandler);
     signal(SIGSTOP, SignalHandler);
+    signal(SIGTERM, SignalHandler);
 }
 
 void SignalHandler(int signum) {
