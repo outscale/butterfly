@@ -537,7 +537,7 @@ function qemu_start {
     else
         CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
     fi
-    exec $CMD &#> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
+    exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
     pid=$!
 
     echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
@@ -647,7 +647,7 @@ function server_start_options {
     options=${@:2}
     echo "[butterfly-$id] starting"
 
-    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options &#> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
     pid=$!
     sleep 1
     sudo kill -s 0 $pid
@@ -841,6 +841,19 @@ function tap_add {
     done
     ip netns list
     sleep 1
+}
+
+function cli_cov {
+    but_id=$1
+    excepted_result=$2
+    opts=${@:3}
+    echo "[butterfly-$but_id] cli run $opts"
+
+    $BUTTERFLY_BUILD_ROOT/api/client/butterfly $opts -e tcp://127.0.0.1:876$but_id &> $BUTTERFLY_BUILD_ROOT/cli_output
+    if [ "$?" == "$excepted_result" ]; then
+        fail "cli run failed, check cli_output file"
+    fi
+    sleep 0.5
 }
 
 function nic_add {
