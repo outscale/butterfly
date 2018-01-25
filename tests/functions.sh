@@ -626,10 +626,10 @@ function server_start_ipv4 {
 }
 
 function server_start_options_ipv4 {
-    id=$1 
-    options=${@:2} 
+    id=$1
+    options=${@:2}
     echo "[butterfly-$id] starting"
-        
+
     exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i 10.0.0.$id -s /tmp --endpoint=tcp://0.0.0.0:876$id $options -t &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
     pid=$!
     sleep 1
@@ -637,7 +637,6 @@ function server_start_options_ipv4 {
     if [ $? -ne 0 ]; then
         fail "failed to start butterfly, check butterflyd_${id}_output file"
     fi
-    
     server_pids["$id"]=$pid
 }
 function network_connect {
