@@ -1071,6 +1071,7 @@ function check_bin {
 function clean_pcaps {
     sudo rm -rf /tmp/butterfly-*.pcap
 }
+
 function clean_all {
     sudo killall butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sleep 0.5
