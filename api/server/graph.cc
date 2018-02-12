@@ -68,17 +68,17 @@ Graph::~Graph(void) {
     Stop();
 }
 
-bool Graph::LinkAndStalk(Graph::BrickShrPtr eastBrick,
-                         Graph::BrickShrPtr westBrick,
+bool Graph::LinkAndStalk(Graph::BrickShrPtr westBrick,
+                         Graph::BrickShrPtr eastBrick,
                          Graph::BrickShrPtr sniffer) {
     if (app::config.packet_trace) {
-        if (pg_brick_chained_links(&app::pg_error, eastBrick.get(),
-                                   sniffer.get(), westBrick.get()) < 0) {
+        if (pg_brick_chained_links(&app::pg_error, westBrick.get(),
+                                   sniffer.get(), eastBrick.get()) < 0) {
             PG_ERROR_(app::pg_error);
             return false;
         }
     } else {
-        if (pg_brick_link(eastBrick.get(), westBrick.get(),
+        if (pg_brick_link(westBrick.get(), eastBrick.get(),
                           &app::pg_error) < 0) {
             PG_ERROR_(app::pg_error);
             return false;
