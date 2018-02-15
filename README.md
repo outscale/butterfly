@@ -37,15 +37,6 @@ Example: create of a new vnic "vnic_1" on vni "1337":
 butterfly nic add --ip 42.0.0.1 --mac 52:54:00:12:34:01 --vni 1337 --id vnic_1
 ```
 
-***Note for enic:***
-
-Although butterfly can run on Cisco enic, enic pmd driver doesn't support checksum
-offloading or TSO for inner packets yet (needed for vxlan encapsulation).
-If you want to use Butterfly with enic, you must desactivate TSO and TX checksum offloading on VM:
-```
-ethtool -K ensX tx off
-```
-
 # Filtering
 
 VMs traffic is filtered using an integrated firewall within Butterfly
@@ -285,6 +276,14 @@ Some shared memory between the guest and Butterfly:
 For each network interface:
 ```
 -chardev socket,id=char0,path=/path/to/socket -netdev type=vhost-user,id=mynet0,chardev=char0,vhostforce -device virtio-net-pci,netdev=mynet0,gso=off
+```
+
+***Note about enic:***
+
+Although butterfly can run on Cisco enic and, depending of your hadware, enic pmd driver may not support checksum offloading or TSO for inner packets yet (needed for vxlan encapsulation).
+If you want to use Butterfly with enic, you must desactivate TSO and TX checksum offloading on VM:
+```
+ethtool -K ensX tx off
 ```
 
 For more details, check [vhost-user dpdk guide](http://dpdk.org/browse/dpdk/plain/doc/guides/prog_guide/vhost_lib.rst).
