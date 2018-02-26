@@ -431,8 +431,8 @@ static void SubNicAddHelp(void) {
             << endl <<
         "    --mac MAC           virtual interface's mac (mandatory)" << endl <<
         "    --id ID             interface's id (mandatory)" << endl <<
-            "    --type TYPE         nic type (VHOST_USER_SERVER or " <<
-            "TAP default: VHOST_USER_SERVER)" << endl <<
+        "    --type TYPE         nic type (VHOST_USER_SERVER or " <<
+        "    TAP default: VHOST_USER_SERVER)" << endl <<
         "    --vni VNI           virtual network id < 2^26 (mandatory)"
             << endl <<
         "    --enable-antispoof  enable antispoof protection (default: off)"
