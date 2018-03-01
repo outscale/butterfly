@@ -395,6 +395,11 @@ NicAddOptions::NicAddOptions() {
     type = "VHOST_USER_SERVER";
 }
 
+NicUpdateOptions::NicUpdateOptions() {
+    packet_trace = "";
+    enable_antispoof = "";
+}
+
 static inline bool CheckOption(int count, int argc, char **argv,
                                char const *option) {
     return count + 1 < argc && string(argv[count]) == option;
@@ -426,6 +431,22 @@ int NicAddOptions::Parse(int argc, char **argv) {
     return !mac.length() || !id.length() || !vni.length();
 }
 
+int NicUpdateOptions::Parse(int argc, char **argv) {
+    for (int i = 1; i < argc; i++) {
+        if (CheckOption(i, argc, argv, "--ip"))
+            ips.push_back(string(argv[i + 1]));
+        else if (string(argv[i]) == "--enable-antispoof")
+            enable_antispoof = "ip_anti_spoof: " + string(argv[i + 1]);
+        else if (CheckOption(i, argc, argv, "--id"))
+            id = string(argv[i + 1]);
+        else if (string(argv[i]) == "--packet-trace")
+            packet_trace = "packet_trace: " + string(argv[i + 1]);
+    }
+    if (id.empty())
+        return 1;
+    return 0;
+}
+
 static void SubNicAddHelp(void) {
     cout << "usage: butterfly nic add [options...]" << endl;
     cout  << endl <<
@@ -443,6 +464,19 @@ static void SubNicAddHelp(void) {
         "    --packet-trace true/false  trace a nic or not" <<
         "    (default: use server behaviour)" << endl <<
         "    --bypass-filtering  remove all filters and protection" << endl;
+    GlobalParameterHelp();
+}
+
+static void SubNicUpdateHelp(void) {
+    cout << "usage: butterfly nic update [options...]" << endl;
+    cout  << endl <<
+        "options:" << endl <<
+        "    --ip IP             virtual interface's ip (v4 or v6)"
+            << endl <<
+        "    --id ID             interface's id (mandatory)" << endl <<
+        "    --enable-antispoof true/fasle  enable antispoof" << endl <<
+        "    --packet-trace true/false  trace a nic or not" <<
+        "    (default: use server behaviour)" << endl;
     GlobalParameterHelp();
 }
 
@@ -492,6 +526,49 @@ static int SubNicAdd(int argc, char **argv, const GlobalOptions &options) {
         return 1;
     }
     cout << res_0.nic_add().path() << endl;
+    return 0;
+}
+
+static int SubNicUpdate(int argc, char **argv, const GlobalOptions &options) {
+    if (argc >= 4 && string(argv[3]) == "help") {
+        SubNicAddHelp();
+        return 0;
+    }
+
+    NicUpdateOptions o;
+    if (o.Parse(argc, argv)) {
+        SubNicUpdateHelp();
+        return 1;
+    }
+
+    string req =
+        "messages {"
+        "  revision: " PROTO_REV
+        "  message_0 {"
+        "    request {"
+        "      nic_update {"
+        "        id: \"" + o.id + "\"";
+    for (string ip : o.ips) {
+        if (ip == "-e")
+            req += " ip: \"\"";
+        else if (!ip.empty())
+            req += " ip: \"" + ip + "\"";
+    }
+    if (!o.enable_antispoof.empty())
+        req += "  " + o.enable_antispoof + "";
+    req +=
+        "        " + o.packet_trace +
+        "      }"
+        "    }"
+        "  }"
+        "}";
+
+    proto::Messages res;
+
+    if (Request(req, &res, options, false)) {
+        SubNicUpdateHelp();
+        return 1;
+    }
     return 0;
 }
 
@@ -570,6 +647,8 @@ int SubNic(int argc, char **argv, const GlobalOptions &options) {
         return SubNicSg(argc, argv, options);
     } else if (cmd == "add") {
         return SubNicAdd(argc, argv, options);
+    } else if (cmd == "update") {
+        return SubNicUpdate(argc, argv, options);
     } else if (cmd == "del") {
         return SubNicDel(argc, argv, options);
     } else if (cmd == "help") {

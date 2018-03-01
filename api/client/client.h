@@ -88,6 +88,15 @@ struct NicAddOptions {
     string bypass_filtering;
 };
 
+struct NicUpdateOptions {
+    NicUpdateOptions();
+    int Parse(int argc, char **argv);
+    vector<string> ips;
+    string id;
+    string enable_antispoof;
+    string packet_trace;
+};
+
 struct RuleAddOptions {
     RuleAddOptions();
     int Parse(int argc, char **argv);
