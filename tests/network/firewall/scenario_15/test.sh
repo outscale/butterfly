@@ -26,8 +26,8 @@ B4=2001:db8:2000:aff0::5
 
 qemu_add_ipv4 1 $a1/24
 qemu_add_ipv6 1 $A1/64
-nic_update_ip 0 1 $a1 $A1
-nic_update_ip 0 2 $b1 $b2
+nic_update 0 1 --ip $a1 --ip $A1
+nic_update 0 2 --ip $b1 --ip $b2
 qemu_add_ipv4 2 $b1/24 $b2/24
 sleep 1
 
@@ -36,7 +36,7 @@ ssh_ping_ip 1 $a1 $b2
 
 qemu_del_ipv4 2 $b1/24 $b2/24
 qemu_add_ipv4 2 $b3/24 $b4/24
-nic_update_ip 0 2 $b3 $b4
+nic_update 0 2 --ip $b3 --ip $b4
 sleep 1
 
 ssh_no_ping_ip 1 $a1 $b1
@@ -47,7 +47,7 @@ ssh_ping_ip 1 $a1 $b4
 qemu_del_ipv4 2 $b3/24 $b4/24
 qemu_add_ipv4 2 $b1/24
 qemu_add_ipv6 2 $B1/64
-nic_update_ip 0 2 $b1 $B1
+nic_update 0 2 --ip $b1 --ip $B1
 sleep 1
 
 ssh_ping_ip 1 $a1 $b1
@@ -59,7 +59,7 @@ ssh_ping_ip6 1 $A1 $B1
 qemu_del_ipv4 2 $b1/24
 qemu_del_ipv6 2 $B1/64
 qemu_add_ipv4 2 $b3/24 $b4/24
-nic_update_ip 0 2 $b3 $b4
+nic_update 0 2 --ip $b3 --ip $b4
 sleep 1
 
 ssh_no_ping_ip 1 $a1 $b1
@@ -71,7 +71,7 @@ ssh_no_ping_ip6 1 $A1 $B1
 qemu_del_ipv4 2 $b3/24 $b4/24
 qemu_add_ipv4 2 $b2/24
 qemu_add_ipv6 2 $B2/64
-nic_update_ip 0 2 $b2 $B2
+nic_update 0 2 --ip $b2 --ip $B2
 sleep 1
 
 ssh_no_ping_ip 1 $a1 $b1
@@ -84,7 +84,7 @@ ssh_ping_ip6 1 $A1 $B2
 qemu_del_ipv4 2 $b2/24
 qemu_del_ipv6 2 $B2/64
 qemu_add_ipv6 2 $B3/64 $B4/64
-nic_update_ip 0 2 $B3 $B4
+nic_update 0 2 --ip $B3 --ip $B4
 sleep 1
 
 ssh_no_ping_ip 1 $a1 $b1
@@ -98,7 +98,7 @@ ssh_ping_ip6 1 $A1 $B4
 
 qemu_del_ipv6 2 $B3/64 $B4/64
 qemu_add_ipv6 2 $B1/64 $B2/64
-nic_update_ip 0 2 $B1 $B2
+nic_update 0 2 --ip $B1 --ip $B2
 sleep 1
 
 ssh_no_ping_ip 1 $a1 $b1

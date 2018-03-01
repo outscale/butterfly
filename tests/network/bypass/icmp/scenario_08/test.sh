@@ -21,8 +21,8 @@ b2=2001:db8:2000:aff0::5
 b3=2001:db8:2000:aff0::6
 
 qemu_add_ipv6 1 $a1/64 $a2/64 $a3/64
-nic_update_ip 0 1 $a1 $a2 $a3
-nic_update_ip 0 2 $b1 $b2 $b3
+nic_update 0 1 --ip $a1 --ip $a2 --ip $a3
+nic_update 0 2 --ip $b1 --ip $b2 --ip $b3
 qemu_add_ipv6 2 $b1/64 $b2/64 $b3/64
 sleep 1
 

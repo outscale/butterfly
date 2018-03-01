@@ -733,36 +733,6 @@ function nic_add_noip {
     cli $but_id 0 nic sg add nic-$nic_id $sg_list
 }
 
-function nic_update_ip {
-    but_id=$1
-    nic_id=$2
-    ip_list=${@:3}
-
-    f=/tmp/butterfly.req
-    echo "[butterfly-$but_id] new ip list for nic-$nic_id: $ip_list"
-
-    echo -e "messages {
-  revision: 0
-  message_0 {
-    request {
-      nic_update {
-        id: \"nic-$nic_id\"" > $f
-    if [ "-$ip_list" == "-" ]; then
-        echo "ip: \"\"" >> $f
-    else
-        for i in $ip_list; do
-            echo "ip: \"$i\"" >> $f
-        done
-    fi
-    echo "
-      }
-    }
-  }
-}
-" >> $f
-    request $but_id $f
-}
-
 function nic_update {
      but_id=$1
      nic_id=$2

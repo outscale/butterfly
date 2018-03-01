@@ -21,8 +21,8 @@ b2=42.0.0.5
 b3=42.0.0.6
 
 qemu_add_ipv4 1 $a1/24 $a2/24 $a3/24
-nic_update_ip 0 1 $a1 $a2 $a3
-nic_update_ip 0 2 $b1 $b2 $b3
+nic_update 0 1  --ip $a1 --ip $a2 --ip $a3
+nic_update 0 2  --ip $b1 --ip $b2 --ip $b3
 qemu_add_ipv4 2 $b1/24 $b2/24 $b3/24
 sleep 1
 

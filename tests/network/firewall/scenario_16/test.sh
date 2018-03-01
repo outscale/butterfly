@@ -13,10 +13,10 @@ qemus_start 1 2
 
 for i in $(seq 1 10); do
     ssh_no_ping 1 2
-    nic_update_ip 0 2 42.0.0.2
+    nic_update 0 2 --ip 42.0.0.2
     sleep 1
     ssh_ping 1 2
-    nic_update_ip 0 2
+    nic_update 0 2 --ip
     sleep 1
 done
 

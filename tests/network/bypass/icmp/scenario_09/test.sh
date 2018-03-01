@@ -23,8 +23,8 @@ for i in $(seq 1 10); do
     qemu_add_ipv6 1 $A1/64
     qemu_add_ipv4 2 $b1/24
     qemu_add_ipv6 2 $B1/64
-    nic_update_ip 0 1 $a1 $A1
-    nic_update_ip 0 2 $b1 $B1
+    nic_update 0 1 --ip $a1 --ip $A1
+    nic_update 0 2 --ip $b1 --ip $B1
     sleep 2
     ssh_ping_ip 1 $a1 $b1
     ssh_ping_ip6 1 $A1 $B1
@@ -37,8 +37,8 @@ for i in $(seq 1 10); do
     qemu_add_ipv6 2 $A1/64
     qemu_add_ipv4 1 $b1/24
     qemu_add_ipv6 1 $B1/64
-    nic_update_ip 0 2 $a1 $A1
-    nic_update_ip 0 1 $b1 $B1
+    nic_update 0 2 --ip $a1 --ip $A1
+    nic_update 0 1 --ip $b1 --ip $B1
     sleep 2
     ssh_ping_ip 1 $b1 $a1
     ssh_ping_ip6 1 $B1 $A1
