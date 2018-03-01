@@ -595,6 +595,22 @@ function server_start_options {
     server_pids["$id"]=$pid
 }
 
+function server_start_no_trace {
+    id=$1
+    options=${@:2}
+    echo "[butterfly-$id] starting"
+
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
+    pid=$!
+    sleep 1
+    sudo kill -s 0 $pid
+    if [ $? -ne 0 ]; then
+        fail "failed to start butterfly, check butterflyd_${id}_output file"
+    fi
+
+    server_pids["$id"]=$pid
+}
+
 function server_start_bonding {
     id=$1
     mode=$2
@@ -747,6 +763,20 @@ function nic_update_ip {
     request $but_id $f
 }
 
+function nic_update {
+     but_id=$1
+     nic_id=$2
+     update_options=${@:3}
+
+     echo "[butterfly-$but_id] update nic-$nic_id with: $update_options"
+     cli $but_id 0 nic update --id nic-$nic_id $update_options
+
+     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+         echo "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+         clean_all
+         exit 1
+     fi
+}
 
 function tap_del {
     nic_id=$1
@@ -797,6 +827,27 @@ function nic_add {
     fi
 }
 
+function nic_add_trace {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    sg_list=${@:4}
+
+    echo "[butterfly-$but_id] add nic $nic_id with vni $vni"
+
+    cli $but_id 0 nic add --id "nic-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "42.0.0.$nic_id" --enable-antispoof --packet-trace true
+    sleep 1
+
+    for i in $sg_list; do
+        cli $but_id 0 nic sg add "nic-$nic_id" $i
+    done
+    sleep 1
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+        fail "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+    fi
+}
+
 function nic_add6 {
     but_id=$1
     nic_id=$2
@@ -817,6 +868,76 @@ function nic_add6 {
     fi
 }
 
+function nic_add6_trace {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    sg_list=${@:4}
+
+    echo "[butterfly-$but_id] add nic(6) $nic_id with vni $vni"
+
+    cli $but_id 0 nic add --id "nic-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "2001:db8:2000:aff0::$nic_id" --enable-antispoof --packet-trace true
+    sleep 1
+
+    for i in $sg_list; do
+       cli $but_id 0 nic sg add "nic-$nic_id" $i
+    done
+    sleep 0.3
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+        fail "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+    fi
+}
+
+function test_packet_tracing {
+    check=$1
+    id1=$2
+    id2=$3
+    id_list=${@:2}
+
+    for i in $id_list; do
+        if [ "$i" != "0" ] && [ -e /tmp/*nic-$i.pcap ]; then
+            sleep 0.2
+            du -s /tmp/*nic-$i.pcap | awk '{ print $1 }' >> /tmp/tracing
+        else
+            fail "Tracing failed: can not found pcap file with id $i"
+        fi
+    done
+
+    tpnic1=$(sed -n "1p" /tmp/tracing)
+    tpnic2=$(sed -n "2p" /tmp/tracing)
+
+    if [ $check -eq 1 ]; then
+        cmp=0
+        timeout=20
+        while [ $cmp -ne $timeout ]; do
+            if [ $tpnic1 -eq $tpnic2 ]; then
+                echo "Packet trace VM $id1 ---> VM $id2 OK"
+                rm /tmp/tracing
+                return 0
+            fi
+            rm /tmp/tracing
+            for i in $id_list; do
+                du -s /tmp/*nic-$i.pcap | awk '{ print $1 }' >> /tmp/tracing
+            done
+            tpnic1=$(sed -n "1p" /tmp/tracing)
+            tpnic2=$(sed -n "2p" /tmp/tracing)
+            sleep 0.1
+            cmp=$(( $cmp + 1 ))
+        done
+        rm /tmp/tracing
+        fail "Packet trace VM $id1 ---> VM $id2 FAIL"
+    else
+        if [ $tpnic1 -ne $tpnic2 ]; then
+            echo "Packet trace VM $id1 --/-> VM $id2 OK"
+            rm /tmp/tracing
+        else
+            rm /tmp/tracing
+            fail "packet trace VM $id1 --/-> VM $id2 FAIL"
+        fi
+    fi
+}
+
 function nic_add_bypass {
     but_id=$1
     nic_id=$2
@@ -825,8 +946,24 @@ function nic_add_bypass {
     f=/tmp/butterfly.req
     echo "[butterfly-$but_id] add nic $nic_id with vni $vni (filtering bypass)"
 
-
     cli $but_id 0 nic add --id "nic-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "42.0.0.$nic_id" --bypass-filtering
+    sleep 0.3
+
+    if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
+        fail "client failed: we should have a socket in /tmp/qemu-vhost-nic-$nic_id"
+    fi
+}
+
+function nic_add_bypass_trace {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+
+    f=/tmp/butterfly.req
+    echo "[butterfly-$but_id] add nic $nic_id with vni $vni (filtering bypass and packet tracing)"
+
+
+    cli $but_id 0 nic add --id "nic-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "42.0.0.$nic_id" --bypass-filtering --packet-trace true
     sleep 0.3
 
     if ! test -e /tmp/qemu-vhost-nic-$nic_id ; then
