@@ -84,6 +84,7 @@ struct NicAddOptions {
     string id;
     string vni;
     string type;
+    string packet_trace;
     string bypass_filtering;
 };
 

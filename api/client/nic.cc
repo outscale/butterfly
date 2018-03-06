@@ -389,6 +389,7 @@ static int SubNicSg(int argc, char **argv, const GlobalOptions &options) {
 }
 
 NicAddOptions::NicAddOptions() {
+    packet_trace = "";
     enable_antispoof = "false";
     bypass_filtering = "false";
     type = "VHOST_USER_SERVER";
@@ -417,6 +418,8 @@ int NicAddOptions::Parse(int argc, char **argv) {
             vni = string(argv[i + 1]);
         else if (string(argv[i]) == "--bypass-filtering")
             bypass_filtering = "true";
+        else if (string(argv[i]) == "--packet-trace")
+            packet_trace = "packet_trace: " + std::string(argv[i + 1]);
     }
     if (type != "VHOST_USER_SERVER" && type != "TAP")
         return 1;
@@ -437,6 +440,8 @@ static void SubNicAddHelp(void) {
             << endl <<
         "    --enable-antispoof  enable antispoof protection (default: off)"
             << endl <<
+        "    --packet-trace true/false  trace a nic or not" <<
+        "    (default: use server behaviour)" << endl <<
         "    --bypass-filtering  remove all filters and protection" << endl;
     GlobalParameterHelp();
 }
@@ -469,6 +474,7 @@ static int SubNicAdd(int argc, char **argv, const GlobalOptions &options) {
     req +=
         "        ip_anti_spoof: " + o.enable_antispoof +
         "        type: " + o.type +
+        "        " + o.packet_trace +
         "        bypass_filtering: " + o.bypass_filtering +
         "      }"
         "    }"
