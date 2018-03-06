@@ -82,6 +82,7 @@ struct Nic {
     uint32_t vni;
     std::vector<Ip> ip_list;
     std::vector<std::string> security_groups;
+    bool packet_trace;
     bool ip_anti_spoof;
     std::string sniff_target_nic_id;
     bool bypass_filtering;

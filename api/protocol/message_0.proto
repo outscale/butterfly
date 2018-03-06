@@ -184,6 +184,8 @@ message MessageV0 {
     optional Type type = 9 [default = VHOST_USER_SERVER];
     // Nic path may be set depending of NIC's type
     optional string path = 10;
+    // dump VM traffic in pcap file
+    optional bool packet_trace = 11;
   }
 
   // NIC statistics
@@ -278,6 +280,8 @@ message MessageV0 {
     // Replace Security Groups of a NIC
     // To remove all security groups, set a empty string
     repeated string security_group = 4;
+    // Update dumping vm traffic in pcap file
+    optional bool packet_trace = 5;
   }
 
   message NicAddRes {

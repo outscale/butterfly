@@ -728,6 +728,8 @@ bool Api0::Convert(const app::Nic &nic_model, MessageV0_Nic *nic_message) {
     }
     // Antispoof IP
     nic_message->set_ip_anti_spoof(nic_model.ip_anti_spoof);
+    // packet trace
+    nic_message->set_packet_trace(nic_model.packet_trace);
     // Sniff target
     if (nic_model.sniff_target_nic_id.length() > 0)
         nic_message->set_sniff_target_nic_id(nic_model.sniff_target_nic_id);
@@ -777,6 +779,10 @@ bool Api0::Convert(const MessageV0_Nic &nic_message, app::Nic *nic_model) {
     nic_model->ip_anti_spoof = false;
     if (nic_message.has_ip_anti_spoof())
         nic_model->ip_anti_spoof = nic_message.ip_anti_spoof();
+    // Packet trace
+    nic_model->packet_trace = app::config.packet_trace;
+    if (nic_message.has_packet_trace())
+        nic_model->packet_trace = nic_message.packet_trace();
     // Sniff target
     if (nic_message.has_sniff_target_nic_id())
         nic_model->sniff_target_nic_id = nic_message.sniff_target_nic_id();
@@ -805,6 +811,13 @@ bool Api0::Convert(const MessageV0_NicUpdateReq &nic_update_message,
         nic_update_model->has_ip_anti_spoof = true;
     } else {
         nic_update_model->has_ip_anti_spoof = false;
+    }
+    // packet trace
+    if (nic_update_message.has_packet_trace()) {
+        nic_update_model->packet_trace = nic_update_message.packet_trace();
+        nic_update_model->has_packet_trace = true;
+    } else {
+        nic_update_model->has_packet_trace = false;
     }
     // IP list of NIC
     nic_update_model->ip_overwrite =

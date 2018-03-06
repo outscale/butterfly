@@ -378,6 +378,12 @@ bool Graph::PollerUpdate(struct RpcQueue **list) {
                 if (pg_error_is_set(&app::pg_error))
                     PG_ERROR_(app::pg_error);
                 break;
+            case UNLINK_EDGE:
+                pg_brick_unlink_edge(a->unlink_edge.w, a->unlink_edge.e,
+                                    &app::pg_error);
+                if (pg_error_is_set(&app::pg_error))
+                    PG_ERROR_(app::pg_error);
+                break;
             case ADD_VNI:
                 if (isVtep6_) {
                     if (pg_vtep_add_vni(a->add_vni.vtep,
@@ -513,7 +519,7 @@ bool Graph::NicAdd(app::Nic *nic_) {
         PG_ERROR_(app::pg_error);
         return false;
     }
-    if (app::config.packet_trace) {
+    if (nic.packet_trace) {
         name = "sniffer-" + gn.id;
         gn.pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
                               "-" + gn.id + ".pcap").c_str(), "w");
@@ -530,7 +536,7 @@ bool Graph::NicAdd(app::Nic *nic_) {
 
     // Build branch and set head
     if (nic.bypass_filtering) {
-        if (app::config.packet_trace) {
+        if (nic.packet_trace) {
             gn.head = gn.sniffer;
             if (pg_brick_link(gn.sniffer.get(), gn.vhost.get(),
                               &app::pg_error) < 0) {
@@ -730,6 +736,76 @@ void Graph::NicConfigAntiSpoof(const app::Nic &nic, bool enable) {
     } else {
         pg_antispoof_arp_disable(antispoof.get());
     }
+}
+
+void Graph::EnablePacketTrace(const app::Nic &nic) {
+    Graph::GraphNic *g_nic = FindNic(nic);
+    std::string name;
+    if (nic.packet_trace) {
+        app::log.Info("packet trace option on %s is already enabled",
+                      nic.id.c_str());
+        return;
+    }
+
+    if (g_nic->sniffer == NULL) {
+        name = "sniffer-" + g_nic->id;
+        g_nic->pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
+                                 "-" + g_nic->id + ".pcap").c_str(), "w");
+        g_nic->sniffer = BrickShrPtr(pg_print_new(name.c_str(),
+                                 g_nic->pcap_file, PG_PRINT_FLAG_PCAP |
+                                 PG_PRINT_FLAG_CLOSE_FILE,
+                                 NULL, &app::pg_error),
+                       pg_brick_destroy);
+        if (!g_nic->sniffer) {
+            PG_ERROR_(app::pg_error);
+            return;
+        }
+    }
+    if (nic.bypass_filtering) {
+        unlink(g_nic->vhost);
+        g_nic->head = g_nic->sniffer;
+        link(g_nic->sniffer, g_nic->vhost);
+        link(vtep_, g_nic->head);
+        add_vni(vtep_, g_nic->head, nic.vni);
+    } else {
+        unlink_edge(g_nic->antispoof, g_nic->vhost);
+        g_nic->head = g_nic->sniffer;
+        link(g_nic->antispoof, g_nic->sniffer);
+        link(g_nic->sniffer, g_nic->vhost);
+    }
+}
+
+void Graph::DisablePacketTrace(const app::Nic &nic) {
+    Graph::GraphNic *g_nic = FindNic(nic);
+    if (!nic.packet_trace) {
+        app::log.Info("packet trace option on %s is already disabled",
+                      nic.id.c_str());
+        return;
+    }
+
+    if (g_nic->sniffer == NULL) {
+        app::log.Error("can not find pcap brick");
+        return;
+    }
+
+    if (nic.bypass_filtering) {
+        unlink(g_nic->sniffer);
+        g_nic->head = g_nic->vhost;
+        link(vtep_, g_nic->head);
+        add_vni(vtep_, g_nic->head, nic.vni);
+    } else {
+        unlink(g_nic->sniffer);
+        g_nic->head = g_nic->antispoof;
+        link(g_nic->antispoof, g_nic->vhost);
+    }
+}
+
+void Graph::NicConfigPacketTrace(const app::Nic &nic, bool is_trace_set) {
+    if (is_trace_set)
+        EnablePacketTrace(nic);
+    else
+        DisablePacketTrace(nic);
+    update_poll();
 }
 
 std::string Graph::FwBuildRule(const app::Rule &rule) {
@@ -1015,6 +1091,14 @@ void Graph::unlink(BrickShrPtr b) {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = UNLINK;
     a->unlink.b = b.get();
+    g_async_queue_push(queue_, a);
+}
+
+void Graph::unlink_edge(BrickShrPtr w, BrickShrPtr e) {
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
+    a->action = UNLINK_EDGE;
+    a->unlink_edge.w = w.get();
+    a->unlink_edge.e = e.get();
     g_async_queue_push(queue_, a);
 }
 

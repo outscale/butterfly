@@ -28,6 +28,7 @@ namespace app {
 Nic::Nic() {
     vni = 0;
     ip_anti_spoof = false;
+    packet_trace = false;
     bypass_filtering = false;
     type = VHOST_USER_SERVER;
 }

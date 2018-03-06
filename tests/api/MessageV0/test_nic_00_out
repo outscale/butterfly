@@ -56,6 +56,7 @@ messages {
         bypass_filtering: false
         type: VHOST_USER_SERVER
         path: "/tmp/qemu-vhost-nic-2"
+        packet_trace: true
       }
     }
   }
@@ -80,6 +81,7 @@ messages {
         bypass_filtering: false
         type: VHOST_USER_SERVER
         path: "/tmp/qemu-vhost-nic-1"
+        packet_trace: true
       }
       nic_details {
         id: "nic-2"
@@ -94,6 +96,7 @@ messages {
         bypass_filtering: false
         type: VHOST_USER_SERVER
         path: "/tmp/qemu-vhost-nic-2"
+        packet_trace: true
       }
     }
   }

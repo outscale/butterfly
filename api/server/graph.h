@@ -72,6 +72,19 @@ class Graph {
      * @param  enable true to enable IP antispoof, false otherwise
      */
     void NicConfigAntiSpoof(const app::Nic &nic, bool enable);
+    /** Enabale packet traceability in nic graph
+     * @param  nic nic to enable packet traceability
+     */
+    void EnablePacketTrace(const app::Nic &nic);
+    /** Disable packet traceability in nic graph
+     * @param  nic nic to disable packet taceability
+     */
+    void DisablePacketTrace(const app::Nic &nic);
+    /** Enabale or disable packet traceability in nic graph
+     * @param  nic nic to update
+     * @param  is_trace true to enable packet traceability, false otherwise
+     */
+    void NicConfigPacketTrace(const app::Nic &nic, bool is_trace);
     /** Rebuild all firewall rules of a NIC
      * @param  nic model of the NIC
      */
@@ -102,6 +115,7 @@ class Graph {
         VHOST_STOP,
         LINK,
         UNLINK,
+        UNLINK_EDGE,
         ADD_VNI,
         UPDATE_POLL,
         FW_RELOAD,
@@ -117,6 +131,11 @@ class Graph {
 
     struct RpcUnlink {
         struct pg_brick *b;
+    };
+
+    struct RpcUnlink_edge {
+        struct pg_brick *w;
+        struct pg_brick *e;
     };
 
     struct RpcAddVni {
@@ -156,6 +175,7 @@ class Graph {
         enum RpcAction action;
         struct RpcLink link;
         struct RpcUnlink unlink;
+        struct RpcUnlink_edge unlink_edge;
         struct RpcAddVni add_vni;
         struct RpcUpdatePoll update_poll;
         struct RpcFwReload fw_reload;
@@ -169,6 +189,7 @@ class Graph {
     void vhost_stop();
     void link(BrickShrPtr w, BrickShrPtr e);
     void unlink(BrickShrPtr b);
+    void unlink_edge(BrickShrPtr w, BrickShrPtr e);
     void add_vni(BrickShrPtr vtep, BrickShrPtr neighbor, uint32_t vni);
     void update_poll();
     void fw_reload(BrickShrPtr b);
@@ -217,10 +238,10 @@ class Graph {
 
     const char *NicPath(BrickShrPtr nic);
     /**
-     * Try to link @eastBrick to @westBrick, and add @sniffer betwin those
+     * Try to link @westBrick to @eastBrick, and add @sniffer betwin those
      * bricks
      */
-    bool LinkAndStalk(BrickShrPtr eastBrick, BrickShrPtr westBrick,
+    bool LinkAndStalk(BrickShrPtr westBrick, BrickShrPtr eastBrick,
                       BrickShrPtr sniffer);
 
     /* VM branch. */

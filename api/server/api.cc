@@ -214,6 +214,12 @@ bool Api::ActionNicUpdate(const Api::NicUpdate &update,
         app::graph.NicConfigAntiSpoof(n, n.ip_anti_spoof);
     }
 
+    // Update packet trace if needed
+    if (update.has_packet_trace) {
+        app::graph.NicConfigPacketTrace(n, update.packet_trace);
+        n.packet_trace = update.packet_trace;
+    }
+
     if (need_fw_update)
         app::graph.FwUpdate(n);
 

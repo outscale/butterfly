@@ -44,6 +44,8 @@ class Api {
     // This structure centralize description of NicUpdate informations
     struct NicUpdate {
         std::string id;
+        bool has_packet_trace;
+        bool packet_trace;
         bool has_ip_anti_spoof;
         bool ip_anti_spoof;
         std::vector<app::Ip> ip;
