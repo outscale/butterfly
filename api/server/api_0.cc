@@ -681,7 +681,7 @@ bool Api0::ValidateMac(const std::string &mac) {
                &addr[3], &addr[4], &addr[5]) != 6)
         return false;
     for (int i = 0; i < 6; i++)
-        if (addr[i] < 0 || addr[i] > 255)
+        if (addr[i] > 255)
             return false;
     return true;
 }
