@@ -89,13 +89,13 @@ class Log {
     ~Log();
     bool SetLogLevel(std::string level);
     void Debug(const char *message, ...);
-    void Debug(const std::string &message, ...);
+    void Debug(const std::string message, ...);
     void Info(const char *message, ...);
-    void Info(const std::string &message, ...);
+    void Info(const std::string message, ...);
     void Warning(const char *message, ...);
-    void Warning(const std::string &message, ...);
+    void Warning(const std::string message, ...);
     void Error(const char *message, ...);
-    void Error(const std::string &message, ...);
+    void Error(const std::string message, ...);
     static void Open();
 
  private:
