@@ -69,6 +69,7 @@ struct Config {
     std::string dpdk_args;
     int graph_core_id;
     bool packet_trace;
+    std::string packet_trace_path;
     int tid;
     std::string nic_mtu;
     int dpdk_port;

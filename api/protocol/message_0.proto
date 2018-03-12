@@ -186,6 +186,8 @@ message MessageV0 {
     optional string path = 10;
     // dump VM traffic in pcap file
     optional bool packet_trace = 11;
+    //path to store pcap file
+    optional string packet_trace_path = 12;
   }
 
   // NIC statistics
@@ -282,6 +284,8 @@ message MessageV0 {
     repeated string security_group = 4;
     // Update dumping vm traffic in pcap file
     optional bool packet_trace = 5;
+    //path to store pcap file
+    optional string packet_trace_path = 6;
   }
 
   message NicAddRes {

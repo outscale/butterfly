@@ -29,6 +29,7 @@ Nic::Nic() {
     vni = 0;
     ip_anti_spoof = false;
     packet_trace = false;
+    packet_trace_path = "";
     bypass_filtering = false;
     type = VHOST_USER_SERVER;
 }

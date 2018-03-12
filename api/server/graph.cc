@@ -521,8 +521,8 @@ bool Graph::NicAdd(app::Nic *nic_) {
     }
     if (nic.packet_trace) {
         name = "sniffer-" + gn.id;
-        gn.pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
-                              "-" + gn.id + ".pcap").c_str(), "w");
+        gn.packet_trace_path = nic.packet_trace_path;
+        gn.pcap_file = fopen(gn.packet_trace_path.c_str(), "w");
         gn.sniffer = BrickShrPtr(pg_print_new(name.c_str(), gn.pcap_file,
                                  PG_PRINT_FLAG_PCAP |
                                  PG_PRINT_FLAG_CLOSE_FILE,
@@ -738,6 +738,23 @@ void Graph::NicConfigAntiSpoof(const app::Nic &nic, bool enable) {
     }
 }
 
+void Graph::LinkSniffer(const app::Nic &nic, Graph::BrickShrPtr n_sniffer) {
+    Graph::GraphNic *g_nic = FindNic(nic);
+
+    if (nic.bypass_filtering) {
+        unlink(g_nic->vhost);
+        g_nic->head = n_sniffer;
+        link(n_sniffer, g_nic->vhost);
+        link(vtep_, g_nic->head);
+        add_vni(vtep_, g_nic->head, nic.vni);
+    } else {
+        unlink_edge(g_nic->antispoof, g_nic->vhost);
+        g_nic->head = n_sniffer;
+        link(g_nic->antispoof, n_sniffer);
+        link(n_sniffer, g_nic->vhost);
+    }
+}
+
 void Graph::EnablePacketTrace(const app::Nic &nic) {
     Graph::GraphNic *g_nic = FindNic(nic);
     std::string name;
@@ -749,8 +766,7 @@ void Graph::EnablePacketTrace(const app::Nic &nic) {
 
     if (g_nic->sniffer == NULL) {
         name = "sniffer-" + g_nic->id;
-        g_nic->pcap_file = fopen(("/tmp/butterfly-" + std::to_string(getpid()) +
-                                 "-" + g_nic->id + ".pcap").c_str(), "w");
+        g_nic->pcap_file = fopen(nic.packet_trace_path.c_str(), "w");
         g_nic->sniffer = BrickShrPtr(pg_print_new(name.c_str(),
                                  g_nic->pcap_file, PG_PRINT_FLAG_PCAP |
                                  PG_PRINT_FLAG_CLOSE_FILE,
@@ -761,18 +777,7 @@ void Graph::EnablePacketTrace(const app::Nic &nic) {
             return;
         }
     }
-    if (nic.bypass_filtering) {
-        unlink(g_nic->vhost);
-        g_nic->head = g_nic->sniffer;
-        link(g_nic->sniffer, g_nic->vhost);
-        link(vtep_, g_nic->head);
-        add_vni(vtep_, g_nic->head, nic.vni);
-    } else {
-        unlink_edge(g_nic->antispoof, g_nic->vhost);
-        g_nic->head = g_nic->sniffer;
-        link(g_nic->antispoof, g_nic->sniffer);
-        link(g_nic->sniffer, g_nic->vhost);
-    }
+    LinkSniffer(nic, g_nic->sniffer);
 }
 
 void Graph::DisablePacketTrace(const app::Nic &nic) {
@@ -805,6 +810,32 @@ void Graph::NicConfigPacketTrace(const app::Nic &nic, bool is_trace_set) {
         EnablePacketTrace(nic);
     else
         DisablePacketTrace(nic);
+    update_poll();
+}
+
+void Graph::NicConfigPacketTracePath(const app::Nic &nic,
+                                     std::string update_path) {
+    Graph::GraphNic *g_nic = FindNic(nic);
+    FILE *n_pcap_file;
+    std::string name;
+    if (nic.packet_trace_path == update_path) {
+        app::log.Info("packet trace path %s is already exist",
+                      update_path.c_str());
+         return;
+    }
+
+    DisablePacketTrace(nic);
+    name = "sniffer-" + g_nic->id;
+    n_pcap_file = fopen(update_path.c_str(), "w");
+    BrickShrPtr n_sniffer = BrickShrPtr(pg_print_new(name.c_str(),
+                                  n_pcap_file, PG_PRINT_FLAG_PCAP |
+                                  PG_PRINT_FLAG_CLOSE_FILE,
+                                  NULL, &app::pg_error), pg_brick_destroy);
+    if (!n_sniffer) {
+        PG_ERROR_(app::pg_error);
+        return;
+    }
+    LinkSniffer(nic, n_sniffer);
     update_poll();
 }
 

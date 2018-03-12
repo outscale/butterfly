@@ -57,6 +57,7 @@ messages {
         type: VHOST_USER_SERVER
         path: "/tmp/qemu-vhost-nic-2"
         packet_trace: true
+        packet_trace_path: "/tmp/butterfly-5593-nic-2.pcap"
       }
     }
   }
@@ -82,6 +83,7 @@ messages {
         type: VHOST_USER_SERVER
         path: "/tmp/qemu-vhost-nic-1"
         packet_trace: true
+        packet_trace_path: "/tmp/butterfly-5593-nic-1.pcap"
       }
       nic_details {
         id: "nic-2"
@@ -97,6 +99,7 @@ messages {
         type: VHOST_USER_SERVER
         path: "/tmp/qemu-vhost-nic-2"
         packet_trace: true
+        packet_trace_path: "/tmp/butterfly-5593-nic-2.pcap"
       }
     }
   }

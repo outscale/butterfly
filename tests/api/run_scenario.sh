@@ -105,7 +105,16 @@ set -e
 check_file $output
 
 err=false
-diff $output $expected_response
+
+# At the moment we just remove the packet trace path in the output
+# and expected_response, because butterfly "PID" change all the time.
+# We will fix it later.
+#diff $output $expected_response
+test_output='/tmp/output_without_path'
+test_response='/tmp/expected_response_without_path'
+cat $output | sed -e '/packet_trace_path/d' > $test_output
+cat $expected_response | sed -e '/packet_trace_path/d' > $test_response
+diff $test_output $test_response
 if [ $? -ne 0 ]; then
     echo "expected response differs from server's response"
     err=true
@@ -114,6 +123,9 @@ fi
 # Clean output
 if [ -z $learn_mode ]; then
     rm $output
+    rm $test_response
+    rm $test_output
+    rm /tmp/*.pcap
 fi
 
 if [ $err = true ]; then

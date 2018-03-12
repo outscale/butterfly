@@ -85,6 +85,11 @@ class Graph {
      * @param  is_trace true to enable packet traceability, false otherwise
      */
     void NicConfigPacketTrace(const app::Nic &nic, bool is_trace);
+    /** Update path of packet traceability in nic graph if packet trace is set
+     * @param  nic nic to update
+     * @param  path path to store packet trace file (pcap file)
+     */
+    void NicConfigPacketTracePath(const app::Nic &nic, std::string path);
     /** Rebuild all firewall rules of a NIC
      * @param  nic model of the NIC
      */
@@ -247,6 +252,7 @@ class Graph {
     /* VM branch. */
     struct GraphNic {
        std::string id;
+       std::string packet_trace_path;
        // head is a pointer to the first brick in the branch
        BrickShrPtr head;
        BrickShrPtr firewall;
@@ -268,7 +274,7 @@ class Graph {
     };
 
     GraphNic *FindNic(const app::Nic &nic);
-
+    void LinkSniffer(const app::Nic &nic, BrickShrPtr n_sniffer);
     /* Global branch. */
     BrickShrPtr nic_;
     BrickShrPtr vtep_;

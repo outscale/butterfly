@@ -18,6 +18,7 @@
 #ifndef API_SERVER_API_H_
 #define API_SERVER_API_H_
 
+#include <unistd.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/stubs/common.h>
 #include <string>
@@ -46,6 +47,7 @@ class Api {
         std::string id;
         bool has_packet_trace;
         bool packet_trace;
+        std::string packet_trace_path;
         bool has_ip_anti_spoof;
         bool ip_anti_spoof;
         std::vector<app::Ip> ip;

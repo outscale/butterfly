@@ -220,6 +220,12 @@ bool Api::ActionNicUpdate(const Api::NicUpdate &update,
         n.packet_trace = update.packet_trace;
     }
 
+    // Update packet trace path if needed
+    if (n.packet_trace && !update.packet_trace_path.empty()) {
+        app::graph.NicConfigPacketTracePath(n, update.packet_trace_path);
+        n.packet_trace_path = update.packet_trace_path;
+    }
+
     if (need_fw_update)
         app::graph.FwUpdate(n);
 

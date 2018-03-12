@@ -730,6 +730,8 @@ bool Api0::Convert(const app::Nic &nic_model, MessageV0_Nic *nic_message) {
     nic_message->set_ip_anti_spoof(nic_model.ip_anti_spoof);
     // packet trace
     nic_message->set_packet_trace(nic_model.packet_trace);
+    // packet trace path
+    nic_message->set_packet_trace_path(nic_model.packet_trace_path);
     // Sniff target
     if (nic_model.sniff_target_nic_id.length() > 0)
         nic_message->set_sniff_target_nic_id(nic_model.sniff_target_nic_id);
@@ -783,6 +785,12 @@ bool Api0::Convert(const MessageV0_Nic &nic_message, app::Nic *nic_model) {
     nic_model->packet_trace = app::config.packet_trace;
     if (nic_message.has_packet_trace())
         nic_model->packet_trace = nic_message.packet_trace();
+    // Packet trace path
+    if (!nic_message.packet_trace_path().empty())
+        nic_model->packet_trace_path = nic_message.packet_trace_path();
+    else
+        nic_model->packet_trace_path = "/tmp/butterfly-" +
+            std::to_string(getpid()) + "-" + nic_model->id + ".pcap";
     // Sniff target
     if (nic_message.has_sniff_target_nic_id())
         nic_model->sniff_target_nic_id = nic_message.sniff_target_nic_id();
@@ -819,6 +827,14 @@ bool Api0::Convert(const MessageV0_NicUpdateReq &nic_update_message,
     } else {
         nic_update_model->has_packet_trace = false;
     }
+    // Packet trace path
+    if (nic_update_model->packet_trace &&
+        !nic_update_message.packet_trace_path().empty())
+        nic_update_model->packet_trace_path =
+        nic_update_message.packet_trace_path();
+    else
+        nic_update_model->packet_trace_path = "/tmp/butterfly-" +
+            std::to_string(getpid()) + "-" + nic_update_model->id + ".pcap";
     // IP list of NIC
     nic_update_model->ip_overwrite =
         nic_update_message.ip_size() ? true : false;
