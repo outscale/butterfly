@@ -390,6 +390,7 @@ static int SubNicSg(int argc, char **argv, const GlobalOptions &options) {
 
 NicAddOptions::NicAddOptions() {
     packet_trace = "";
+    packet_trace_path = "";
     enable_antispoof = "false";
     bypass_filtering = "false";
     type = "VHOST_USER_SERVER";
@@ -397,6 +398,7 @@ NicAddOptions::NicAddOptions() {
 
 NicUpdateOptions::NicUpdateOptions() {
     packet_trace = "";
+    packet_trace_path = "";
     enable_antispoof = "";
 }
 
@@ -424,8 +426,15 @@ int NicAddOptions::Parse(int argc, char **argv) {
         else if (string(argv[i]) == "--bypass-filtering")
             bypass_filtering = "true";
         else if (string(argv[i]) == "--packet-trace")
-            packet_trace = "packet_trace: " + std::string(argv[i + 1]);
+            packet_trace = "packet_trace: " + string(argv[i + 1]);
+        else if (string(argv[i]) == "--trace-path")
+            packet_trace_path = "packet_trace_path: " + string(argv[i + 1]);
     }
+
+    if (!packet_trace_path.empty() &&
+        (packet_trace.empty() || packet_trace == "packet_trace: false"))
+        return 1;
+
     if (type != "VHOST_USER_SERVER" && type != "TAP")
         return 1;
     return !mac.length() || !id.length() || !vni.length();
@@ -441,8 +450,14 @@ int NicUpdateOptions::Parse(int argc, char **argv) {
             id = string(argv[i + 1]);
         else if (string(argv[i]) == "--packet-trace")
             packet_trace = "packet_trace: " + string(argv[i + 1]);
+        else if (string(argv[i]) == "--trace-path")
+            packet_trace_path = "packet_trace_path: \"" +
+                                string(argv[i + 1]) + "\"";
     }
     if (id.empty())
+        return 1;
+    if (!packet_trace_path.empty() &&
+        (packet_trace.empty() || packet_trace == "packet_trace: false"))
         return 1;
     return 0;
 }
@@ -461,8 +476,11 @@ static void SubNicAddHelp(void) {
             << endl <<
         "    --enable-antispoof  enable antispoof protection (default: off)"
             << endl <<
-        "    --packet-trace true/false  trace a nic or not" <<
+        "    --packet-trace      true/false  trace a nic or not" <<
         "    (default: use server behaviour)" << endl <<
+        "    --trace-path PATH    where to store pcap file if packet-trace" <<
+        "    was set true (default: PATH = /tmp/butterfly-PID-nic-NICID.pcap)"
+            << endl <<
         "    --bypass-filtering  remove all filters and protection" << endl;
     GlobalParameterHelp();
 }
@@ -474,9 +492,12 @@ static void SubNicUpdateHelp(void) {
         "    --ip IP             virtual interface's ip (v4 or v6)"
             << endl <<
         "    --id ID             interface's id (mandatory)" << endl <<
-        "    --enable-antispoof true/fasle  enable antispoof" << endl <<
-        "    --packet-trace true/false  trace a nic or not" <<
-        "    (default: use server behaviour)" << endl;
+        "    --enable-antispoof  true/fasle  enable antispoof" << endl <<
+        "    --packet-trace      true/false  trace a nic or not" <<
+        "    (default: use server behaviour)" << endl <<
+        "    --trace-path PATH    where to store pcap file if packet-trace" <<
+        "    was set true (default: PATH = /tmp/butterfly-PID-nic-NICID.pcap)"
+            << endl;
     GlobalParameterHelp();
 }
 
@@ -509,6 +530,7 @@ static int SubNicAdd(int argc, char **argv, const GlobalOptions &options) {
         "        ip_anti_spoof: " + o.enable_antispoof +
         "        type: " + o.type +
         "        " + o.packet_trace +
+        "        " + o.packet_trace_path +
         "        bypass_filtering: " + o.bypass_filtering +
         "      }"
         "    }"
@@ -558,6 +580,7 @@ static int SubNicUpdate(int argc, char **argv, const GlobalOptions &options) {
         req += "  " + o.enable_antispoof + "";
     req +=
         "        " + o.packet_trace +
+        "        " + o.packet_trace_path +
         "      }"
         "    }"
         "  }"

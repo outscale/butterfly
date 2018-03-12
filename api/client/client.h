@@ -85,6 +85,7 @@ struct NicAddOptions {
     string vni;
     string type;
     string packet_trace;
+    string packet_trace_path;
     string bypass_filtering;
 };
 
@@ -95,6 +96,7 @@ struct NicUpdateOptions {
     string id;
     string enable_antispoof;
     string packet_trace;
+    string packet_trace_path;
 };
 
 struct RuleAddOptions {
