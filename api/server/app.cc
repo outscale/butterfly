@@ -254,45 +254,49 @@ bool Log::SetLogLevel(std::string level) {
     return true;
 }
 
-#define DEBUG_INTERNAL(TYPE) do {                                       \
+#define DEBUG_INTERNAL(TYPE, last_args) do {                            \
         va_list ap;                                                     \
                                                                         \
-        va_start(ap, message);                                          \
+        va_start(ap, last_args);                                        \
         logger(LOG_##TYPE,                                              \
                (std::string("<"#TYPE"> ") + message).c_str(), ap);      \
         va_end(ap);                                                     \
     } while (0)
 
 void Log::Debug(const char *message, ...) {
-    DEBUG_INTERNAL(DEBUG);
+    DEBUG_INTERNAL(DEBUG, message);
 }
 
 void Log::Info(const char *message, ...) {
-    DEBUG_INTERNAL(INFO);
+    DEBUG_INTERNAL(INFO, message);
 }
 
 void Log::Warning(const char *message, ...) {
-    DEBUG_INTERNAL(WARNING);
+    DEBUG_INTERNAL(WARNING, message);
 }
 
 void Log::Error(const char *message, ...) {
-    DEBUG_INTERNAL(ERR);
+    DEBUG_INTERNAL(ERR, message);
 }
 
-void Log::Debug(const std::string &message, ...) {
-    DEBUG_INTERNAL(DEBUG);
+void Log::Debug(const std::string msg, ...) {
+    const char *message = msg.c_str();
+    DEBUG_INTERNAL(DEBUG, msg);
 }
 
-void Log::Info(const std::string &message, ...) {
-    DEBUG_INTERNAL(INFO);
+void Log::Info(const std::string msg, ...) {
+    const char *message = msg.c_str();
+    DEBUG_INTERNAL(INFO, msg);
 }
 
-void Log::Warning(const std::string &message, ...) {
-    DEBUG_INTERNAL(WARNING);
+void Log::Warning(const std::string msg, ...) {
+    const char *message = msg.c_str();
+    DEBUG_INTERNAL(WARNING, msg);
 }
 
-void Log::Error(const std::string &message, ...) {
-    DEBUG_INTERNAL(ERR);
+void Log::Error(const std::string msg, ...) {
+    const char *message = msg.c_str();
+    DEBUG_INTERNAL(ERR, msg);
 }
 
 #undef DEBUG_INTERNAL
@@ -340,8 +344,9 @@ bool LoadConfigFile(std::string config_path) {
     v = ini.GetValue("general", "graph-core-id", "_");
     if (std::string(v) != "_") {
         config.graph_core_id = std::stoi(v);
-        std::string m = "LoadConfig: get graph-core-id from config: " +
-            config.graph_core_id;
+        std::string m = "LoadConfig: get graph-core-id from config: ";
+
+        m += config.graph_core_id;
         log.Debug(m);
     }
 
@@ -364,8 +369,9 @@ bool LoadConfigFile(std::string config_path) {
     v = ini.GetValue("general", "dpdk-port", "_");
     if (std::string(v) != "_") {
         config.dpdk_port = std::stoi(v);
-        std::string m = "LoadConfig: get dpdk-port from config: " +
-            config.dpdk_port;
+        std::string m = "LoadConfig: get dpdk-port from config: ";
+
+        m += config.dpdk_port;
         log.Debug(m);
     }
 
