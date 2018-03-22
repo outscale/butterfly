@@ -908,6 +908,60 @@ function test_packet_tracing {
     fi
 }
 
+function test_size {
+    declare -A my_arry  
+    path_list=${@:1}
+    cmp=0
+    timeout=20
+    size_tmp=0
+
+    for path in $path_list; do
+        my_arry[$path]=$(du -s "$path" | awk '{ print $1 }')
+    done
+
+    while [ $cmp -lt $timeout ]; do
+        size_tmp=${my_arry[$(echo $path_list | awk '{ print $1 }')]}
+        ret=0
+        for path in $path_list; do
+            if [ $size_tmp -ne ${my_arry[$path]} ]; then
+                ret=1
+                break
+            fi
+        done
+        if [ $ret -eq 0 ]; then
+           return $ret
+        fi
+        for path in $path_list; do
+            my_arry[$path]=$(du -s $path | awk '{ print $1 }')
+        done
+        cmp=$(( $cmp + 1 ))
+    done
+    return 1
+}
+
+function test_packet_trace_path {
+    check=$1
+    path_list=${@:2}
+
+    for path in $path_list; do
+        if [ ! -f $path ]; then
+            fail "Trace path FAIL: can not found $path"
+            return 1
+        fi
+    done
+    test_size $path_list
+    result="$?"
+    if [ "$check" == "0" ] && [ "$result" == "1" ]; then
+        echo "No trace path: $path_list OK"
+    elif [ "$check" == "1" ] && [ "$result" == "0" ]; then
+        echo "Trace path: $path_list OK"
+    elif [ "$check" == "1" ] && [ "$result" == "1" ]; then
+        fail "Trace path: $path_list FAIL"
+    else
+        fail "No trace path: $path_list FAIL"
+    fi
+}
+
 function nic_add_bypass {
     but_id=$1
     nic_id=$2
