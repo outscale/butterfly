@@ -753,6 +753,7 @@ void Graph::LinkSniffer(const app::Nic &nic, Graph::BrickShrPtr n_sniffer) {
         link(g_nic->antispoof, n_sniffer);
         link(n_sniffer, g_nic->vhost);
     }
+    WaitEmptyQueue();
 }
 
 void Graph::EnablePacketTrace(const app::Nic &nic) {
@@ -803,6 +804,7 @@ void Graph::DisablePacketTrace(const app::Nic &nic) {
         g_nic->head = g_nic->antispoof;
         link(g_nic->antispoof, g_nic->vhost);
     }
+    WaitEmptyQueue();
 }
 
 void Graph::NicConfigPacketTrace(const app::Nic &nic, bool is_trace_set) {
