@@ -23,7 +23,7 @@ ssh_connection_test udp 1 2 7543
 ssh_connection_test udp 2 1 6041
 ssh_connection_test sctp 1 2 7500
 ssh_connection_test sctp 2 1 8506
-test_packet_tracing 1 1 2
+test_packet_tracing true 1 2
 
 nic_update 0 1 --packet-trace true --trace-path ./trace_nic1.pcap
 nic_update 1 2 --packet-trace true --trace-path ./trace_nic2.pcap
@@ -36,8 +36,7 @@ ssh_connection_test udp 1 2 7543
 ssh_connection_test udp 2 1 6041
 ssh_connection_test sctp 1 2 7500
 ssh_connection_test sctp 2 1 8506
-test_packet_trace_path 1 ./trace_nic1.pcap ./trace_nic2.pcap
-
+test_packet_trace_path true ./trace_nic1.pcap ./trace_nic2.pcap
 nic_update 0 1 --packet-trace false
 
 ssh_ping 1 2
@@ -48,7 +47,9 @@ ssh_connection_test udp 1 2 7543
 ssh_connection_test udp 2 1 6041
 ssh_connection_test sctp 1 2 7500
 ssh_connection_test sctp 2 1 8506
-test_packet_trace_path 0 ./trace_nic1.pcap ./trace_nic2.pcap
+ssh_connection_test sctp 1 2 7800
+ssh_connection_test sctp 2 1 9006
+test_packet_trace_path true ./trace_nic1.pcap ./trace_nic2.pcap
 
 nic_update 0 1 --packet-trace true --trace-path /tmp/trace_nic1.pcap
 nic_update 1 2 --packet-trace true --trace-path /tmp/trace_nic2.pcap
@@ -61,7 +62,7 @@ ssh_connection_test udp 1 2 7543
 ssh_connection_test udp 2 1 6041
 ssh_connection_test sctp 1 2 7500
 ssh_connection_test sctp 2 1 8506
-test_packet_trace_path 1 /tmp/trace_nic1.pcap /tmp/trace_nic2.pcap
+test_packet_trace_path true /tmp/trace_nic1.pcap /tmp/trace_nic2.pcap
 qemu_stop 1
 qemu_stop 2
 server_stop 0
