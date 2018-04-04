@@ -857,75 +857,60 @@ function test_packet_tracing {
     for i in $id_list; do
         if [ "$i" != "0" ] && [ -e /tmp/*nic-$i.pcap ]; then
             sleep 0.2
-            du -s /tmp/*nic-$i.pcap | awk '{ print $1 }' >> /tmp/tracing
+            paths+=" /tmp/*nic-$i.pcap"
         else
             fail "Tracing failed: can not found pcap file with id $i"
         fi
     done
+    test_packet_trace_path $check $paths
+    unset paths
+}
 
-    tpnic1=$(sed -n "1p" /tmp/tracing)
-    tpnic2=$(sed -n "2p" /tmp/tracing)
-
-    if [ $check -eq 1 ]; then
-        cmp=0
-        timeout=20
-        while [ $cmp -ne $timeout ]; do
-            if [ $tpnic1 -eq $tpnic2 ]; then
-                echo "Packet trace VM $id1 ---> VM $id2 OK"
-                rm /tmp/tracing
-                return 0
-            fi
-            rm /tmp/tracing
-            for i in $id_list; do
-                du -s /tmp/*nic-$i.pcap | awk '{ print $1 }' >> /tmp/tracing
-            done
-            tpnic1=$(sed -n "1p" /tmp/tracing)
-            tpnic2=$(sed -n "2p" /tmp/tracing)
-            sleep 0.1
-            cmp=$(( $cmp + 1 ))
-        done
-        rm /tmp/tracing
-        fail "Packet trace VM $id1 ---> VM $id2 FAIL"
+function print_message {
+    if [ "$1" == "1" ]; then
+        echo "$2 OK"
     else
-        if [ $tpnic1 -ne $tpnic2 ]; then
-            echo "Packet trace VM $id1 --/-> VM $id2 OK"
-            rm /tmp/tracing
-        else
-            rm /tmp/tracing
-            fail "packet trace VM $id1 --/-> VM $id2 FAIL"
-        fi
+        fail "$2 FAIL"
     fi
 }
 
 function test_size {
     declare -A my_arry  
-    path_list=${@:1}
-    cmp=0
-    timeout=20
-    size_tmp=0
+    path_lists=${@:1}
+    ret=0;
 
-    for path in $path_list; do
+    for path in $path_lists; do
         my_arry[$path]=$(du -s "$path" | awk '{ print $1 }')
+        if [ ! -e $path-butterfly_size ]; then
+            if [ ${my_arry[$path]} -gt "0" ]; then
+                ret=1
+            fi
+            echo "${my_arry[$path]}" > $path-butterfly_size
+        fi
     done
 
-    while [ $cmp -lt $timeout ]; do
-        size_tmp=${my_arry[$(echo $path_list | awk '{ print $1 }')]}
-        ret=0
-        for path in $path_list; do
-            if [ $size_tmp -ne ${my_arry[$path]} ]; then
-                ret=1
-                break
-            fi
-        done
-        if [ $ret -eq 0 ]; then
-           return $ret
+    if [ $ret -eq "1" ]; then
+        unset path_lists
+        unset my_arry[@]
+        unset path
+        return $ret
+    fi
+
+    for path in $path_lists; do
+        if [ ${my_arry[$path]} -eq $(cat "$path-butterfly_size") ]; then
+            echo "${my_arry[$path]}" > $path-butterfly_size
+            ret=0
+        elif [ ${my_arry[$path]} -gt $(cat "$path-butterfly_size") ]; then
+            echo "${my_arry[$path]}" > $path-butterfly_size
+            ret=1
+        else
+            ret=-1
         fi
-        for path in $path_list; do
-            my_arry[$path]=$(du -s $path | awk '{ print $1 }')
-        done
-        cmp=$(( $cmp + 1 ))
     done
-    return 1
+    unset path_lists
+    unset my_arry[@]
+    unset path
+    return $ret
 }
 
 function test_packet_trace_path {
@@ -938,17 +923,18 @@ function test_packet_trace_path {
             return 1
         fi
     done
+
     test_size $path_list
     result="$?"
-    if [ "$check" == "0" ] && [ "$result" == "1" ]; then
-        echo "No trace path: $path_list OK"
-    elif [ "$check" == "1" ] && [ "$result" == "0" ]; then
-        echo "Trace path: $path_list OK"
-    elif [ "$check" == "1" ] && [ "$result" == "1" ]; then
-        fail "Trace path: $path_list FAIL"
+    if [ "$check" == "false" ]; then
+        print_message $(($result == 0)) "Disable tracing on: $path_list"
+    elif [ "$check" == "true" ]; then
+        print_message $(($result == 1)) "Enable tracing on: $path_list"
     else
-        fail "No trace path: $path_list FAIL"
+        fail "Error $check have to be true or false"
     fi
+    unset path_list
+    unset check
 }
 
 function nic_add_bypass {
@@ -1229,6 +1215,8 @@ function clean_all {
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
     rm -rf $BUTTERFLY_BUILD_ROOT/qemu_pids*
+    rm -rf $BUTTERFLY_BUILD_ROOT/*-butterfly_size
+    rm -rf /tmp/*-butterfly_size
 }
 
 function fail {

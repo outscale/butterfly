@@ -42,7 +42,7 @@ do
     ssh_connection_test sctp 2 1 6028
 
     sleep 1
-    test_packet_tracing 1 1 2
+    test_packet_tracing true 1 2
 done
 
 qemu_stop 1
