@@ -140,8 +140,9 @@ bool Graph::Start(std::string dpdk_args) {
 
     // Create nic brick
     if (app::config.dpdk_port < 0) {
-        app::log.Error("invalid DPDK port " +
-                       std::to_string(app::config.dpdk_port));
+        std::string m = "invalid DPDK port " +
+                        std::to_string(app::config.dpdk_port);
+        LOG_ERROR_("%s", m.c_str());
         return false;
     }
     nic_ = BrickShrPtr(pg_nic_new_by_id(
@@ -163,8 +164,8 @@ bool Graph::Start(std::string dpdk_args) {
             LOG_INFO_("created tap interface %s", pg_tap_ifname(nic_.get()));
         }
     } else {
-        app::log.Debug("using dpdk port " +
-                       std::to_string(app::config.dpdk_port));
+        LOG_DEBUG_("using dpdk port " +
+                   std::to_string(app::config.dpdk_port));
         SetConfigMtu();
         pg_nic_get_mac(nic_.get(), &mac);
     }
@@ -173,13 +174,13 @@ bool Graph::Start(std::string dpdk_args) {
         !(nic_capa_tx & PG_NIC_TX_OFFLOAD_OUTER_IPV4_CKSUM) ||
         !(nic_capa_tx & PG_NIC_TX_OFFLOAD_TCP_TSO)) {
         if (app::config.no_offload)
-            app::log.Info("offloading manually desactivated");
+            LOG_INFO_("offloading manually desactivated");
         else
-            app::log.Info("no offloading available");
+            LOG_INFO_("no offloading available");
         pg_vhost_global_disable(VIRTIO_NET_F_HOST_TSO4 |
                                 VIRTIO_NET_F_HOST_TSO6);
     } else {
-        app::log.Info("some offloading is available");
+        LOG_INFO_("some offloading is available");
     }
 
     // Create sniffer brick
@@ -223,7 +224,7 @@ void Graph::SetConfigMtu() {
         goto exit;
 
     if (app::config.nic_mtu == "max") {
-        app::log.Info("try to find maximal MTU");
+        LOG_INFO_("try to find maximal MTU");
         int min = 1400;
         int max = 65536;
 
@@ -238,9 +239,9 @@ void Graph::SetConfigMtu() {
         }
         if (pg_nic_set_mtu(nic_.get(), min, &app::pg_error) < 0) {
             PG_ERROR_(app::pg_error);
-            app::log.Error("failed to find minimal supported MTU");
+            LOG_ERROR_("failed to find minimal supported MTU");
         } else {
-           app::log.Info("found maximal MTU of " + std::to_string(min));
+            LOG_INFO_("found maximal MTU of " + std::to_string(min));
         }
     } else {
         try {
@@ -249,14 +250,14 @@ void Graph::SetConfigMtu() {
                 if (pg_nic_set_mtu(nic_.get(), mtu, &app::pg_error) < 0) {
                     PG_ERROR_(app::pg_error);
                 } else {
-                    app::log.Info("MTU successfully set to " +
-                                  app::config.nic_mtu);
+                    LOG_INFO_("MTU successfully set to " +
+                              app::config.nic_mtu);
                 }
             } else {
                 LOG_ERROR_("bad MTU, must be > 0");
             }
         } catch(...) {
-            app::log.Error("bad nic-mtu argument");
+            LOG_ERROR_("bad nic-mtu argument");
         }
     }
 
@@ -264,9 +265,9 @@ exit:
         uint16_t mtu;
         if (pg_nic_get_mtu(nic_.get(), &mtu, &app::pg_error) < 0) {
             PG_ERROR_SILENT_(app::pg_error);
-            app::log.Debug("cannot get physical nic mtu");
+            LOG_DEBUG_("cannot get physical nic mtu");
         } else {
-            app::log.Debug("physical nic mtu is " + std::to_string(mtu));
+            LOG_DEBUG_("physical nic mtu is " + std::to_string(mtu));
         }
 }
 
@@ -759,8 +760,8 @@ void Graph::EnablePacketTrace(const app::Nic &nic) {
     Graph::GraphNic *g_nic = FindNic(nic);
     std::string name;
     if (nic.packet_trace) {
-        app::log.Info("packet trace option on %s is already enabled",
-                      nic.id.c_str());
+        LOG_INFO_("packet trace option on %s is already enabled",
+                  nic.id.c_str());
         return;
     }
 
@@ -783,13 +784,13 @@ void Graph::EnablePacketTrace(const app::Nic &nic) {
 void Graph::DisablePacketTrace(const app::Nic &nic) {
     Graph::GraphNic *g_nic = FindNic(nic);
     if (!nic.packet_trace) {
-        app::log.Info("packet trace option on %s is already disabled",
-                      nic.id.c_str());
+        LOG_INFO_("packet trace option on %s is already disabled",
+                  nic.id.c_str());
         return;
     }
 
     if (g_nic->sniffer == NULL) {
-        app::log.Error("can not find pcap brick");
+        LOG_ERROR_("can not find pcap brick");
         return;
     }
 
@@ -819,8 +820,8 @@ void Graph::NicConfigPacketTracePath(const app::Nic &nic,
     FILE *n_pcap_file;
     std::string name;
     if (nic.packet_trace_path == update_path) {
-        app::log.Info("packet trace path %s is already exist",
-                      update_path.c_str());
+        LOG_INFO_("packet trace path %s is already exist",
+                  update_path.c_str());
          return;
     }
 
@@ -861,7 +862,7 @@ std::string Graph::FwBuildRule(const app::Rule &rule) {
         if (sg == app::model.security_groups.end()) {
             std::string m = "security group " + rule.security_group +
                             " not available";
-            app::log.Error(m);
+            LOG_ERROR_("%s", m.c_str());
             return "";
         }
         if (sg->second.members.size() > 0) {
@@ -875,7 +876,7 @@ std::string Graph::FwBuildRule(const app::Rule &rule) {
             r += ")";
         } else {
             std::string m = "no member in security group " + sg->second.id;
-            app::log.Warning(m);
+            LOG_WARNING_("%s", m.c_str());
             return "";
         }
     }
@@ -1014,14 +1015,14 @@ void Graph::FwUpdate(const app::Nic &nic) {
     pg_firewall_rule_flush(fw.get());
     std::string m;
     m = "rules (in) for nic " + nic.id + ": " + in_rules;
-    app::log.Debug(m);
+    LOG_DEBUG_("%s", m.c_str());
     m = "rules (out) for nic " + nic.id + ": " + out_rules;
-    app::log.Debug(m);
+    LOG_DEBUG_("%s", m.c_str());
     if (in_rules.length() > 0 &&
         (pg_firewall_rule_add(fw.get(), in_rules.c_str(), PG_WEST_SIDE,
                               0, &app::pg_error) < 0)) {
         std::string m = "cannot build rules (in) for nic " + nic.id;
-        app::log.Error(m);
+        LOG_ERROR_("%s", m.c_str());
         PG_ERROR_(app::pg_error);
         return;
     }
@@ -1029,7 +1030,7 @@ void Graph::FwUpdate(const app::Nic &nic) {
         pg_firewall_rule_add(fw.get(), out_rules.c_str(), PG_EAST_SIDE,
                              1,  &app::pg_error) < 0) {
         std::string m = "cannot build rules (out) for nic " + nic.id;
-        app::log.Error(m);
+        LOG_ERROR_("%s", m.c_str());
         PG_ERROR_(app::pg_error);
         return;
     }
@@ -1054,13 +1055,13 @@ void Graph::FwAddRule(const app::Nic &nic, const app::Rule &rule) {
     std::string r = FwBuildRule(rule);
     if (r.length() == 0) {
         m = "cannot build rule (add) for nic " + nic.id;
-        app::log.Error(m);
+        LOG_ERROR_("%s", m.c_str());
         PG_ERROR_(app::pg_error);
         return;
     }
 
     m = "adding new rule to firewall of nic " + nic.id + ": " + r;
-    app::log.Debug(m);
+    LOG_DEBUG_("%s", m.c_str()); 
 
     // Get firewall brick
     auto itvni = vnis_.find(nic.vni);
@@ -1071,7 +1072,7 @@ void Graph::FwAddRule(const app::Nic &nic, const app::Rule &rule) {
     auto itnic = itvni->second.nics.find(nic.id);
     if (itnic == itvni->second.nics.end()) {
         m = "nic " + nic.id + " not found";
-        app::log.Error(m);
+        LOG_ERROR_("%s", m.c_str());
         return;
     }
     BrickShrPtr &fw = itnic->second.firewall;
@@ -1080,8 +1081,8 @@ void Graph::FwAddRule(const app::Nic &nic, const app::Rule &rule) {
     if (pg_firewall_rule_add(fw.get(), r.c_str(), PG_WEST_SIDE,
                              0, &app::pg_error) < 0) {
         m = "cannot load rule (add) for nic " + nic.id;
-        app::log.Error(m);
-        app::log.Debug(r);
+        LOG_ERROR_("%s", m.c_str());
+        LOG_DEBUG_("%s", r.c_str()); 
         return;
     }
     fw_reload(fw);
