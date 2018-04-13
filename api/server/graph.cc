@@ -842,15 +842,16 @@ void Graph::NicConfigPacketTracePath(const app::Nic &nic,
 
 std::string Graph::FwBuildRule(const app::Rule &rule) {
     // Note that we only take into account inbound rules
-    if (rule.direction == app::Rule::OUTBOUND)
-        return "";
-
     std::string r;
 
     // Build source
     if (rule.security_group.length() == 0) {
         if (rule.cidr.mask_size != 0) {
-            r += "src net " + rule.cidr.address.Str() +
+            if (rule.direction == app::Rule::OUTBOUND)
+                r += "dst";
+            else
+                r += "src";
+            r += " net " + rule.cidr.address.Str() +
                  "/" +  std::to_string(rule.cidr.mask_size);
         } else if (rule.cidr.address.Type() == app::Ip::V4) {
             r += "ip";
@@ -1010,6 +1011,7 @@ void Graph::FwUpdate(const app::Nic &nic) {
     }
     out_rules += "(src host 0.0.0.0 and dst host 255.255.255.255 and "
                  "udp src port 68 and udp dst port 67)";
+    itnic->second.default_outbound_rule = true;
 
     // Push rules to the firewall
     pg_firewall_rule_flush(fw.get());
@@ -1040,6 +1042,8 @@ void Graph::FwUpdate(const app::Nic &nic) {
 }
 
 void Graph::FwAddRule(const app::Nic &nic, const app::Rule &rule) {
+    using app::Rule;
+
     std::string m;
     if (!started) {
         LOG_ERROR_("Graph has not been started");
@@ -1061,7 +1065,7 @@ void Graph::FwAddRule(const app::Nic &nic, const app::Rule &rule) {
     }
 
     m = "adding new rule to firewall of nic " + nic.id + ": " + r;
-    LOG_DEBUG_("%s", m.c_str()); 
+    LOG_DEBUG_("%s", m.c_str());
 
     // Get firewall brick
     auto itvni = vnis_.find(nic.vni);
@@ -1077,12 +1081,19 @@ void Graph::FwAddRule(const app::Nic &nic, const app::Rule &rule) {
     }
     BrickShrPtr &fw = itnic->second.firewall;
 
+    if (rule.direction == Rule::OUTBOUND &&
+        itnic->second.default_outbound_rule) {
+        pg_firewall_rule_flush_side(fw.get(), PG_EAST_SIDE);
+        itnic->second.default_outbound_rule = false;
+    }
     // Add rule & reload firewall
-    if (pg_firewall_rule_add(fw.get(), r.c_str(), PG_WEST_SIDE,
+    if (pg_firewall_rule_add(fw.get(), r.c_str(),
+                             rule.direction == Rule::OUTBOUND ?
+                             PG_EAST_SIDE : PG_WEST_SIDE,
                              0, &app::pg_error) < 0) {
         m = "cannot load rule (add) for nic " + nic.id;
         LOG_ERROR_("%s", m.c_str());
-        LOG_DEBUG_("%s", r.c_str()); 
+        LOG_DEBUG_("%s", r.c_str());
         return;
     }
     fw_reload(fw);
