@@ -133,7 +133,7 @@ cli 0 1 sg rule add sg-1 --ip-proto tcp --port not_a_port --cidr 10.0.0.0/24
 cli 0 1 sg rule add sg-1 --dir in --ip-proto tcp --port-start not_a_port --port-end 2000 --cidr 10.0.0.0/24
 cli 0 1 sg rule add sg-1 --dir in --ip-proto tcp --port-start 1000 --port-end not_a_port --cidr 10.0.0.0/24
 cli 0 1 sg rule add sg-1 --dir in --ip-proto tcp --port-start 2000 --port-end 1000 --cidr 10.0.0.0/24
-cli 0 1 sg rule add sg-1 --ip-proto 42 --sg-members sg-2 --dir out # not supported yet
+cli 0 0 sg rule add sg-1 --ip-proto 42 --sg-members sg-2 --dir out
 cli 0 1 sg rule add sg-1 --ip-proto 42 --sg-members sg-2 --dir not_a_dir
 
 cli 0 1 sg rule list

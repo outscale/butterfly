@@ -644,6 +644,7 @@ function server_start_options_ipv4 {
     fi
     server_pids["$id"]=$pid
 }
+
 function network_connect {
     id1=$1
     id2=$2
