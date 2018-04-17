@@ -9,7 +9,7 @@ key=$BUTTERFLY_BUILD_ROOT/api-key
 bad_key=$BUTTERFLY_BUILD_ROOT/bad-api-key
 dd if=/dev/urandom bs=32 count=1 | base64 > $key
 dd if=/dev/urandom bs=32 count=1 | base64 > $bad_key
-server_start_options 0 -k $key
+server_start_options 0 -k $key -t
 server_start 1
 
 cli 0 1 status -k doesnotexits

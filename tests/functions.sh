@@ -584,7 +584,7 @@ function server_start_options {
     options=${@:2}
     echo "[butterfly-$id] starting"
 
-    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options -t &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
     pid=$!
     sleep 1
     sudo kill -s 0 $pid
@@ -597,18 +597,7 @@ function server_start_options {
 
 function server_start_no_trace {
     id=$1
-    options=${@:2}
-    echo "[butterfly-$id] starting"
-
-    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
-    pid=$!
-    sleep 1
-    sudo kill -s 0 $pid
-    if [ $? -ne 0 ]; then
-        fail "failed to start butterfly, check butterflyd_${id}_output file"
-    fi
-
-    server_pids["$id"]=$pid
+    server_start_optionts $id
 }
 
 function server_start_bonding {

@@ -24,8 +24,8 @@ for big in \
     _nic_add_3=$(echo $big | cut -d '+' -f 4)
 
     # both servers start with or without trace option
-    server_start_options 0 $_server_start_options
-    server_start_options 1 $_server_start_options
+    server_start_options 0 $_server_start_options -t
+    server_start_options 1 $_server_start_options -t
     nic_add 0 1 42 sg-1
     nic_add 1 2 42 sg-1
     qemus_start 1 2
