@@ -10,7 +10,6 @@ function usage {
     echo "   -h, --help : print this help" 1>&2
 }
 
-
 declare -A qemu_pids
 declare -A server_pids
 declare -A socat_pids
@@ -927,7 +926,6 @@ function test_size {
     done
     return 1
 }
-
 function test_packet_trace_path {
     check=$1
     path_list=${@:2}
@@ -950,7 +948,6 @@ function test_packet_trace_path {
         fail "No trace path: $path_list FAIL"
     fi
 }
-
 function nic_add_bypass {
     but_id=$1
     nic_id=$2
