@@ -597,7 +597,7 @@ function server_start_options {
 
 function server_start_no_trace {
     id=$1
-    server_start_optionts $id
+    server_start_options $id
 }
 
 function server_start_bonding {
