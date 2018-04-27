@@ -229,7 +229,7 @@ function ssh_iperf3_tcp {
     (ssh_run $id1 iperf3 -s &> /dev/null &)
     local server_pid=$!
     sleep 1
-    ssh_run $id2 iperf3 -c 42.0.0.$id1 -t 3 &> /dev/null
+    ssh_run $id2 iperf3 -c 42.0.0.$id1 -t 10 #&> /dev/null
     if [ $? -ne 0 ]; then
         fail "iperf3 tcp VM $id1 ---> VM $id2 FAIL"
     else
@@ -516,13 +516,28 @@ function qemu_wait {
 function qemu_start {
     id=$1
     ip=$2
+    nic_type=$3
     echo "[VM $id] starting"
     SOCKET_PATH=/tmp/qemu-vhost-nic-$id
     IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
     MAC=52:54:00:12:34:0$id
 
-    CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
-    exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
+    if [ $nic_type == "tap" ]; then
+        sudo ip link delete but-br-$id type bridge
+        sudo ip link delete tap-q-$id type bridge
+        sudo ip tuntap add dev tap-q-$id mode tap
+        sudo ip link add but-br-$id type bridge
+        sudo ip link set tap-q-$id master but-br-$id
+        sudo ip link set tap-$id master but-br-$id
+        sudo ip link set tap-q-$id up
+        sudo ip link set tap-$id up
+        sudo ip link set but-br-$id up
+        sudo iptables -A FORWARD -p all -i but-br-$id -j ACCEPT
+        CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm  -netdev type=tap,id=mynet1,ifname=tap-q-$id,script=no,downscript=no -device virtio-net-pci,gso=off,mac=$MAC,netdev=mynet1 -drive file=$IMG_PATH -snapshot -nographic"
+    else
+        CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
+    fi
+    exec $CMD &#> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
     pid=$!
 
     echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
@@ -602,6 +617,8 @@ function qemus_stop {
     qemu_stop $1
     shift 1
     qemus_stop $@
+    sudo ip link delete but-br-$id type bridge
+    sudo ip link delete tap-q-$id type bridge
 }
 
 function server_start {
@@ -772,6 +789,20 @@ function tap_del {
     nic_id=$1
 
     sudo ip netns del ns$1
+}
+
+function tap_create {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    sg_list=${@:4}
+
+    cli $but_id 0 nic add --id "tap-$nic_id" --mac "52:54:00:12:34:0$nic_id" --vni $vni --ip "42.0.0.$nic_id" --enable-antispoof --type TAP
+    sleep 1
+    for i in $sg_list; do
+        cli $but_id 0 nic sg add "tap-$nic_id" $i
+    done
+    #sudo ip link set tap-$nic_id
 }
 
 function tap_add {
@@ -1028,7 +1059,7 @@ function sg_rule_add_port_open {
     cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0.0.0.0/0
 }
 
-function sg_rule_add_ip_and_port_dir {
+function sg_rule_add_ip_and_port_direction {
     protocol=$1
     but_id=$2
     ip=$3
@@ -1042,10 +1073,10 @@ function sg_rule_add_ip_and_port_dir {
 
 
 function sg_rule_add_ip_and_port {
-    sg_rule_add_ip_and_port_dir $1 $2 $3 $4 $5 $6 in
+    sg_rule_add_ip_and_port_direction $1 $2 $3 $4 $5 $6 in
 }
 
-function sg_rule_del_ip_and_port_dir {
+function sg_rule_del_ip_and_port_direction {
     protocol=$1
     but_id=$2
     ip=$3
@@ -1059,10 +1090,10 @@ function sg_rule_del_ip_and_port_dir {
 }
 
 function sg_rule_del_ip_and_port {
-    sg_rule_del_ip_and_port_dir $1 $2 $3 $4 $5 $6 "in"
+    sg_rule_del_ip_and_port_direction $1 $2 $3 $4 $5 $6 "in"
 }
 
-function sg_rule_add_ip_dir {
+function sg_rule_add_ip_direction {
     but_id=$1
     ip=$2
     mask_size=$3
@@ -1075,10 +1106,10 @@ function sg_rule_add_ip_dir {
 }
 
 function sg_rule_add_ip {
-    sg_rule_add_ip_dir $1 $2 $3 $4 "in"
+    sg_rule_add_ip_direction $1 $2 $3 $4 "in"
 }
 
-function sg_rule_del_ip_dir {
+function sg_rule_del_ip_direction {
     but_id=$1
     ip=$2
     mask_size=$3
@@ -1091,7 +1122,7 @@ function sg_rule_del_ip_dir {
 }
 
 function sg_rule_del_ip {
-    sg_rule_del_ip_dir $1 $2 $3 $4 "in"
+    sg_rule_del_ip_direction $1 $2 $3 $4 "in"
 }
 
 function sg_rule_add_with_sg_member {
