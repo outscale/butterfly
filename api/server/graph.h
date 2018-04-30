@@ -260,6 +260,7 @@ class Graph {
        BrickShrPtr vhost;
        BrickShrPtr sniffer;
        FILE *pcap_file;
+       bool default_outbound_rule;
        // If we should add this branch or not to our poll updates
        bool enable;
     };

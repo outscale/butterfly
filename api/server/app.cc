@@ -52,7 +52,11 @@ Config::Config() {
     no_offload = 0;
 }
 
-void (*logger)(int, const char *, va_list);
+void no_logger(int, const char *, va_list) {
+    return;
+}
+
+void (*logger)(int, const char *, va_list) = no_logger;
 
 void print_log(int l, const char *format, va_list av) {
     vdprintf(2, format, av);

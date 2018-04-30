@@ -158,6 +158,35 @@ function ssh_no_ping6 {
     fi
 }
 
+function tap_ping {
+    id1=$1
+    id2=$2
+    sudo ip netns exec ns$id1 ping 42.0.0.$id2 -c 5
+    ret=$?
+    echo ret $ret
+    if [ $ret -eq 0 ]; then
+        echo "ping TAP ns$id1 -/-> $id2 OK"
+    else
+        fail "ping TAP ns$id1 -/-> $id2 FAIL"
+    fi
+}
+
+function tap_iperf3_tcp {
+    id1=$1
+    id2=$2
+
+    sudo ip netns exec ns$id1 iperf3 -s &
+    local server_pid=$!
+    sleep 1
+    sudo ip netns exec ns$id2 iperf3 -c 42.0.0.$id1 -t 5
+    if [ $? -ne 0 ]; then
+        fail "iperf3 tcp ns $id1 ---> $id2 FAIL"
+    else
+        echo "iperf3 tcp ns $id1 ---> $id2 OK"
+    fi
+    kill -15 $server_pid &> /dev/null
+}
+
 function ssh_iperf_tcp {
     id1=$1
     id2=$2
@@ -227,6 +256,7 @@ function ssh_iperf3_udp {
     kill -15 $server_pid &> /dev/null
     rm /tmp/iperf3_tmp_results
 }
+
 function ssh_connection_tests_send {
     protocol=$1
     if [ "$protocol" == "udp" ]; then
@@ -997,49 +1027,70 @@ function sg_rule_add_port_open {
     cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0.0.0.0/0
 }
 
-function sg_rule_add_ip_and_port {
+function sg_rule_add_ip_and_port_dir {
     protocol=$1
     but_id=$2
     ip=$3
     mask_size=$4
     port=$5
     sg=$6
+    dir=$7
     echo "[butterfly-$but_id] add rule $protocol port $port ip $ip/$mask_size in $sg"
-    cli $but_id 0 sg rule add $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr $ip/$mask_size
+    cli $but_id 0 sg rule add $sg --dir $dir --ip-proto $protocol --port-start $port --port-end $port --cidr $ip/$mask_size
+}
+
+
+function sg_rule_add_ip_and_port {
+    sg_rule_add_ip_and_port_dir $1 $2 $3 $4 $5 $6 in
+}
+
+function sg_rule_del_ip_and_port_dir {
+    protocol=$1
+    but_id=$2
+    ip=$3
+    mask_size=$4
+    port=$5
+    sg=$6
+    dir=$7
+    echo "[butterfly-$but_id] del rule $protocol port $port ip $ip/$mask_size in $sg"
+
+    cli $but_id 0 sg rule del $sg --dir $dir --ip-proto $protocol --port-start $port --port-end $port --cidr $ip/$mask_size
 }
 
 function sg_rule_del_ip_and_port {
-    protocol=$1
-    but_id=$2
-    ip=$3
-    mask_size=$4
-    port=$5
-    sg=$6
-    echo "[butterfly-$but_id] del rule $protocol port $port ip $ip/$mask_size in $sg"
-
-    cli $but_id 0 sg rule del $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr $ip/$mask_size
+    sg_rule_del_ip_and_port_dir $1 $2 $3 $4 $5 $6 "in"
 }
 
-function sg_rule_add_ip {
+function sg_rule_add_ip_dir {
     but_id=$1
     ip=$2
     mask_size=$3
     sg=$4
+    dir=$5
 
     echo "[butterfly-$but_id] add rule to $sg: allow $ip/$mask_size on all protocols"
 
-    cli $but_id 0 sg rule add $sg --dir in --ip-proto -1 --cidr $ip/$mask_size
+    cli $but_id 0 sg rule add $sg --dir $dir --ip-proto -1 --cidr $ip/$mask_size
 }
 
-function sg_rule_del_ip {
+function sg_rule_add_ip {
+    sg_rule_add_ip_dir $1 $2 $3 $4 "in"
+}
+
+function sg_rule_del_ip_dir {
     but_id=$1
     ip=$2
     mask_size=$3
     sg=$4
+    dir=$5
 
     echo "[butterfly-$but_id] delete rule on $sg: allow $ip/$mask_size on all protocols"
 
-    cli $but_id 0 sg rule del $sg --dir in --ip-proto -1 --cidr $ip/$mask_size
+    cli $but_id 0 sg rule del $sg --dir $dir --ip-proto -1 --cidr $ip/$mask_size
+}
+
+function sg_rule_del_ip {
+    sg_rule_del_ip_dir $1 $2 $3 $4 "in"
 }
 
 function sg_rule_add_with_sg_member {

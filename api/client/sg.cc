@@ -255,8 +255,7 @@ int RuleAddOptions::Parse(int argc, char **argv) {
             if (direction == "in") {
                 direction = "INBOUND";
             } else if (direction == "out") {
-                cerr << "outbound not supported at the moment" << endl;
-                return 1;
+                direction = "OUTBOUND";
             } else {
                 cerr << "--dir argument not recognized" << endl;
                 return 1;
@@ -353,7 +352,8 @@ static void SubSgRuleAddHelp(void) {
     cout << "usage: butterfly sg rule add SG [options...]" << endl << endl;
     cout << "Add a new firewalling rule inside a security group" << endl;
     cout << "options:" << endl <<
-        "    --dir DIRECTION    rule direction (default: in)" << endl <<
+        "    --dir DIRECTION    rule direction 'in' or 'out' (default: in)" <<
+        endl <<
         "    --ip-proto PROTO   IP protocol to allow (mandatory)" << endl <<
         "    --port PORT        open a single port" << endl <<
         "    --port-start PORT  port range start" << endl <<
@@ -361,9 +361,6 @@ static void SubSgRuleAddHelp(void) {
         "    --cidr CIDR        adress mask to allow in CIDR format" << endl <<
         "    --sg-members SG    security group members to allow" << endl <<
         endl <<
-        "DIRECTION:" << endl << endl <<
-        "Can only be 'in' (for inbound) at the moment, 'out' (for outbound) "
-        "not supported yet" << endl << endl <<
         "PROTO:" << endl << endl <<
         "Must be 'tcp', 'udp', 'icmp', a number between 0 and 255 "
         "or 'all' to allow all protocols" << endl << endl <<
