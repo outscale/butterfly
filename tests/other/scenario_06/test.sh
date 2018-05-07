@@ -51,6 +51,33 @@ ssh_connection_test sctp 1 2 7500
 ssh_connection_test sctp 2 1 8506
 test_packet_tracing true 1 2
 
+nic_update 1 2 --packet-trace false
+
+ssh_ping 1 2
+ssh_ping 2 1
+ssh_connection_test tcp 1 2 4550
+ssh_connection_test tcp 2 1 8500
+ssh_connection_test udp 1 2 7543
+ssh_connection_test udp 2 1 6041
+ssh_connection_test sctp 1 2 7500
+ssh_connection_test sctp 2 1 8506
+test_packet_tracing true 1
+test_packet_tracing false 2
+
+nic_update 0 1 --packet-trace true
+nic_update 1 2 --packet-trace true
+
+ssh_ping 1 2
+ssh_ping 2 1
+ssh_connection_test tcp 1 2 4550
+ssh_connection_test tcp 2 1 8500
+ssh_connection_test udp 1 2 7543
+ssh_connection_test udp 2 1 6041
+ssh_connection_test sctp 1 2 7500
+ssh_connection_test sctp 2 1 8506
+test_packet_tracing true 1
+test_packet_tracing true 2
+
 qemu_stop 1
 qemu_stop 2
 server_stop 0
