@@ -29,35 +29,35 @@ if [ ! -f $BUTTERFLY_BUILD_ROOT/CMakeCache.txt ]; then
     exit 1
 fi
 
-# API tests
-if [ "$BUTTERFLY_TYPE_TEST" = "api" ] || [ "$BUTTERFLY_TYPE_TEST" = "all" ]; then
-    run_scenario "$BUTTERFLY_ROOT/tests/api" "api" $BUTTERFLY_BUILD_ROOT $VERBOSE
-fi
 # Test Protocol ICMP
-if [ "$BUTTERFLY_TYPE_TEST" = "icmp" ] || [ "$BUTTERFLY_TYPE_TEST" = "all" ]; then
-    run_scenario "$BUTTERFLY_ROOT/tests/network/bypass/icmp" "icmp" $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ "$BUTTERFLY_TYPE_TEST" = "icmp" ]; then
+    run_target_scenario $BUTTERFLY_BUILD_ROOT "ping" $VERBOSE
 fi
 # Test Protocol TCP
-if [ "$BUTTERFLY_TYPE_TEST" = "tcp" ] || [ "$BUTTERFLY_TYPE_TEST" = "all" ]; then
-    run_scenario "$BUTTERFLY_ROOT/tests/network/bypass/tcp" "tcp" $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ "$BUTTERFLY_TYPE_TEST" = "tcp" ]; then
+    run_target_scenario $BUTTERFLY_BUILD_ROOT "tcp" $VERBOSE
 fi
 # Test Protocol UDP
-if [ "$BUTTERFLY_TYPE_TEST" = "udp" ] || [ "$BUTTERFLY_TYPE_TEST" = "all" ]; then
-    run_scenario "$BUTTERFLY_ROOT/tests/network/bypass/udp" "udp" $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ "$BUTTERFLY_TYPE_TEST" = "udp" ]; then
+    run_target_scenario $BUTTERFLY_BUILD_ROOT "udp" $VERBOSE
 fi
 # Test Protocol SCTP
-if [ "$BUTTERFLY_TYPE_TEST" = "sctp" ] || [ "$BUTTERFLY_TYPE_TEST" = "all" ]; then
-    run_scenario "$BUTTERFLY_ROOT/tests/network/bypass/sctp" "sctp" $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ "$BUTTERFLY_TYPE_TEST" = "sctp" ]; then
+    run_target_scenario $BUTTERFLY_BUILD_ROOT "sctp" $VERBOSE
 fi
 # Test Protocol UDP & TCP
-if [ "$BUTTERFLY_TYPE_TEST" = "udp_tcp" ] || [ "$BUTTERFLY_TYPE_TEST" = "all" ]; then
-    run_scenario "$BUTTERFLY_ROOT/tests/network/bypass/udp_tcp" "udp_tcp" $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ "$BUTTERFLY_TYPE_TEST" = "udp_tcp" ]; then
+    run_target_scenario $BUTTERFLY_BUILD_ROOT "udp_tcp" $VERBOSE
 fi
 # Test Firewall
-if [ "$BUTTERFLY_TYPE_TEST" = "firewall" ] || [ "$BUTTERFLY_TYPE_TEST" = "all" ]; then
-    run_scenario "$BUTTERFLY_ROOT/tests/network/firewall" "firewall" $BUTTERFLY_BUILD_ROOT $VERBOSE
+if [ "$BUTTERFLY_TYPE_TEST" = "firewall" ]; then
+    run_target_scenario $BUTTERFLY_BUILD_ROOT "firewall" $VERBOSE
 fi
-# Test Other
-if [ "$BUTTERFLY_TYPE_TEST" = "other" ] || [ "$BUTTERFLY_TYPE_TEST" = "all" ]; then
-    run_scenario "$BUTTERFLY_ROOT/tests/other" "other" $BUTTERFLY_BUILD_ROOT $VERBOSE
+# Test other
+if [ "$BUTTERFLY_TYPE_TEST" = "other" ]; then
+    run_other_scenario $BUTTERFLY_BUILD_ROOT $VERBOSE
+fi
+#Test All
+if [ "$BUTTERFLY_TYPE_TEST" = "all" ]; then
+    run_scenario $BUTTERFLY_BUILD_ROOT $VERBOSE
 fi
