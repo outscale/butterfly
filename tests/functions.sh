@@ -522,7 +522,7 @@ function qemu_start {
     IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
     MAC=52:54:00:12:34:0$id
 
-    if [ $nic_type == "tap" ]; then
+    if [ "$nic_type" == "tap" ]; then
         sudo ip link delete but-br-$id type bridge
         sudo ip link delete tap-q-$id type bridge
         sudo ip tuntap add dev tap-q-$id mode tap
