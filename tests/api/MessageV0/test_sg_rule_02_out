@@ -1,0 +1,23 @@
+messages {
+  revision: 5
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+      nic_add {
+        path: "/tmp/qemu-vhost-nic-1"
+      }
+    }
+  }
+}
+messages {
+  revision: 5
+  message_0 {
+    response {
+      status {
+        status: true
+      }
+    }
+  }
+}
