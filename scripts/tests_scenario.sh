@@ -7,18 +7,59 @@ VERBOSE=$3
 BUTTERFLY_ROOT=$(cd "$(dirname $0)/.." && pwd)
 
 function run_scenario {
-    path_to_test=$1
-    name_test=$2
-    BUTTERFLY_BUILD_ROOT=$3
-    VERBOSE=$4
-    echo verbose mode $VERBOSE
-    for s in $path_to_test/scenario_*; do
-        echo "=== running $name_test $(basename $s) ==="
-        if [ ".$VERBOSE" == ".1" ]; then
-            echo verbose mode
-            bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit
-        else
-            $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
+    BUTTERFLY_BUILD_ROOT=$1
+    VERBOSE=$2
+    for s in $BUTTERFLY_ROOT/tests/*; do
+        ret=$(find $s -name '*api*' | wc -l)
+        if [ $ret -eq 0 ]; then
+            if [ "$s" == "README.md" ] || [ "$s" == "functions.sh" ] ; then
+                continue;
+            fi
+            echo "=== running $(basename $s) ==="
+            if [ ".$VERBOSE" == ".1" ]; then
+                echo verbose mode
+                bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit
+            else
+                $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
+            fi
+        fi
+    done
+}
+
+function run_target_scenario {
+    BUTTERFLY_BUILD_ROOT=$1
+    target=$2
+    VERBOSE=$3
+    for s in $BUTTERFLY_ROOT/tests/*; do
+        ret=$(find $s -name '*'$target'*' -type d | wc -l)
+        if [ $ret -eq 1 ]; then
+            echo "=== running $(basename $s) ==="
+            if [ ".$VERBOSE" == ".1" ]; then
+                echo verbose mode
+                bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit
+            else
+                $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
+            fi
+        fi
+    done
+}
+
+function run_other_scenario {
+    BUTTERFLY_BUILD_ROOT=$1
+    VERBOSE=$2
+    for s in $BUTTERFLY_ROOT/tests/*; do
+        ret=$(find $s -name '*ping*' -o -name '*tcp*' -o -name '*udp*' -o -name '*sctp*' -o -name '*firewall*' -o -name '*api*' -type d | wc -l)
+        if [ $ret -eq 0 ]; then
+            if [ "$s" == "README.md" ] || [ "$s" == "function.sh" ] ; then
+                continue;
+            fi
+            echo "=== running $(basename $s) ==="
+            if [ ".$VERBOSE" == ".1" ]; then
+                echo verbose mode
+                bash -x $s/test.sh $BUTTERFLY_BUILD_ROOT || exit
+            else
+                $s/test.sh $BUTTERFLY_BUILD_ROOT || exit 1
+            fi
         fi
     done
 }
