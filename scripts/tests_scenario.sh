@@ -9,12 +9,9 @@ BUTTERFLY_ROOT=$(cd "$(dirname $0)/.." && pwd)
 function run_scenario {
     BUTTERFLY_BUILD_ROOT=$1
     VERBOSE=$2
-    for s in $BUTTERFLY_ROOT/tests/*; do
+    for s in $BUTTERFLY_ROOT/tests/*/; do
         ret=$(find $s -name '*api*' | wc -l)
         if [ $ret -eq 0 ]; then
-            if [ "$s" == "README.md" ] || [ "$s" == "functions.sh" ] ; then
-                continue;
-            fi
             echo "=== running $(basename $s) ==="
             if [ ".$VERBOSE" == ".1" ]; then
                 echo verbose mode
@@ -30,7 +27,7 @@ function run_target_scenario {
     BUTTERFLY_BUILD_ROOT=$1
     target=$2
     VERBOSE=$3
-    for s in $BUTTERFLY_ROOT/tests/*; do
+    for s in $BUTTERFLY_ROOT/tests/*/; do
         ret=$(find $s -name '*'$target'*' -type d | wc -l)
         if [ $ret -eq 1 ]; then
             echo "=== running $(basename $s) ==="
@@ -47,12 +44,9 @@ function run_target_scenario {
 function run_other_scenario {
     BUTTERFLY_BUILD_ROOT=$1
     VERBOSE=$2
-    for s in $BUTTERFLY_ROOT/tests/*; do
+    for s in $BUTTERFLY_ROOT/tests/*/; do
         ret=$(find $s -name '*ping*' -o -name '*tcp*' -o -name '*udp*' -o -name '*sctp*' -o -name '*firewall*' -o -name '*api*' -type d | wc -l)
         if [ $ret -eq 0 ]; then
-            if [ "$s" == "README.md" ] || [ "$s" == "function.sh" ] ; then
-                continue;
-            fi
             echo "=== running $(basename $s) ==="
             if [ ".$VERBOSE" == ".1" ]; then
                 echo verbose mode
