@@ -9,6 +9,17 @@ server_start 0
 cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 1 --id nic01
 cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 2 --id nic02 --enable-antispoof
 cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 3 --id nic03 --bypass-filtering
+cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 1 --id nic01 --sg sg-1 --sg sg-2 --packet-trace true --trace-path test.pcap
+cli 0 1 nic add --id nic04 --ip 10.0.0.1 --mac 01:02:03:04:05:06 --type 0 --vni 2 --sg sg-1 --enable-antispoof true --trace-path ./test.pcap
+cli 0 1 nic add --id nic05 --ip 10.0.0.1 --mac 01:02:03:04:05:06 --type TESTS
+cli 0 1 nic update --id nic02 --packet-trace false --trace-path ./tests.pcap
+cli 0 0 nic update --id nic01 --enable-antispoof true --packet-trace true
+cli 0 0 nic update --id nic01 --enable-antispoof false
+cli 0 1 nic update --id nic01 --trace-path ./tests.pcap
+cli 0 0 nic update --id nic01 --enable-antispoof true
+cli 0 1 nic update
+cli 0 0 --version
+cli 0 0 -V
 
 cli 0 0 nic add --ip 10.0.0.1 --mac 01:02:03:04:05:06 --vni 4 --id nic04
 cli 0 0 nic add --ip 10.0.0.2 --mac 02:02:03:04:05:06 --vni 4 --id nic05
