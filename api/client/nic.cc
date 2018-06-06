@@ -428,7 +428,8 @@ int NicAddOptions::Parse(int argc, char **argv) {
         else if (string(argv[i]) == "--packet-trace")
             packet_trace = "packet_trace: " + string(argv[i + 1]);
         else if (string(argv[i]) == "--trace-path")
-            packet_trace_path = "packet_trace_path: " + string(argv[i + 1]);
+            packet_trace_path = "packet_trace_path: \"" +
+                                 string(argv[i + 1]) + "\"";
     }
 
     if (!packet_trace_path.empty() &&
