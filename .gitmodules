@@ -24,4 +24,4 @@
 	url = https://github.com/rmind/npf.git
 [submodule "3rdparty/packetgraph"]
 	path = 3rdparty/packetgraph
-	url = https://github.com/outscale/packetgraph.git
+	url = https://github.com/outscale-toa/packetgraph.git
