@@ -40,7 +40,7 @@ set(PG_LIBRARIES
     ${PG_INSTALL_DIR}/.libs/libqsbr.a
     ${PG_INSTALL_DIR}/.libs/libsljit.a
     ${PG_INSTALL_DIR}/.libs/libpacketgraph.a -Wl,--end-group
-    -lz -lnuma)
+    -lz -lnuma -ldl -lpcap)
 set(PG_INCLUDE_DIR ${3RDPARTY_DIR}/packetgraph/include)
 
 set(CMAKE_C_FLAGS "-g -O3 -march=core-avx-i -mtune=core-avx-i -fmessage-length=0  -Werror -Wall -Wextra -Wwrite-strings -Winit-self -Wcast-align -Wpointer-arith -Wstrict-aliasing -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wno-unused-parameter -Wuninitialized -Wold-style-definition -Wstrict-prototypes -Wmissing-prototypes -L${DPDK_INSTALL_DIR}/build/lib")
