@@ -537,7 +537,7 @@ function qemu_start {
     else
         CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -display none"
     fi
-    exec $CMD &#> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
+    exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
     pid=$!
 
     echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
