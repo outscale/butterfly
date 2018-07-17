@@ -248,7 +248,7 @@ function ssh_iperf3_udp {
     ssh_run $id2 iperf3 -l 1400 -c 42.0.0.$id1 -t 3 -u --reverse --json > /tmp/iperf3_tmp_results
     local ret=$?
     local res=$(cat /tmp/iperf3_tmp_results | grep packets | tail -n 1 | cut -d ':' -f 2 | cut -d ',' -f 1 | tr -d ' ' | tr -d '\t')
-    if [ $res -eq 0 ] || [ $ret -ne 0 ]; then
+    if [ "$res" == "0" ] || [ "$ret" != "0" ]; then
         fail "iperf3 udp VM $id1 ---> VM $id2 FAIL"
     else
         echo "iperf3 udp VM $id1 ---> VM $id2 OK"
