@@ -432,8 +432,17 @@ int NicAddOptions::Parse(int argc, char **argv) {
     }
 
     if (!packet_trace_path.empty() &&
-        (packet_trace.empty() || packet_trace == "packet_trace: false"))
+        (packet_trace.empty() || packet_trace == "packet_trace: false")) {
+        cerr << "packet_trace have to be \"true\" if "<<
+             "packet_trace_path option is set" << endl;
         return 1;
+    }
+
+    if (!packet_trace.empty() && packet_trace != "packet_trace: true"
+                              && packet_trace !="packet_trace: true") {
+        cerr << "invalid nic subcommand " << packet_trace << endl;
+        return 1;
+    }
 
     if (type != "VHOST_USER_SERVER" && type != "TAP")
         return 1;
@@ -457,8 +466,17 @@ int NicUpdateOptions::Parse(int argc, char **argv) {
     if (id.empty())
         return 1;
     if (!packet_trace_path.empty() &&
-        (packet_trace.empty() || packet_trace == "packet_trace: false"))
+        (packet_trace.empty() || packet_trace == "packet_trace: false")) {
+        cerr << "packet_trace have to be \"true\" if" <<
+             "packet_trace_path option is set" << endl;
         return 1;
+    }
+
+    if (!packet_trace.empty() && packet_trace != "packet_trace: true"
+                              && packet_trace != "packet_trace: false") {
+        cerr << "invalid nic subcommand " << packet_trace << endl;
+        return 1;
+    }
     return 0;
 }
 
