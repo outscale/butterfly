@@ -297,7 +297,7 @@ Anyways, connecting a container should be possible too.
 ## Does Butterfly Support IPv6?
 
 - Virtual Machine traffic can be in IPv6.
-- Outer network (VXLAN's side) is made in IPv4 for the moment.
+- Outer network (VXLAN's side) can use both IPv4 or IPv6.
 
 ## What If My Virtual Machine Crashes/Reboots/Stops?
 
