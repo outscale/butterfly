@@ -21,6 +21,7 @@
 #include <zmqpp/zmqpp.hpp>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <sstream>
 #include <iostream>
 #include "api/client/client.h"
@@ -88,6 +89,13 @@ static void Help(void) {
         GlobalParameterHelp();
 }
 
+namespace {
+struct Cmd {
+    char **command;
+    int size;
+    Cmd(char **acommand, int asize) : command(acommand), size(asize) {}
+};
+}
 int main(int argc, char **argv) {
     GlobalOptions options;
     options.Parse(argc, argv);
@@ -106,23 +114,49 @@ int main(int argc, char **argv) {
         Help();
         return 1;
     }
-
-    string cmd = string(argv[1]);
-    if (cmd == "nic") {
-        return SubNic(argc, argv, options);
-    } else if (cmd == "sg") {
-        return SubSg(argc, argv, options);
-    } else if (cmd == "status") {
-        return sub_status(argc, argv, options);
-    } else if (cmd == "shutdown") {
-        return sub_shutdown(argc, argv, options);
-    } else if (cmd == "request") {
-        return SubRequest(argc, argv, options);
-    } else if (cmd == "dump") {
-        return SubDump(argc, argv, options);
-    } else {
-        cerr << "invalid subcommand " << cmd << endl;
-        Help();
-        return 1;
+    int id_command = 0;
+    int id_insert = 0;
+    std::vector<Cmd> cmds;
+    Cmd command(argv, 0);
+    cmds.push_back(command);
+    for (int i = 0; i < argc; i++) {
+        string cmd = argv[id_insert];
+        if (cmd == "+") {
+            cmds[id_command].size = id_insert;
+            argv += id_insert;
+            id_command++;
+            Cmd command(argv, 0);
+            cmds.push_back(command);
+            id_insert = 1;
+        } else {
+            id_insert++;
+        }
     }
+    cmds[id_command].size = id_insert;
+    int ret = 0;
+    for (unsigned int i = 0; i < cmds.size(); i++) {
+        string cmd = cmds[i].command[1];
+        if (cmd == "nic") {
+            ret = SubNic(cmds[i].size, cmds[i].command, options);
+        } else if (cmd == "sg") {
+            ret = SubSg(cmds[i].size, cmds[i].command, options);
+        } else if (cmd == "status") {
+            ret = sub_status(cmds[i].size, cmds[i].command, options);
+        } else if (cmd == "shutdown") {
+            ret = sub_shutdown(cmds[i].size, cmds[i].command, options);
+        } else if (cmd == "request") {
+            ret = SubRequest(cmds[i].size, cmds[i].command, options);
+        } else if (cmd == "dump") {
+            ret = SubDump(cmds[i].size, cmds[i].command, options);
+        } else {
+            cerr << "invalid subcommand " << cmd << endl;
+            Help();
+            return 1;
+        }
+        if (ret == 1) {
+            cerr << "error in command: " << cmd << endl;
+            return 1;
+        }
+    }
+    return 0;
 }
