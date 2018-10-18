@@ -26,6 +26,10 @@ cli 0 1 nic add --ip 42.0.0.1 --vni 1337 --id nic_not_created
 cli 0 1 nic add --ip 42.0.0.1 --mac 42:42:42:42:42:01 --id nic_not_created
 cli 0 1 nic add --ip 42.0.0.1 --mac 42:42:42:42:42:01 --vni 1337
 
+cli 0 0 nic add --ip 42.0.0.3 --mac 42:42:42:42:42:03 --vni 1337 --id nic_3 + nic add --ip 42.0.0.4 --mac 42:42:42:42:42:04 --vni 1337 --id nic_4 + nic list
+
+cli 0 0 nic del nic_3 + nic del nic_4
+
 cli 0 0 nic list
 cli 0 0 nic list help
 cli 0 0 nic list -v
