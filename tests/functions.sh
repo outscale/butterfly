@@ -782,8 +782,7 @@ function nic_add_noip {
     nic_id=$2
     vni=$3
     sg_list=${@:4}
-    cli $but_id 0 nic add --id nic-$nic_id --mac 52:54:00:12:34:0$nic_id --vni $vni --enable-antispoof
-    cli $but_id 0 nic sg add nic-$nic_id $sg_list
+    cli $but_id 0 nic add --id nic-$nic_id --mac 52:54:00:12:34:0$nic_id --vni $vni --enable-antispoof + nic sg add nic-$nic_id $sg_list
 }
 
 function nic_update {
@@ -1062,8 +1061,7 @@ function sg_rule_add_all_open {
     sg=$2
     echo "[butterfly-$but_id] add rule all open in $sg"
 
-    cli $but_id 0 sg rule add $sg --dir in --ip-proto all --cidr 0.0.0.0/0
-    cli $but_id 0 sg rule add $sg --dir in --ip-proto all --cidr ::0/0
+    cli $but_id 0 sg rule add $sg --dir in --ip-proto all --cidr 0.0.0.0/0 + sg rule add $sg --dir in --ip-proto all --cidr ::0/0
 }
 
 function sg_rule_add_port_open {
@@ -1238,8 +1236,7 @@ function sg_rule_del_all_open {
     sg=$2
     echo "[butterfly-$but_id] delete rule all open from $sg"
 
-    cli $but_id 0 sg rule del $sg --dir in --ip-proto -1 --cidr 0.0.0.0/0
-    cli $but_id 0 sg rule del $sg --dir in --ip-proto -1 --cidr 0::/0
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto -1 --cidr 0.0.0.0/0 + sg rule del $sg --dir in --ip-proto -1 --cidr 0::/0
 }
 
 function sg_rule_del_port_open {
@@ -1249,8 +1246,7 @@ function sg_rule_del_port_open {
     port=$4
     echo "[butterfly-$but_id] delete rule $protocol port $port open from $sg"
 
-    cli $but_id 0 sg rule del $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0.0.0.0/0
-    cli $but_id 0 sg rule del $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0::/0
+    cli $but_id 0 sg rule del $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0.0.0.0/0 + sg rule del $sg --dir in --ip-proto $protocol --port-start $port --port-end $port --cidr 0::/0
 }
 
 function sg_rule_add_icmp {
