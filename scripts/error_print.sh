@@ -13,7 +13,6 @@ error_print()
     elif [ $has_cowsay -eq 255 ]; then
         echo $1 | cowsay -d
     else
-        tput setaf 1
         echo $1
         tput sgr0
     fi
