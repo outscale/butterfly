@@ -229,7 +229,7 @@ function ssh_iperf3_tcp {
     (ssh_run $id1 iperf3 -s &> /dev/null &)
     local server_pid=$!
     sleep 1
-    ssh_run $id2 iperf3 -c 42.0.0.$id1 -t 10 #&> /dev/null
+    ssh_run $id2 iperf3 -c 42.0.0.$id1 -t 10 &> /dev/null
     if [ $? -ne 0 ]; then
         fail "iperf3 tcp VM $id1 ---> VM $id2 FAIL"
     else
