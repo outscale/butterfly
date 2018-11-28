@@ -958,7 +958,7 @@ function test_size {
     ret=0;
 
     for path in $path_lists; do
-        my_arry[$path]=$(du -s "$path" | awk '{ print $1 }')
+        my_arry[$path]=$(du -b "$path" | awk '{ print $1 }')
         if [ ! -e $path-butterfly_size ]; then
             if [ ${my_arry[$path]} -gt "0" ]; then
                 ret=1
