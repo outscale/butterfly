@@ -131,6 +131,7 @@ function vm_start {
     ssh_vm $ip $port $id ip addr add 42.0.0.$id/16 dev ens4
     echo tso : $tso_on
     if [ $tso_on -eq 1 ]; then
+        ssh_vm $ip $port $id pacman -Sy --noconfirm archlinux-keyring
         ssh_vm $ip $port $id pacman -Sy --noconfirm ethtool
         ssh_vm $ip $port $id ethtool -K ens4 tso on
     fi
