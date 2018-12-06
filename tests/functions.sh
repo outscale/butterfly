@@ -533,9 +533,9 @@ function qemu_start {
         sudo ip link set tap-$id up
         sudo ip link set but-br-$id up
         sudo iptables -A FORWARD -p all -i but-br-$id -j ACCEPT
-        CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm  -netdev type=tap,id=mynet1,ifname=tap-q-$id,script=no,downscript=no -device virtio-net-pci,gso=off,mac=$MAC,netdev=mynet1 -drive file=$IMG_PATH -snapshot -nographic"
+        CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm  -netdev type=tap,id=mynet1,ifname=tap-q-$id,script=no,downscript=no -device virtio-net-pci,gso=off,mac=$MAC,netdev=mynet1 -drive file=$IMG_PATH -snapshot -display none"
     else
-        CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
+        CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -display none"
     fi
     exec $CMD &#> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
     pid=$!
