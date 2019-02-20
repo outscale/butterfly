@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#Butterfly root directory
+cd "$(dirname "$0")/.."
+
+rm -fr build | true
+sed -i '/tput setaf/d' scripts/*.sh
+sed -i '/^clean_coverage/d' scripts/tests_coverage.sh
+mkdir build && cd build
+cmake .. -DCOVERAGE=ON
+make
+make tests-all
+gcovr --exclude '../3rdparty' --exclude '../build' --exclude '../api/server/simpleini' -r '../' --xml-pretty -o coverage.xml
+
+echo "Build and tests succeded"
+exit 0
