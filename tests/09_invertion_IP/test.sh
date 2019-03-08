@@ -48,6 +48,7 @@ for i in $(seq 1 10); do
     qemu_del_ipv6 1 $B1/64
 done
 
+qemus_stop 1 2
 server_stop 0
 network_disconnect 0 1
 return_result

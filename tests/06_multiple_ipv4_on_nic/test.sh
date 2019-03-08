@@ -46,6 +46,8 @@ ssh_ping_ip 2 $b3 $a1
 ssh_ping_ip 2 $b3 $a2
 ssh_ping_ip 2 $b3 $a3
 
+
+qemus_stop 1 2
 server_stop 0
 network_disconnect 0 1
 return_result
