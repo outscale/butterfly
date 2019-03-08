@@ -179,14 +179,16 @@ class Graph {
 
     struct RpcQueue {
         enum RpcAction action;
-        struct RpcLink link;
-        struct RpcUnlink unlink;
-        struct RpcUnlink_edge unlink_edge;
-        struct RpcAddVni add_vni;
-        struct RpcUpdatePoll update_poll;
-        struct RpcFwReload fw_reload;
-        struct RpcFwNew fw_new;
-        struct RpcBrickDestroy brick_destroy;
+        union {
+            struct RpcLink link;
+            struct RpcUnlink unlink;
+            struct RpcUnlink_edge unlink_edge;
+            struct RpcAddVni add_vni;
+            struct RpcUpdatePoll update_poll;
+            struct RpcFwReload fw_reload;
+            struct RpcFwNew fw_new;
+            struct RpcBrickDestroy brick_destroy;
+        };
     };
 
     /* Wrappers to ease RPC actions. */
