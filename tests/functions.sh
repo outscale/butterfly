@@ -679,13 +679,32 @@ function server_start_bonding {
     server_pids["$id"]=$pid
 }
 
+function do_kill {
+    should_do=$1
+    signal=$2
+
+    if [ $should_skip -ne 0 ]; then
+        sudo kill $signal $(ps --ppid ${server_pids[$id]} -o pid=) &> /dev/null
+        sleep 0.2
+        sudo kill -s 0 ${server_pids[$id]} &> /dev/null
+        return $?
+    fi
+    return 0
+}
+
 function server_stop {
     id=$1
     echo "[butterfly-$id] stopping"
-    sudo kill -2 $(ps --ppid ${server_pids[$id]} -o pid=)
+    ret=do_kill 1 -2
+    ret=do_kill $ret -2
+    ret=do_kill $ret -2
+    ret=do_kill $ret -15
+    ret=do_kill $ret -15
     while sudo kill -s 0 ${server_pids[$id]} &> /dev/null ; do
+        sudo kill -9 $(ps --ppid ${server_pids[$id]} -o pid=) &> /dev/null
         sleep 0.1
     done
+    sleep 1
 }
 
 function server_start_ipv4 {
@@ -728,7 +747,7 @@ function network_disconnect {
     id1=$1
     id2=$2
     echo "network disconnect butterfly-$id1 <--> butterfly-$id2"
-    sudo kill -15 $(ps --ppid ${socat_pids[$id1$id2]} -o pid=)
+    sudo kill -15 $(ps --ppid ${socat_pids[$id1$id2]} -o pid=) &> /dev/null
 }
 
 function download {
