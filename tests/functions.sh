@@ -683,9 +683,36 @@ function server_stop {
     id=$1
     echo "[butterfly-$id] stopping"
     sudo kill -2 $(ps --ppid ${server_pids[$id]} -o pid=)
-    while sudo kill -s 0 ${server_pids[$id]} &> /dev/null ; do
+    sudo kill -s 0 ${server_pids[$id]} &> /dev/null ;
+    if [ $? -ne 0 ]; then
+        sudo kill -2 $(ps --ppid ${server_pids[$id]} -o pid=)
         sleep 0.1
-    done
+        sudo kill -s 0 ${server_pids[$id]} &> /dev/null ;
+    fi
+    if [ $? -ne 0 ]; then
+        sudo kill -2 $(ps --ppid ${server_pids[$id]} -o pid=)
+        sleep 0.1
+        sudo kill -s 0 ${server_pids[$id]} &> /dev/null ;
+    fi
+    if [ $? -ne 0 ]; then
+        sudo kill -2 $(ps --ppid ${server_pids[$id]} -o pid=)
+        sleep 0.1
+        sudo kill -s 0 ${server_pids[$id]} &> /dev/null ;
+    fi
+    if [ $? -ne 0 ]; then
+        sudo kill -2 $(ps --ppid ${server_pids[$id]} -o pid=)
+        sleep 0.1
+        sudo kill -s 0 ${server_pids[$id]} &> /dev/null ;
+    fi
+    if [ $? -ne 0 ]; then
+        sudo kill -15 $(ps --ppid ${server_pids[$id]} -o pid=)
+        sleep 0.4
+        sudo kill -s 0 ${server_pids[$id]} &> /dev/null ;
+    fi
+    if [ $? -ne 0 ]; then
+        sudo kill -9 $(ps --ppid ${server_pids[$id]} -o pid=)
+        sleep 0.3
+    fi
 }
 
 function server_start_ipv4 {
