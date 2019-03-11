@@ -24,6 +24,7 @@ function usage {
     echo "    --port-b       : SSH port of second machine (optional, default: 22)"
     echo "    --package      : 'rpm' or 'deb' (optional, default: rpm)"
     echo "    --fat          : use fat package instead of clasique one"
+    echo "    --qemu-args    : append args to qemu commande"
     echo "    --no-perf      : don't use perf record durring benchmark"
     echo "    --tso-on       : force usage of tso"
     echo "    -t | --time    : duration (seconds) of each benchmark"
@@ -47,9 +48,10 @@ output="$(pwd)/output.csv"
 bench_duration=100
 keep_running=0
 fat=""
+qemu_args=""
 no_perf=0
 
-args=`getopt -o s:b:o:t:h:: --long sources:,build:,output:,ip-a:,ip-b:,port-a:,port-b:,package:,time:,keep-running,fat,no-perf,tso-on,help:: -- "$@"`
+args=`getopt -o s:b:o:t:h:: --long sources:,build:,output:,ip-a:,ip-b:,port-a:,port-b:,package:,time:,keep-running,fat,no-perf,tso-on,qemu-args:,help:: -- "$@"`
 eval set -- "$args"
 while true ; do
     case "$1" in
@@ -69,6 +71,8 @@ while true ; do
             port_b=$2 ; shift 2 ;;
         --package)
             package=$2 ; shift 2 ;;
+        --qemu-args)
+            qemu_args="$2"; shift 2 ;;
         -t|--time)
             bench_duration=$2 ; shift 2 ;;
         --keep-running)
@@ -202,11 +206,11 @@ ssh_run $ip_b $port_b chmod 600 /var/tmp/image.rsa
 # VM 2 is on host A
 # VM 3 is on host B
 declare -a pids;
-vm_start $ip_a $port_a 1 $tso_on &
+vm_start $ip_a $port_a 1 $tso_on "$qemu_args" &
 pids[$!]=$!
-vm_start $ip_a $port_a 2 $tso_on &
+vm_start $ip_a $port_a 2 $tso_on "$qemu_args" &
 pids[$!]=$!
-vm_start $ip_b $port_b 3 $tso_on &
+vm_start $ip_b $port_b 3 $tso_on "$qemu_args" &
 pids[$!]=$!
 wait ${pids[*]};
 unset $pids;
