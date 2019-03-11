@@ -116,7 +116,7 @@ void Graph::Stop() {
     }
     g_async_queue_unref(queue_);
 
-    // Byby packetgraph
+    // Byebye packetgraph
     vnis_.clear();
     pg_stop();
     app::DestroyCgroup();
