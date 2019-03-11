@@ -118,6 +118,7 @@ class Graph {
         EXIT,
         VHOST_START,
         VHOST_STOP,
+        VHOST_REQUEST_REMOVE,
         LINK,
         UNLINK,
         UNLINK_EDGE,
@@ -192,6 +193,7 @@ class Graph {
     void exit();
     void vhost_start();
     void vhost_stop();
+    void vhost_request_remove(BrickShrPtr b);
     void link(BrickShrPtr w, BrickShrPtr e);
     void unlink(BrickShrPtr b);
     void unlink_edge(BrickShrPtr w, BrickShrPtr e);

@@ -370,6 +370,9 @@ bool Graph::PollerUpdate(struct RpcQueue **list) {
             case VHOST_STOP:
                 pg_vhost_stop();
                 break;
+            case VHOST_REQUEST_REMOVE:
+                pg_vhost_request_remove(a->brick_destroy.b);
+                break;
             case LINK:
                 if (pg_brick_link(a->link.w, a->link.e, &app::pg_error) < 0)
                     PG_ERROR_(app::pg_error);
@@ -660,6 +663,10 @@ void Graph::NicDel(const app::Nic &nic) {
     // Disable branch and update poller
     struct GraphNic &n = nic_it->second;
     n.enable = false;
+    vhost_request_remove(n.vhost);
+    // We wait here so we are sure vhosts are poll at last once,
+    // so VMs can be properly disconected
+    WaitEmptyQueue();
     update_poll();
 
     // Disconnect branch from vtep or switch
@@ -1119,6 +1126,13 @@ void Graph::vhost_start() {
 void Graph::vhost_stop() {
     struct RpcQueue *a = g_new(struct RpcQueue, 1);
     a->action = VHOST_STOP;
+    g_async_queue_push(queue_, a);
+}
+
+void Graph::vhost_request_remove(BrickShrPtr b) {
+    struct RpcQueue *a = g_new(struct RpcQueue, 1);
+    a->action = VHOST_REQUEST_REMOVE;
+    a->brick_destroy.b = b.get();
     g_async_queue_push(queue_, a);
 }
 
