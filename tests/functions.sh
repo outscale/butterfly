@@ -1339,7 +1339,7 @@ if [ ! -f $BUTTERFLY_BUILD_ROOT/api/server/butterflyd ]; then
 fi
 
 # Check some binaries
-check_bin sudo -h
+check_bin sudo ls
 check_bin ssh -V
 check_bin sudo qemu-system-x86_64 -h
 check_bin sudo socat -h
