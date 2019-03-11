@@ -112,12 +112,13 @@ function vm_start {
     local port=$2
     local id=$3
     local tso_on=$4
+    local qemu_extra_args="$5"
     SOCKET_PATH=/tmp/qemu-vhost-nic-$id
     IMG_PATH=/var/tmp/image.qcow
     KEY_PATH=/var/tmp/image.rsa
     MAC=52:54:00:12:34:0$id
 
-    CMD="qemu-system-x86_64 -cpu host -smp 1 -netdev user,id=network0,hostfwd=tcp::600${id}-:22 -device e1000,netdev=network0 -m 256M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=256M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -nographic"
+    CMD="qemu-system-x86_64 $qemu_extra_args -cpu host -smp 1 -netdev user,id=network0,hostfwd=tcp::600${id}-:22 -device e1000,netdev=network0 -m 256M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=256M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -display none"
     ssh_run $ip $port $CMD &
 
     sleep 5
