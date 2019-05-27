@@ -56,9 +56,10 @@ ExternalProject_Add(packetgraph
 	DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
 	DOWNLOAD_COMMAND git submodule update --init ${PG_SOURCE_DIR} && cd ${PG_SOURCE_DIR} && git submodule update --init
 	BINARY_DIR ${PG_INSTALL_DIR}
+	BUILD_DIR ${PG_SOURCE_DIR}
 	BUILD_COMMAND make
 	INSTALL_DIR ${PG_INSTALL_DIR}
-	INSTALL_COMMAND true
+	INSTALL_COMMAND make install
 	LOG_BUILD 1 Building packetgraph)
 
 # clean targets
@@ -67,7 +68,7 @@ add_custom_target(dependency-cleanup CLEAN
 	COMMENT Deleting dependencies)
 
 add_custom_target(clean-pg
-                  COMMAND rm -rf ${PROJECT_BINARY_DIR}/3rdparty/packetgraph-prefix/ ${PG_INSTALL_DIR})
+                  COMMAND rm -rf ${PROJECT_BINARY_DIR}/3rdparty/packetgraph-prefix/ ${PG_INSTALL_DIR} && make -C ${PROJECT_SOURCE_DIR}/3rdparty/packetgraph fclean)
 
 add_custom_target(clean-dpdk
                   COMMAND rm -rf ${PROJECT_BINARY_DIR}/3rdparty/dpdk-prefix/ ${DPDK_INSTALL_DIR}
