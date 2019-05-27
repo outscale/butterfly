@@ -32,15 +32,15 @@ set(ZMQPP_INCLUDE_DIR ${3RDPARTY_DIR}/zmqpp/src)
 set(PG_LIBRARIES
   -L${DPDK_INSTALL_DIR}/build/lib -Wl,--start-group
     ${DPDK_INSTALL_DIR}/build/lib/libdpdk.a
-    ${PG_INSTALL_DIR}/.libs/libbpfjit.a
-    ${PG_INSTALL_DIR}/.libs/libcdb.a
-    ${PG_INSTALL_DIR}/.libs/libnpf.a
-    ${PG_INSTALL_DIR}/.libs/libnpfkern.a
-    ${PG_INSTALL_DIR}/.libs/libnvlist.a
-    ${PG_INSTALL_DIR}/.libs/libthmap.a
-    ${PG_INSTALL_DIR}/.libs/libqsbr.a
-    ${PG_INSTALL_DIR}/.libs/libsljit.a
-    ${PG_INSTALL_DIR}/.libs/libpacketgraph.a -Wl,--end-group
+    ${PG_INSTALL_DIR}/lib/libbpfjit.a
+    ${PG_INSTALL_DIR}/lib/libcdb.a
+    ${PG_INSTALL_DIR}/lib/libnpf.a
+    ${PG_INSTALL_DIR}/lib/libnpfkern.a
+    ${PG_INSTALL_DIR}/lib/libnvlist.a
+    ${PG_INSTALL_DIR}/lib/libthmap.a
+    ${PG_INSTALL_DIR}/lib/libqsbr.a
+    ${PG_INSTALL_DIR}/lib/libsljit.a
+    ${PG_INSTALL_DIR}/lib/libpacketgraph.a -Wl,--end-group
     -lz -lnuma -ldl -lpcap)
 set(PG_INCLUDE_DIR ${3RDPARTY_DIR}/packetgraph/include)
 

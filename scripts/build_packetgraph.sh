@@ -10,7 +10,7 @@ PG_SOURCE_DIR=$1
 echo packetgraph install dir: $2
 PG_INSTALL_DIR=$2
 
-echo dpdk dir: $RTE_SDK
+cd $PG_SOURCE_DIR
 
 git submodule sync
 git submodule update --init --recursive
