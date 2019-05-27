@@ -67,7 +67,7 @@ add_custom_target(dependency-cleanup CLEAN
 	COMMENT Deleting dependencies)
 
 add_custom_target(clean-pg
-                  COMMAND rm -rf ${PROJECT_BINARY_DIR}/3rdparty/packetgraph-prefix/ ${PG_INSTALL_DIR})
+                  COMMAND rm -rf ${PROJECT_BINARY_DIR}/3rdparty/packetgraph-prefix/ ${PG_INSTALL_DIR} && make -C ${PROJECT_SOURCE_DIR}/3rdparty/packetgraph fclean)
 
 add_custom_target(clean-dpdk
                   COMMAND rm -rf ${PROJECT_BINARY_DIR}/3rdparty/dpdk-prefix/ ${DPDK_INSTALL_DIR}
