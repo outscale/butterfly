@@ -145,6 +145,12 @@ static int SubNicDetails(int argc, char **argv,
             (details.ip_anti_spoof() ? "true" : "false") << endl;
     if (details.has_sniff_target_nic_id())
         cout << "sniff target: " << details.sniff_target_nic_id() << endl;
+    if (details.has_bypass_filtering())
+        cout << "bypass filtering: " <<
+            (details.bypass_filtering() ? "true" : "false") << endl;
+    if (details.has_packet_trace())
+        cout << "packet trace: " <<
+            (details.packet_trace() ? "true" : "false") << endl;
     return 0;
 }
 
