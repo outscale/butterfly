@@ -60,6 +60,7 @@ function nic_add {
     local port=$2
     local id=$3
     local vni=$4
+    local bp_fw=$5
     f=/tmp/butterfly.req
 
     echo -e "messages {
@@ -70,7 +71,7 @@ function nic_add {
         id: \"nic-$id\"
         mac: \"52:54:00:12:34:0$id\"
         vni: $vni
-	bypass_filtering: false
+        bypass_filtering: $bp_fw
         ip: \"42.0.0.$id\"
         ip_anti_spoof: false
         security_group: \"sg-1\"
@@ -118,8 +119,7 @@ function vm_start {
     IMG_PATH=/var/tmp/image.qcow
     KEY_PATH=/var/tmp/image.rsa
     MAC=52:54:00:12:34:0$id
-
-    CMD="qemu-system-x86_64 $qemu_extra_args -cpu host -smp 1 -netdev user,id=network0,hostfwd=tcp::600${id}-:22 -device e1000,netdev=network0 -m 256M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=256M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -display none"
+    CMD="qemu-system-x86_64 $qemu_extra_args -cpu host -smp 1 -netdev user,id=network0,hostfwd=tcp::600${id}-:22 -device e1000,netdev=network0 -m 256M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=256M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -display none $bios_path"
     ssh_run $ip $port $CMD &
 
     sleep 5
