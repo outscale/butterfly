@@ -27,6 +27,7 @@ function usage {
     echo "    --qemu-args    : append args to qemu commande"
     echo "    --no-perf      : don't use perf record durring benchmark"
     echo "    --tso-on       : force usage of tso"
+    echo "    --bypass-fw     : bypass firewall"
     echo "    -t | --time    : duration (seconds) of each benchmark"
     echo "                     (optional, default: 100)"
     echo "    --keep-running : launch endless TCP iperf before leaving"
@@ -50,8 +51,9 @@ keep_running=0
 fat=""
 qemu_args=""
 no_perf=0
-
-args=`getopt -o s:b:o:t:h:: --long sources:,build:,output:,ip-a:,ip-b:,port-a:,port-b:,package:,time:,keep-running,fat,no-perf,tso-on,qemu-args:,help:: -- "$@"`
+bypass_fw="false"
+bios_path=""
+args=`getopt -o s:b:o:t:h:: --long sources:,build:,output:,ip-a:,ip-b:,port-a:,port-b:,package:,time:,keep-running,fat,no-perf,tso-on,bypass-fw,bios-path:,qemu-args:,help:: -- "$@"`
 eval set -- "$args"
 while true ; do
     case "$1" in
@@ -83,6 +85,10 @@ while true ; do
             no_perf=1 ; shift 1 ;;
         --tso-on)
             tso_on=1 ; shift 1 ;;
+        --bypass-fw)
+            bypass_fw="true" ; shift 1 ;;
+        --bios-path)
+            bios_path="-L $2"; shift 2 ;;
         -h|--help)
             usage; exit 0 ;;
         --)
@@ -180,9 +186,9 @@ butterfly_start 2 $ip_b $port_b
 sleep 5
 
 # create some network interface
-nic_add $ip_a $port_a 1 42
-nic_add $ip_a $port_a 2 42
-nic_add $ip_b $port_b 3 42
+nic_add $ip_a $port_a 1 42 $bypass_fw
+nic_add $ip_a $port_a 2 42 $bypass_fw
+nic_add $ip_b $port_b 3 42 $bypass_fw
 
 # launch virtual machines
 declare -a pids
