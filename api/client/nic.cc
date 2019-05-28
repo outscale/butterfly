@@ -503,7 +503,7 @@ static void SubNicUpdateHelp(void) {
         "    --packet-trace      true/false  trace a nic or not" <<
         "    (default: use server behaviour)" << endl <<
         "    --trace-path PATH    where to store pcap file if packet-trace" <<
-        "    was set true (default: PATH = /tmp/butterfly-PID-nic-NICID.pcap)"
+        "    is set true (default: PATH = /tmp/butterfly-PID-nic-NICID.pcap)"
             << endl;
     GlobalParameterHelp();
 }
