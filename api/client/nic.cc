@@ -657,7 +657,9 @@ static void SubNicHelp(void) {
         "    details  prints nics's details" << endl <<
         "    sg       manage security groups attached to a nic " << endl <<
         "    add      create a new nic" << endl <<
-        "    del      remove nic(s)" << endl;
+        "    del      remove nic(s)" << endl <<
+        "    update   update a nic" << endl <<
+        "    help     print this and return 0" << endl;
         GlobalParameterHelp();
 }
 
