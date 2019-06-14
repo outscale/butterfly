@@ -413,20 +413,34 @@ static inline bool CheckOption(int count, int argc, char **argv,
     return count + 1 < argc && string(argv[count]) == option;
 }
 
+namespace {
+
+string mk_opt_option(const char *f, char *opt) {
+    return string(f) + ": \""+ opt + "\"";
+}
+
+}
+
 int NicAddOptions::Parse(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (CheckOption(i, argc, argv, "--ip"))
             ips.push_back(string(argv[i + 1]));
+        else if (CheckOption(i, argc, argv, "--dip"))
+            dip = mk_opt_option("dip", argv[i + 1]);
         else if (CheckOption(i, argc, argv, "--sg"))
             sgs.push_back(string(argv[i + 1]));
         else if (CheckOption(i, argc, argv, "--mac"))
             mac = string(argv[i + 1]);
+        else if (CheckOption(i, argc, argv, "--dmac"))
+            dmac = mk_opt_option("dmac", argv[i + 1]);
         else if (string(argv[i]) == "--enable-antispoof")
             enable_antispoof = "true";
         else if (CheckOption(i, argc, argv, "--id"))
             id = string(argv[i + 1]);
         else if (CheckOption(i, argc, argv, "--type"))
             type = string(argv[i + 1]);
+        else if (CheckOption(i, argc, argv, "--btype"))
+            btype = mk_opt_option("btype", argv[i + 1]);
         else if (CheckOption(i, argc, argv, "--vni"))
             vni = string(argv[i + 1]);
         else if (string(argv[i]) == "--bypass-filtering")
@@ -442,7 +456,7 @@ int NicAddOptions::Parse(int argc, char **argv) {
         (packet_trace.empty() || packet_trace == "packet_trace: false"))
         return 1;
 
-    if (type != "VHOST_USER_SERVER" && type != "TAP")
+    if (type != "VHOST_USER_SERVER" && type != "TAP" && type != "BENCH")
         return 1;
     return !mac.length() || !id.length() || !vni.length();
 }
@@ -477,8 +491,12 @@ static void SubNicAddHelp(void) {
             << endl <<
         "    --mac MAC           virtual interface's mac (mandatory)" << endl <<
         "    --id ID             interface's id (mandatory)" << endl <<
-        "    --type TYPE         nic type (VHOST_USER_SERVER or " <<
+        "    --type TYPE         nic type (VHOST_USER_SERVER, BENCH or " <<
         "    TAP default: VHOST_USER_SERVER)" << endl <<
+        "    --btype BENCH_TYPE  bench type ICMP_SND_LIKE or " <<
+        "ICMP_RCV_LIKE (for bench)" << endl <<
+        "    --dip IP            interface's dest ip (for bench)" << endl <<
+        "    --dmac MAC          interface's dest mac (for bench)" << endl <<
         "    --vni VNI           virtual network id < 2^26 (mandatory)"
             << endl <<
         "    --enable-antispoof  enable antispoof protection (default: off)"
@@ -536,6 +554,9 @@ static int SubNicAdd(int argc, char **argv, const GlobalOptions &options) {
     req +=
         "        ip_anti_spoof: " + o.enable_antispoof +
         "        type: " + o.type +
+        "        " + o.dip +
+        "        " + o.dmac +
+        "        " + o.btype +
         "        " + o.packet_trace +
         "        " + o.packet_trace_path +
         "        bypass_filtering: " + o.bypass_filtering +

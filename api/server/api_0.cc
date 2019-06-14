@@ -799,8 +799,29 @@ bool Api0::Convert(const MessageV0_Nic &nic_message, app::Nic *nic_model) {
     if (nic_message.has_bypass_filtering())
         nic_model->bypass_filtering = nic_message.bypass_filtering();
     // Nic type
-    if (nic_message.has_type())
+    if (nic_message.has_type()) {
         nic_model->type = static_cast<enum app::NicType>(nic_message.type());
+        if (nic_model->type == app::BENCH) {
+            if (!nic_message.has_btype()) {
+                return false;
+            }
+
+            if (nic_message.btype() == "ICMP_SND_LIKE") {
+                nic_model->btype = app::ICMP_SND_LIKE;
+
+                if (!nic_message.has_dip() || !nic_message.has_dmac())
+                    return false;
+                if (!Convert(nic_message.dmac(), &nic_model->dmac))
+                    return false;
+                if (!Convert(nic_message.dip(), &nic_model->dip))
+                    return false;
+            } else if (nic_message.btype() == "ICMP_RCV_LIKE") {
+                nic_model->btype = app::ICMP_RCV_LIKE;
+            } else {
+                return false;
+            }
+        }
+    }
     // Path
     if (nic_message.has_path())
         nic_model->path = nic_message.path();

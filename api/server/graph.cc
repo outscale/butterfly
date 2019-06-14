@@ -18,9 +18,13 @@
 extern "C" {
 #include <glib.h>
 #include <arpa/inet.h>
+#include <netinet/ether.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/ip_icmp.h>
 #include <sys/sysinfo.h>
 #include <sys/syscall.h>
+#include <sys/time.h>
 #include <unistd.h>
 }
 #include <utility>
@@ -29,6 +33,8 @@ extern "C" {
 #include <cstring>
 #include "api/server/app.h"
 #include "api/server/graph.h"
+#include "api/common/crypto.h"
+#include "api/common/vec.h"
 
 namespace {
 void PgfakeDestroy(struct pg_brick *) {}
@@ -55,6 +61,198 @@ void BuildMulticastIp6(uint8_t *multicast_ip, uint32_t vni) {
     multicast_ip[13] = reinterpret_cast<uint8_t *>(& vni)[2];
     multicast_ip[12] = reinterpret_cast<uint8_t *>(& vni)[3];
 }
+
+struct h {
+    struct ether_header e;
+    struct ip ip;
+    struct icmp icmp;
+    char payload[36];
+} __attribute__((packed));
+
+constexpr int TIMEOUT = 10000;
+
+static_assert(((BENCH_MAX_L % 64) == 0) && BENCH_MAX_L > 0,
+              "BENCH_MAX_L must be a multiple of 64 and > 0");
+
+#ifndef unlikely
+# define unlikely(x)    __builtin_expect(!!(x), 0)
+#endif
+
+int mk_hdr(pg_packet_t *pkt, Graph::BenchInfo *b,
+           int8_t icmp_type, uint16_t seq,
+           uint32_t time) {
+    struct h *hdr;
+
+    pg_packet_set_l2_len(pkt, sizeof(struct ether_header));
+    pg_packet_set_l3_len(pkt, sizeof(struct ip));
+    pg_packet_set_l4_len(pkt, sizeof(struct icmp) + 36);
+    if (unlikely(pg_packet_compute_len(pkt, 0) < 0))
+        return -1;
+
+    hdr = reinterpret_cast<struct h *>(pg_packet_data(pkt));
+    /* the good code athe the wrong place */
+    memcpy(hdr->e.ether_shost, b->smac, 6);
+    memcpy(hdr->e.ether_dhost, b->dmac, 6);
+    hdr->e.ether_type = PG_BE_ETHER_TYPE_IPv4;
+
+    hdr->ip.ip_hl = 5;
+    hdr->ip.ip_v = IPVERSION;
+    hdr->ip.ip_tos = 0;
+    /* 32 for payload */
+    hdr->ip.ip_len = htons(sizeof(struct ip) + sizeof(struct icmp) + 36);
+    hdr->ip.ip_id = 0;
+    hdr->ip.ip_off = (4 << 4);
+    hdr->ip.ip_ttl = 64;
+    hdr->ip.ip_p = PG_ICMP_PROTOCOL;
+    hdr->ip.ip_sum = 0;
+    hdr->ip.ip_src.s_addr = b->ipsrc;
+    hdr->ip.ip_dst.s_addr = b->ipdest;
+
+    memset(&hdr->icmp, 0, sizeof(struct icmp) + 36);
+    hdr->icmp.icmp_type = icmp_type;
+    hdr->icmp.icmp_code = 0;
+    hdr->icmp.icmp_cksum = 0;
+    hdr->icmp.icmp_id = 0x0bb0;
+    hdr->icmp.icmp_seq = htons(seq);
+    /* hdr->icmp.icmp_data can contain anything, I'm tempted do do ascii art */
+    /* But nothing seems a better plan */
+    hdr->ip.ip_sum =
+            pg_packet_ipv4_checksum(reinterpret_cast<uint8_t *>(&hdr->ip));
+    hdr->icmp.icmp_otime = htonl(time);
+    hdr->icmp.icmp_rtime = 0;
+    hdr->icmp.icmp_ttime = 0;
+    hdr->icmp.icmp_cksum =
+            ~pg_packet_sum(reinterpret_cast<uint8_t *>(&hdr->icmp),
+                           sizeof(struct icmp) + 36);
+    return 0;
+}
+
+void rx_rcv_callback(struct pg_brick *b, pg_packet_t **burst,
+                     uint16_t len, void *private_data) {
+    int i = 0;
+
+    V_FOREACH_UNTIL(burst, pkt, (i++ < len)) {
+        Graph::BenchRcv *rcv_nfo =
+                reinterpret_cast<Graph::BenchRcv *>(private_data);
+        Graph::BenchInfo *binfo;
+        struct h* pdata;
+
+        if (rcv_nfo->l >= BENCH_RCV_MAX_L - 1)
+            break;
+        binfo = &rcv_nfo->binfos[rcv_nfo->l++];
+        pdata = pg_packet_cast_data(pkt, struct h);
+
+        if (unlikely(rcv_nfo->ipsrc != pdata->ip.ip_dst.s_addr)) {
+            rcv_nfo->l--;
+            continue;
+        }
+
+        memcpy(binfo->smac, pdata->e.ether_dhost, 6);
+        memcpy(binfo->dmac, pdata->e.ether_shost, 6);
+        binfo->ipdest = pdata->ip.ip_src.s_addr;
+        binfo->ipsrc = pdata->ip.ip_dst.s_addr;
+        binfo->seq = pdata->icmp.icmp_seq;
+        binfo->time = pdata->icmp.icmp_otime;
+    }
+}
+
+void tx_rcv_callback(struct pg_brick *b, pg_packet_t **burst,
+                     uint16_t *len, void *private_data) {
+    Graph::BenchRcv *rcv_nfo =
+            reinterpret_cast<Graph::BenchRcv *>(private_data);
+    Graph::BenchInfo *binfos = rcv_nfo->binfos;
+    int l = rcv_nfo->l;
+    int i = l;
+    int j = 0;
+
+    V_FOREACH_UNTIL(binfos, binfo,
+                    (--i >= 0 && ++j <= 64 &&
+                     (mk_hdr(burst[i], &binfo, 0,
+                             binfo.seq, binfo.time) >= 0)));
+
+    rcv_nfo->l = i + 1;
+    *len = l - rcv_nfo->l;
+}
+
+inline uint32_t get_time() {
+    uint32_t t;
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+    t = 1000000 * tv.tv_sec + tv.tv_usec;
+    return t;
+}
+
+void rx_snd_callback(struct pg_brick *b, pg_packet_t **burst,
+                     uint16_t len, void *private_data) {
+    Graph::BenchSnd *bsnd = reinterpret_cast<Graph::BenchSnd *>(private_data);
+    if (!len)
+        return;
+
+    if (unlikely(bsnd->not_droped + len >= 1024)) {
+        printf("ping time for %d pkts: min/mean/max %d us %d us %d us\n",
+               bsnd->not_droped, bsnd->min_time, bsnd->mean / bsnd->not_droped,
+               bsnd->max_time);
+        bsnd->not_droped = 0;
+        bsnd->mean = 0;
+        bsnd->max_time = 0;
+        bsnd->min_time = 0;
+    }
+
+    /* I don't want the report here ^ to influence time here V */
+    uint32_t time = get_time();
+    int i = 0;
+
+    V_FOREACH_UNTIL(burst, pkt, (i++ < len)) {
+        struct h *hdr = pg_packet_cast_data(pkt, struct h);
+        uint16_t cksum = hdr->icmp.icmp_cksum;
+        uint32_t t;
+        uint16_t ncksum;
+
+        if (hdr->e.ether_type != PG_BE_ETHER_TYPE_IPv4) {
+            continue;
+        }
+        if (hdr->ip.ip_p != PG_ICMP_PROTOCOL) {
+            continue;
+        }
+        if (hdr->icmp.icmp_type) {
+            continue;
+        }
+        if (hdr->icmp.icmp_id != 0x0bb0 || !hdr->icmp.icmp_otime) {
+            continue;
+        }
+
+        hdr->icmp.icmp_cksum = 0;
+        ncksum = ~pg_packet_sum(reinterpret_cast<uint8_t *>(&hdr->icmp),
+                                sizeof(struct icmp) + 36);
+        if (ncksum != cksum) {
+            continue;
+        }
+        t = time - hdr->icmp.icmp_otime;
+        bsnd->mean += t;
+        if (t > bsnd->max_time)
+            bsnd->max_time = t;
+        if (!bsnd->min_time || t < bsnd->min_time)
+            bsnd->min_time = t;
+        bsnd->not_droped += 1;
+    }
+}
+
+
+
+void tx_snd_callback(struct pg_brick *b, pg_packet_t **burst,
+                     uint16_t *len, void *private_data) {
+    Graph::BenchSnd *bsnd = reinterpret_cast<Graph::BenchSnd *>(private_data);
+    Graph::BenchInfo *binfo = &bsnd->binfo;
+    static uint16_t seq;
+    uint32_t time = get_time();
+
+    if (mk_hdr(burst[0], binfo, 8, seq++, time) < 0) {
+        return;
+    }
+    *len = 1;
+}
+
 
 }  // namespace
 
@@ -280,6 +478,7 @@ void *Graph::Poller(void *graph) {
     uint16_t pkts_count;
     struct pg_brick *nic = g->nic_.get();
     uint32_t size = 0;
+    struct pg_error *poll_err;
 
     g_async_queue_ref(g->queue_);
 
@@ -304,12 +503,14 @@ void *Graph::Poller(void *graph) {
         }
 
         /* Poll all pollable vhosts. */
-        if (pg_brick_poll(nic, &pkts_count, &app::pg_error) < 0)
-            PG_ERROR_(app::pg_error);
+        if (pg_brick_poll(nic, &pkts_count, &app::pg_error) < 0) {
+            PG_ERROR_(poll_err);
+        }
+
         for (uint32_t v = 0; v < size; v++) {
             if (pg_brick_poll(list->pollables[v],
-                              &pkts_count, &app::pg_error) < 0) {
-                PG_ERROR_(app::pg_error);
+                              &pkts_count, &poll_err) < 0) {
+                PG_ERROR_(poll_err);
             }
         }
 
@@ -496,7 +697,6 @@ bool Graph::NicAdd(app::Nic *nic_) {
         pg_antispoof_arp_enable(gn.antispoof.get());
     }
 
-    LOG_INFO_("new nic now !\n");
     if (nic.type == app::VHOST_USER_SERVER) {
         name = "vhost-" + gn.id;
         gn.vhost = BrickShrPtr(pg_vhost_new(name.c_str(), 0,
@@ -511,6 +711,47 @@ bool Graph::NicAdd(app::Nic *nic_) {
             PG_ERROR_(app::pg_error);
             return false;
         }
+    } else if (nic.type == app::BENCH) {
+        pg_rxtx_rx_callback_t rx_callback = NULL;
+        pg_rxtx_tx_callback_t tx_callback = NULL;
+        void *arg;
+
+        name = "bench-";
+        if (nic.btype == app::ICMP_SND_LIKE) {
+            rx_callback = rx_snd_callback;
+            tx_callback = tx_snd_callback;
+            name += "snd-";
+            gn.bsnd = std::make_shared<Graph::BenchSnd>();
+            memcpy(gn.bsnd->binfo.dmac, nic.dmac.data(), 6);
+            memcpy(gn.bsnd->binfo.smac, nic.mac.data(), 6);
+            nic.dip.Bytes(reinterpret_cast<uint8_t *>(&gn.bsnd->binfo.ipdest));
+            nic.ip_list[0].Bytes(reinterpret_cast<uint8_t *>
+                                 (&gn.bsnd->binfo.ipsrc));
+            gn.bsnd->binfo.seq = 0;
+            gn.bsnd->not_droped = 0;
+            gn.bsnd->min_time = 0;
+            gn.bsnd->max_time = 0;
+            arg = reinterpret_cast<void *>(&*gn.bsnd);
+        } else {
+            name += "rcv-";
+            rx_callback = rx_rcv_callback;
+            tx_callback = tx_rcv_callback;
+
+            gn.brcv = std::make_shared<Graph::BenchRcv>();
+
+            memcpy(gn.brcv->smac, nic.mac.data(), 6);
+            nic.ip_list[0].Bytes(reinterpret_cast<uint8_t *>(&gn.brcv->ipsrc));
+            gn.brcv->l = 0;
+            gn.brcv->droped = 0;
+
+            arg = reinterpret_cast<void *>(&*gn.brcv);
+        }
+        name += gn.id;
+        gn.vhost = BrickShrPtr(pg_rxtx_new(name.c_str(),
+                                           rx_callback,
+                                           tx_callback, arg),
+                               pg_brick_destroy);
+
     } else {
         LOG_ERROR_("unknow vhost type");
         return false;
@@ -518,11 +759,14 @@ bool Graph::NicAdd(app::Nic *nic_) {
 
     if (!gn.vhost) {
         PG_ERROR_(app::pg_error);
+        printf("fail here\n");
         return false;
     }
+
     if (nic.packet_trace) {
         name = "sniffer-" + gn.id;
         gn.packet_trace_path = nic.packet_trace_path;
+        printf("sniffer path %s!\n", gn.packet_trace_path.c_str());
         gn.pcap_file = fopen(gn.packet_trace_path.c_str(), "w");
         gn.sniffer = BrickShrPtr(pg_print_new(name.c_str(), gn.pcap_file,
                                  PG_PRINT_FLAG_PCAP |
@@ -613,8 +857,10 @@ const char *Graph::NicPath(BrickShrPtr nic) {
 
     if (!strcmp(pg_brick_type(b), "vhost"))
         return pg_vhost_socket_path(b);
-    else
+    else if (!strcmp(pg_brick_type(b), "tap"))
         return pg_tap_ifname(b);
+    else
+        return "(nil)";
 }
 
 

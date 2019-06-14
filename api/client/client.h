@@ -87,6 +87,9 @@ struct NicAddOptions {
     string packet_trace;
     string packet_trace_path;
     string bypass_filtering;
+    string btype;
+    string dip;
+    string dmac;
 };
 
 struct NicUpdateOptions {
