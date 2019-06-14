@@ -150,6 +150,7 @@ message MessageV0 {
       // but it will be ignored at nic creation at the moment
       VHOST_USER_SERVER = 0;
       TAP = 1;
+      BENCH = 2;
     }
 
     // Network Interface Card identifier
@@ -188,6 +189,13 @@ message MessageV0 {
     optional bool packet_trace = 11;
     //path to store pcap file
     optional string packet_trace_path = 12;
+    //if type is benchmark, the kind of bebchmark you want to do
+    // ICMP-like-snd and ICMP-like-rcv are the only options avable now
+    optional string btype = 13;
+    // for benchmark, dip and dmac are dest mac and dest ip,
+    // same format as ip and mac
+    optional string dip = 14;
+    optional string dmac = 15;
   }
 
   // NIC statistics

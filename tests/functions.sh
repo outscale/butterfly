@@ -647,7 +647,7 @@ function server_start_options {
     options=${@:2}
     echo "[butterfly-$id] starting"
 
-    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options &> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
+    exec sudo $BUTTERFLY_BUILD_ROOT/api/server/butterflyd --dpdk-args "--no-shconf -c1 -n1 --vdev=eth_pcap$id,iface=but$id --no-huge" -l debug -i ::101 -s /tmp --endpoint=tcp://0.0.0.0:876$id $options &#> $BUTTERFLY_BUILD_ROOT/butterflyd_${id}_output &
     pid=$!
     sleep 1
     sudo kill -s 0 $pid
@@ -831,6 +831,36 @@ function tap_del {
     nic_id=$1
 
     sudo ip netns del ns$1
+}
+
+function bench_lat_snd_add {
+    but_id=$1
+    nic_id=$2
+    nic_id_dst=$3
+    vni=$4
+    sg_list=${@:5}
+
+    cli $but_id 0 nic add --id "bench-snd-$nic_id" --mac "52:54:00:12:34:0$nic_id" \
+        --vni $vni --ip "42.0.0.$nic_id" --enable-antispoof --type BENCH \
+        --btype ICMP_SND_LIKE --dip "42.0.0.$nic_id_dst" \
+        --dmac "52:54:00:12:34:0$nic_id_dst" # --bypass-filtering
+    for i in $sg_list; do
+        cli $but_id 0 nic sg add "bench-snd-$nic_id" $i
+    done
+}
+
+function bench_lat_rcv_add {
+    but_id=$1
+    nic_id=$2
+    vni=$3
+    sg_list=${@:4}
+
+    cli $but_id 0 nic add --id "bench-rcv-$nic_id" --mac "52:54:00:12:34:0$nic_id" \
+        --vni $vni --ip "42.0.0.$nic_id" --enable-antispoof --type BENCH \
+        --btype ICMP_RCV_LIKE  #--bypass-filtering
+    for i in $sg_list; do
+        cli $but_id 0 nic sg add "bench-rcv-$nic_id" $i
+    done
 }
 
 function tap_create {

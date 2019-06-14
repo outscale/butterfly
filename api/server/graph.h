@@ -18,6 +18,10 @@
 #ifndef API_SERVER_GRAPH_H_
 #define API_SERVER_GRAPH_H_
 
+constexpr int BENCH_RCV_MAX_L = 256;
+constexpr int BENCH_MAX_L = BENCH_RCV_MAX_L;
+constexpr int BENCH_MAX_MASK_L = BENCH_MAX_L / 64;
+
 extern "C" {
 #include <glib.h>
 }
@@ -248,11 +252,42 @@ class Graph {
     const char *NicPath(BrickShrPtr nic);
     /**
      * Try to link @westBrick to @eastBrick, and add @sniffer betwin those
-     * bricks
+     * bricks // rlll 0x7fb660003ea0 - 2 - 3
      */
     bool LinkAndStalk(BrickShrPtr westBrick, BrickShrPtr eastBrick,
                       BrickShrPtr sniffer);
 
+ public:
+    struct BenchInfo  {
+        uint8_t smac[6];
+        uint8_t align0[2];
+        uint8_t dmac[6];
+        uint8_t align1[2];
+        int32_t ipsrc;
+        int32_t ipdest;
+        uint16_t seq;
+        uint64_t time;
+    } __attribute__((packed));
+
+    struct BenchRcv {
+        BenchInfo binfos[BENCH_RCV_MAX_L];
+        uint8_t smac[6];
+        uint32_t ipsrc;
+        size_t l;
+        int droped;
+    };
+
+    struct BenchSnd {
+        struct BenchInfo binfo;
+        uint32_t res[1024];
+        uint32_t mean;
+        int not_droped;
+        uint32_t max_time;
+        uint32_t min_time;
+        BenchSnd() : mean{0}, not_droped{0} {}
+    };
+
+ private:
     /* VM branch. */
     struct GraphNic {
        std::string id;
@@ -267,6 +302,8 @@ class Graph {
        bool default_outbound_rule;
        // If we should add this branch or not to our poll updates
        bool enable;
+       std::shared_ptr<Graph::BenchRcv> brcv;
+       std::shared_ptr<Graph::BenchSnd> bsnd;
     };
 
     /* VNI branch. */
