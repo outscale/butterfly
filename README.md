@@ -230,6 +230,17 @@ Machines:
 - NICs: Intel 82599ES 10-Gigabit SFI/SFP+ (DPDK compatible used with vfio-pci driver)
 - CPU: AMD Opteron(tm) Processor 3350 HE
 
+Results (Juin 2019):
+### QPerf TCP latence Without TSO :
+```
+                | Without Firewall | With Firewall |
+ ---------------+------------------+---------------+
+| Same Host     | 18.3 us          | 20.1 us       |
+| Diferent Host | 22.6 us          | 24.1 us       |
+```
+
+ 20.1 us
+20.1 us
 
 Results (august 2017, 60 seconds per tests):
 
