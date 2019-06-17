@@ -231,16 +231,34 @@ Machines:
 - CPU: AMD Opteron(tm) Processor 3350 HE
 
 Results (Juin 2019):
-### QPerf TCP latence Without TSO :
+### QPerf TCP latence Without TSO on VMs:
 ```
+cmd: qperf -vvs  <ip address> tcp_lat
+
                 | Without Firewall | With Firewall |
  ---------------+------------------+---------------+
 | Same Host     | 18.3 us          | 20.1 us       |
 | Diferent Host | 22.6 us          | 24.1 us       |
 ```
 
- 20.1 us
-20.1 us
+
+### QPerf UDP latence With TSO on VMs:
+```
+cmd: qperf -vvs  <ip address> udp_lat
+                | Without Firewall | With Firewall |
+ ---------------+------------------+---------------+
+| Same Host     | 16.8 us          | 18.5 us       |
+| Diferent Host | 21.7 us          | 22.1 us       |
+```
+
+### QPerf TCP latence With TSO on VMs:
+```
+cmd: qperf -vvs  <ip address> tcp_lat
+                | Without Firewall | With Firewall |
+ ---------------+------------------+---------------+
+| Same Host     | 18.4 us          | 20.1 us       |
+| Diferent Host | 22.9 us          | 24.1 us       |
+```
 
 Results (august 2017, 60 seconds per tests):
 
@@ -249,8 +267,8 @@ Results (august 2017, 60 seconds per tests):
                          |   VMs on same host  |  VMs on remote host |
  ------------------------+---------------------+---------------------|
 | Ping (min/average/max) | 0.072/0.090/0.160ms | 0.106/0.162/0.236ms |
-| TCP                    |     6.00 Gbits/s    |     6.70 Gbits/s    |
-| UDP                    |     2.99 Gbits/s    |     1.41 Gbits/s    |
+| TCP (iperf 3)          |     6.00 Gbits/s    |     6.70 Gbits/s    |
+| UDP (iperf 3)          |     2.99 Gbits/s    |     1.41 Gbits/s    |
 ```
 
 ### With TSO enabled on VMs (--tso-on)
@@ -258,8 +276,8 @@ Results (august 2017, 60 seconds per tests):
                          |   VMs on same host  |  VMs on remote host |
  ------------------------+---------------------+---------------------|
 | Ping (min/average/max) | 0.077/0.101/0.447ms | 0.059/0.96/0.203ms  |
-| TCP                    |     15.9 Gbits/s    |     3.2 Gbits/s     |
-| UDP                    |     2.99 Gbits/s    |     1.4 Gbits/s     |
+| TCP  (iperf 3)         |     15.9 Gbits/s    |     3.2 Gbits/s     |
+| UDP  (iperf 3)         |     2.99 Gbits/s    |     1.4 Gbits/s     |
 ```
 
 ### Notes
