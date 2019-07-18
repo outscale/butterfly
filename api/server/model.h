@@ -40,6 +40,7 @@ class Ip {
     bool Bytes(uint8_t *data) const;
     bool operator== (const Ip& a) const;
     Ip operator= (const std::string &a);
+    bool broken;
  private:
     std::string ip_;
     type_t type_;

@@ -22,6 +22,10 @@ extern "C" {
 #include "api/server/api.h"
 #include "api/server/app.h"
 
+namespace {
+thread_local std::string api_0_error;
+}
+
 void Api0::Process(const MessageV0 &req, MessageV0 *res) {
     if (res == nullptr)
         return;
@@ -532,12 +536,23 @@ void Api0::BuildNokRes(MessageV0_Response *res) {
     if (res == nullptr)
         return;
     auto s = res->mutable_status();
-    s->set_status(false);
+    if (!api_0_error.empty()) {
+        s->set_allocated_error(new MessageV0_Error);
+        auto e = s->mutable_error();
+        e->set_description(api_0_error);
+        api_0_error = "";
+    } else {
+        s->set_status(false);
+    }
 }
 
 void Api0::BuildNokRes(MessageV0_Response *res, std::string description) {
     if (res == nullptr)
         return;
+    if (!api_0_error.empty()) {
+        description = api_0_error;
+        api_0_error = "";
+    }
     LOG_DEBUG_("%s", description.c_str());
     BuildNokRes(res);
     auto s = res->mutable_status();
@@ -997,6 +1012,10 @@ bool Api0::Convert(const std::string &ip_message, app::Ip *ip_model) {
     if (ip_model == nullptr)
         return false;
     *ip_model = ip_message;
+    if (ip_model->broken) {
+        api_0_error = "can't convert \"" + ip_message + "\" to IP";
+        return false;
+    }
     return true;
 }
 
