@@ -125,6 +125,7 @@ extern Model model;
 extern Log log;
 extern Graph graph;
 extern pg_error *pg_error;
+
 }  // namespace app
 
 #endif  // API_SERVER_APP_H_

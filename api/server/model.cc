@@ -81,7 +81,7 @@ std::string Cidr::Str() const {
     return address.Str() + "/" + std::to_string(mask_size);
 }
 
-Ip::Ip() {
+Ip::Ip() : broken(false) {
     type_ = Ip::NONE;
     memset(data_, 0, 16);
 }
@@ -139,8 +139,10 @@ bool Ip::Set(std::string a) {
         inet_ntop(AF_INET6, &a6, str, INET6_ADDRSTRLEN);
         ip_ = str;
     } else {
+        broken = true;
         return false;
     }
+    broken = false;
     return true;
 }
 
