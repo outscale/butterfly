@@ -40,6 +40,7 @@ class Ip {
     bool Bytes(uint8_t *data) const;
     bool operator== (const Ip& a) const;
     Ip operator= (const std::string &a);
+    bool broken;
  private:
     std::string ip_;
     type_t type_;
@@ -114,7 +115,7 @@ struct Rule {
     int32_t port_end;
     Cidr cidr;
     std::string security_group;
-    bool operator== (const Rule& a) const;
+    bool operator==(const Rule& a) const;
 };
 
 struct Sg {
