@@ -36,7 +36,8 @@ set(PG_LIBRARIES
     ${PG_INSTALL_DIR}/.libs/libcdb.a
     ${PG_INSTALL_DIR}/.libs/libnpf.a
     ${PG_INSTALL_DIR}/.libs/libnpfkern.a
-    ${PG_INSTALL_DIR}/.libs/libprop.a
+    ${PG_INSTALL_DIR}/.libs/libnvlist.a
+    ${PG_INSTALL_DIR}/.libs/libthmap.a
     ${PG_INSTALL_DIR}/.libs/libqsbr.a
     ${PG_INSTALL_DIR}/.libs/libsljit.a
     ${PG_INSTALL_DIR}/.libs/libpacketgraph.a -Wl,--end-group
