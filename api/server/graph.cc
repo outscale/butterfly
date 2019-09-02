@@ -78,6 +78,10 @@ static_assert(((BENCH_MAX_L % 64) == 0) && BENCH_MAX_L > 0,
 # define unlikely(x)    __builtin_expect(!!(x), 0)
 #endif
 
+#ifndef likely
+# define likely(x)    __builtin_expect(!!(x), 1)
+#endif
+
 int mk_hdr(pg_packet_t *pkt, Graph::BenchInfo *b,
            int8_t icmp_type, uint16_t seq,
            uint32_t time) {
@@ -491,7 +495,7 @@ void *Graph::Poller(void *graph) {
         /* Let's see if there is any update every 100 000 pools. */
 
         if (POLLER_CHECK(cnt)) {
-            if (g->PollerUpdate(&q)) {
+            if (likely(g->PollerUpdate(&q))) {
                 if (q) {
                 list = &q->update_poll;
                 size = list->size;
@@ -503,13 +507,13 @@ void *Graph::Poller(void *graph) {
         }
 
         /* Poll all pollable vhosts. */
-        if (pg_brick_poll(nic, &pkts_count, &app::pg_error) < 0) {
+        if (unlikely(pg_brick_poll(nic, &pkts_count, &app::pg_error) < 0)) {
             PG_ERROR_(poll_err);
         }
 
         for (uint32_t v = 0; v < size; v++) {
-            if (pg_brick_poll(list->pollables[v],
-                              &pkts_count, &poll_err) < 0) {
+            if (unlikely(pg_brick_poll(list->pollables[v],
+                                       &pkts_count, &poll_err) < 0)) {
                 PG_ERROR_(poll_err);
             }
         }
@@ -519,7 +523,6 @@ void *Graph::Poller(void *graph) {
             cnt = 0;
             for (uint32_t v = 0; v < size; v++)
                 pg_firewall_gc(list->firewalls[v]);
-            usleep(5);
         }
     }
     g_async_queue_unref(g->queue_);
