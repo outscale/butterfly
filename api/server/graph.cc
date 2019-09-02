@@ -507,7 +507,7 @@ void *Graph::Poller(void *graph) {
         }
 
         /* Poll all pollable vhosts. */
-        if (unlikely(pg_brick_poll(nic, &pkts_count, &app::pg_error) < 0)) {
+        if (unlikely(pg_brick_poll(nic, &pkts_count, &poll_err) < 0)) {
             PG_ERROR_(poll_err);
         }
 
