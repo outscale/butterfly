@@ -76,6 +76,10 @@ add_custom_target(tests-all
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_all.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
+add_custom_target(tests-crypto
+                  COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_crypto.sh ${PROJECT_BINARY_DIR} ${VERBOSE}
+                  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+
 add_custom_target(style
                   COMMAND ${PROJECT_SOURCE_DIR}/scripts/tests_api_style.sh
                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
