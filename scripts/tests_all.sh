@@ -36,6 +36,19 @@ fi
 
 sleep 1
 
+# Crypto test
+$BUTTERFLY_ROOT/scripts/tests_crypto.sh $BUTTERFLY_BUILD_ROOT/build
+if [ $? != 0 ]; then
+    tput setaf 1
+    echo "crypto test failed"
+    tput setaf 7
+    exit 1
+else
+    tput setaf 2
+    echo "crypto test OK"
+    tput setaf 7
+fi
+
 # API tests
 $BUTTERFLY_ROOT/scripts/tests_api.sh $BUTTERFLY_BUILD_ROOT $VERBOSE
 if [ $? != 0 ]; then
