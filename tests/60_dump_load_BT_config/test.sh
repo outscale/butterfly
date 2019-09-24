@@ -77,6 +77,33 @@ if ! diff $BUTTERFLY_BUILD_ROOT/dump1.req $BUTTERFLY_BUILD_ROOT/dump2.req ; then
     fail "double dump test failed"
 fi
 
+$BUTTERFLY_BUILD_ROOT/api/client/butterfly
+cli 0 1
+cli 0 0 -h
+cli 0 0 --help
+cli 0 1 -k
+$BUTTERFLY_BUILD_ROOT/api/client/butterfly -v
+$BUTTERFLY_BUILD_ROOT/api/client/butterfly --version
+
+$BUTTERFLY_BUILD_ROOT/api/client/butterfly nic stats
+$BUTTERFLY_BUILD_ROOT/api/client/butterfly nic details
+$BUTTERFLY_BUILD_ROOT/api/client/butterfly nic sg list
+cli 0 0 nic stats help
+cli 0 0 nic details help
+cli 0 0 nic sg list help
+cli 0 1 nic sg list -v
+
+cli 0 1 nic details request
+cli 0 1 nic stats request
+cli 0 0 nic list help
+cli 0 0 nic list
+cli 0 0 status
+
+cli 0 1 request
+cli 0 0 shutdown
+cli 0 0 dump help
+
 server_stop 0
 network_disconnect 0 1
 return_result
+
