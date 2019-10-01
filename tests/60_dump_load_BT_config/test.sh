@@ -105,3 +105,4 @@ cli 0 0 dump help
 server_stop 0
 network_disconnect 0 1
 return_result
+
