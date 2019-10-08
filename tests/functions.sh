@@ -19,6 +19,11 @@ RETURN_CODE=0
 
 function return_result {
     clean_all
+    if [ $RETURN_CODE == 0 ]; then
+	echo $CUR_TEST 'SUCESS !!!'
+    else
+	echo 'FAIL !!!'
+    fi
     exit $RETURN_CODE
 }
 
