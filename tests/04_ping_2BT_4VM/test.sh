@@ -3,6 +3,7 @@
 BUTTERFLY_BUILD_ROOT=$1
 BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
 source $BUTTERFLY_SRC_ROOT/tests/functions.sh
+CUR_TEST="04_ping_2BT_4VM"
 
 network_connect 0 1
 server_start 0
