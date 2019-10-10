@@ -397,8 +397,8 @@ void SegvHandler(int sig) {
   size = backtrace(array, 32);
 
   // print out all the frames to stderr
-  printf("got segv");
-  fprintf(stderr, "Error: segmentation fault");
+  printf("server got segv");
+  fprintf(stderr, "Server Error: segmentation fault");
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   exit(139);
 }

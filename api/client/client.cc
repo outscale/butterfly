@@ -16,6 +16,8 @@
  */
 
 #include <glib.h>
+#include <unistd.h>
+#include <execinfo.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/stubs/common.h>
 #include <zmqpp/zmqpp.hpp>
@@ -96,9 +98,26 @@ struct Cmd {
     Cmd(char **acommand, int asize) : command(acommand), size(asize) {}
 };
 }
+
+void SegvHandler(int sig) {
+  void *array[32];
+  size_t size;
+
+  // get void*'s for all entries on the stack
+  size = backtrace(array, 32);
+
+  // print out all the frames to stderr
+  printf("client got segv");
+  fprintf(stderr, "Client Error: segmentation fault");
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  exit(139);
+}
+
 int main(int argc, char **argv) {
     GlobalOptions options;
     options.Parse(argc, argv);
+
+    signal(SIGSEGV, SegvHandler);
 
     if (options.version) {
         cout << VERSION_INFO << endl;
