@@ -17,6 +17,7 @@
 extern "C" {
 #include <unistd.h>
 #include <syslog.h>
+#include <execinfo.h>
 #include <glib.h>
 #include <packetgraph/packetgraph.h>
 }
@@ -388,11 +389,26 @@ bool LoadConfigFile(std::string config_path) {
     return true;
 }
 
+void SegvHandler(int sig) {
+  void *array[32];
+  size_t size;
+
+  // get void*'s for all entries on the stack
+  size = backtrace(array, 32);
+
+  // print out all the frames to stderr
+  printf("got segv");
+  fprintf(stderr, "Error: segmentation fault");
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  exit(139);
+}
+
 void SignalRegister() {
     signal(SIGINT, SignalHandler);
     signal(SIGQUIT, SignalHandler);
     signal(SIGSTOP, SignalHandler);
     signal(SIGTERM, SignalHandler);
+    signal(SIGSEGV, SegvHandler);
 }
 
 void SignalHandler(int signum) {
