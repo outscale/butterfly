@@ -116,10 +116,19 @@ function ssh_no_ping_ip6 {
     fi
 }
 
+function check_alive {
+    ssh_run $1 echo "check aliveness"
+    if [ $? -ne 0 ]; then
+	fail "VM $1 is dead"
+    fi
+}
+
 function ssh_ping {
     id1=$1
     id2=$2
 
+    check_alive $id1
+    check_alive $id2
     ssh_run $id1 ping 42.0.0.$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
         fail "ping VM $id1 ---> VM $id2 FAIL"
@@ -132,6 +141,8 @@ function ssh_no_ping {
     id1=$1
     id2=$2
 
+    check_alive $id1
+    check_alive $id2
     ssh_run $id1 ping 42.0.0.$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping VM $id1 -/-> VM $id2 OK"
@@ -143,6 +154,9 @@ function ssh_no_ping {
 function ssh_ping6 {
     id1=$1
     id2=$2
+
+    check_alive $id1
+    check_alive $id2
     ssh_run $id1 ping -6 2001:db8:2000:aff0::$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
         fail "ping6 VM $id1 ---> VM $id2 FAIL"
@@ -155,6 +169,8 @@ function ssh_no_ping6 {
     id1=$1
     id2=$2
 
+    check_alive $id1
+    check_alive $id2
     ssh_run $id1 ping -6 2001:db8:2000:aff0::$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
         echo "ping6 VM $id1 -/-> VM $id2 OK"
@@ -196,6 +212,8 @@ function ssh_iperf_tcp {
     id1=$1
     id2=$2
 
+    check_alive $id1
+    check_alive $id2
     (ssh_run $id1 iperf -s &> /dev/null &)
     local server_pid=$!
     sleep 1
@@ -212,6 +230,8 @@ function ssh_iperf_udp {
     id1=$1
     id2=$2
 
+    check_alive $id1
+    check_alive $id2
     (ssh_run $id1 iperf -s -u &> /tmp/iperf_tmp_results &)
     local server_pid=$!
     sleep 1
@@ -231,6 +251,8 @@ function ssh_iperf3_tcp {
     id1=$1
     id2=$2
 
+    check_alive $id1
+    check_alive $id2
     (ssh_run $id1 iperf3 -s &> /dev/null &)
     local server_pid=$!
     sleep 1
@@ -247,6 +269,8 @@ function ssh_iperf3_udp {
     id1=$1
     id2=$2
 
+    check_alive $id1
+    check_alive $id2
     (ssh_run $id1 iperf3 -s &> /dev/null &)
     local server_pid=$!
     sleep 1
