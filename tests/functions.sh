@@ -20,9 +20,9 @@ RETURN_CODE=0
 function return_result {
     clean_all
     if [ $RETURN_CODE == 0 ]; then
-	echo $CUR_TEST 'SUCESS !!!'
+        echo $CUR_TEST 'SUCESS !!!'
     else
-	echo 'FAIL !!!'
+        echo 'FAIL !!!'
     fi
     exit $RETURN_CODE
 }
@@ -119,7 +119,7 @@ function ssh_no_ping_ip6 {
 function check_alive {
     ssh_run $1 echo "check aliveness"
     if [ $? -ne 0 ]; then
-	fail "VM $1 is dead"
+        fail "VM $1 is dead"
     fi
 }
 
@@ -1382,6 +1382,7 @@ function clean_pcaps {
 }
 
 function clean_all {
+    sudo pkill -9 qemu &> /dev/null
     sudo killall butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sleep 0.5
     sudo killall -15 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
