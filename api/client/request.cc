@@ -15,6 +15,7 @@
  * along with Butterfly.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <unistd.h>
 #include "api/client/client.h"
 #include "api/common/crypto.h"
 
@@ -58,6 +59,24 @@ int SubRequest(int argc, char **argv, const GlobalOptions &options) {
     proto::Messages res;
     return Request(input_text, &res, options, r_options.to_stdout);
 }
+
+#define SND_RCV(str, op)                                                \
+    if (!options.timeout) {                                             \
+        if (!socket.op(str)) {                                          \
+            cerr <<  "Error, cannot " #op " message to endpoint" << endl; \
+            return 1;                                                   \
+        }                                                               \
+    } else {                                                            \
+        for (int i = 0; i < options.timeout * 1000; ++i) {              \
+            if (socket.op(str, true))                                   \
+                goto op##_sucess;                                       \
+            usleep(1);                                                  \
+        }                                                               \
+        cerr <<  "Error, " #op " timeout" << endl;                      \
+        return 1;                                                       \
+    }                                                                   \
+op##_sucess:
+
 
 int Request(const proto::Messages &req,
             proto::Messages *res,
@@ -113,19 +132,10 @@ int Request(const proto::Messages &req,
     zmqpp::context context;
     zmqpp::socket socket(context, zmqpp::socket_type::request);
     socket.connect(options.endpoint);
-    if (!socket.send(str_request)) {
-        cerr <<  "Error, cannot send message to endpoint" << endl;
-        return 1;
-    }
-
-    // Get ZeroMQ response
+    SND_RCV(str_request, send);
+// Get ZeroMQ response
     string str_response;
-    if (!socket.receive(str_response)) {
-        cerr <<  "Error, cannot receive message from endpoint" <<
-        endl;
-        return 1;
-    }
-
+    SND_RCV(str_response, receive);
     // Convert response to protobuf
     proto::Messages response;
     if (!response.ParseFromString(str_response)) {

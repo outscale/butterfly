@@ -59,6 +59,7 @@ struct GlobalOptions {
     bool version;
     bool verbose;
     bool help;
+    int timeout;
     string encryption_key;
 };
 

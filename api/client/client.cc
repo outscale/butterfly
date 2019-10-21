@@ -36,23 +36,30 @@ GlobalOptions::GlobalOptions() {
     verbose = false;
     version = false;
     help = false;
+    timeout = 0;
 }
 
 void GlobalOptions::Parse(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (i + 1 < argc &&
             (string(argv[i]) == "--endpoint" ||
-             string(argv[i]) == "-e"))
+             string(argv[i]) == "-e")) {
             endpoint = string(argv[i + 1]);
-        else if (string(argv[i]) == "-v" ||
-                 string(argv[i]) == "--verbose")
+        } else if (string(argv[i]) == "-v" ||
+                 string(argv[i]) == "--verbose") {
             verbose = true;
-        else if (string(argv[i]) == "-V" ||
-                 string(argv[i]) == "--version")
+        } else if (string(argv[i]) == "-V" ||
+                 string(argv[i]) == "--version") {
             version = true;
-        else if (string(argv[i]) == "-h" ||
-                 string(argv[i]) == "--help")
+        } else if (string(argv[i]) == "-h" ||
+                   string(argv[i]) == "--help") {
             help = true;
+        } else if (string(argv[i]) == "-t" ||
+                   string(argv[i]) == "--timeout") {
+            if (argv[i + 1] == nullptr)
+                cerr << "timeout need and argument" << endl;
+            timeout = atoi(argv[i + 1]);
+        }
         if (i + 1 < argc &&
             (string(argv[i]) == "--key" ||
              string(argv[i]) == "-k")) {
@@ -70,6 +77,7 @@ void GlobalParameterHelp(void) {
         "    --endpoint, -e  endpoint to use (default: " <<
         DEFAULT_ENDPOINT << ")" << endl <<
         "    --verbose, -v   show details of each operation" << endl <<
+        "    --timeout, -t   set a timeout for each operations in ms" << endl <<
         "    --key, -k       path to encryption key (32 raw bytes)" << endl;
 }
 
