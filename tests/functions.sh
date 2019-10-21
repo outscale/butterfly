@@ -133,6 +133,8 @@ function ssh_ping {
     if [ $? -ne 0 ]; then
         fail "ping VM $id1 ---> VM $id2 FAIL"
     else
+        cli 0 0 nic stats nic-$1
+        cli 1 0 nic stats nic-$2
         echo "ping VM $id1 ---> VM $id2 OK"
     fi
 }
@@ -818,7 +820,7 @@ function cli {
     opts=${@:3}
     echo "[butterfly-$but_id] cli run $opts"
 
-    $BUTTERFLY_BUILD_ROOT/api/client/butterfly $opts -e tcp://127.0.0.1:876$but_id &> $BUTTERFLY_BUILD_ROOT/cli_output
+    $BUTTERFLY_BUILD_ROOT/api/client/butterfly $opts -t 3000 -e tcp://127.0.0.1:876$but_id &> $BUTTERFLY_BUILD_ROOT/cli_output
     if [ ! "$?" == "$excepted_result" ]; then
         fail "cli run failed, check cli_output file"
     fi
