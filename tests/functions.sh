@@ -47,6 +47,18 @@ function ssh_run_timeout {
     cmd="${@:3}"
     key=$BUTTERFLY_BUILD_ROOT/vm.rsa
     ssh -q -p 500$id -l root -i $key -oStrictHostKeyChecking=no -oConnectTimeout=$timeout 127.0.0.1 $cmd
+    ret=$?
+    MAX_TEST=0
+    while [ $ret -ne 0 -a $MAX_TEST -ne $timeout ]; do
+        ssh -p 500$id -l root -i $key -oStrictHostKeyChecking=no -oConnectTimeout=$timeout 127.0.0.1 $cmd
+        ret=$?
+        MAX_TEST=$(($MAX_TEST + 1))
+        if [ $MAX_TEST -ne 0 ]; then
+            echo try ssh $MAX_TEST
+        fi
+        sleep 0.1
+    done
+    return $ret
 }
 
 function scp_to {
@@ -117,7 +129,7 @@ function ssh_no_ping_ip6 {
 }
 
 function check_alive {
-    ssh_run $1 echo "check aliveness"
+    ssh_run $1 echo "check aliveness" &> /dev/null
     if [ $? -ne 0 ]; then
         fail "VM $1 is dead"
     fi
@@ -133,8 +145,6 @@ function ssh_ping {
     if [ $? -ne 0 ]; then
         fail "ping VM $id1 ---> VM $id2 FAIL"
     else
-        cli 0 0 nic stats nic-$1
-        cli 1 0 nic stats nic-$2
         echo "ping VM $id1 ---> VM $id2 OK"
     fi
 }
@@ -258,7 +268,7 @@ function ssh_iperf3_tcp {
     (ssh_run $id1 iperf3 -s &> /dev/null &)
     local server_pid=$!
     sleep 1
-    ssh_run $id2 iperf3 -c 42.0.0.$id1 -t 10 #&> /dev/null
+    ssh_run $id2 iperf3 -c 42.0.0.$id1 -t 10 &> /dev/null
     if [ $? -ne 0 ]; then
         fail "iperf3 tcp VM $id1 ---> VM $id2 FAIL"
     else
@@ -548,10 +558,33 @@ function qemu_start {
     id=$1
     ip=$2
     nic_type=$3
-    echo "[VM $id] starting"
     SOCKET_PATH=/tmp/qemu-vhost-nic-$id
     IMG_PATH=$BUTTERFLY_BUILD_ROOT/vm.qcow
     MAC=52:54:00:12:34:0$id
+
+    if [ "$nic_type" == "tap" ]; then
+        echo "[tap $id] starting"
+    else
+        echo "[VM $id] starting"
+        # tap don't use the same socket path
+        if [ ! -e $SOCKET_PATH ]; then
+            fail "$SOCKET_PATH does not exist"
+        fi
+    fi
+
+    MAX_TEST=0
+    HAVE_WAIT=0
+    sudo netstat  -palnt | grep 500$id &> /dev/null
+    while [ $? -eq 0 -a $MAX_TEST -ne 260 ]; do
+        HAVE_WAIT=1
+        MAX_TEST=$(($MAX_TEST + 1))
+        sleep 1
+        sudo netstat  -palnt | grep 500$id &> /dev/null
+    done
+
+    if [ $HAVE_WAIT -eq 1 ]; then
+        echo "await 500$id closure for $MAX_TEST sec"
+    fi
 
     if [ "$nic_type" == "tap" ]; then
         sudo ip link delete but-br-$id type bridge
@@ -567,20 +600,31 @@ function qemu_start {
         CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm  -netdev type=tap,id=mynet1,ifname=tap-q-$id,script=no,downscript=no -device virtio-net-pci,gso=off,mac=$MAC,netdev=mynet1 -drive file=$IMG_PATH -snapshot -display none"
     else
         CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -display none"
+        nic_type="VM"
     fi
-    exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
+    exec $CMD &#> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
+    have_start=$?
     pid=$!
+    echo have start $have_start '?' $pid
 
     echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
     TEST=$?
     MAX_TEST=0
-    while  [ $TEST -ne 0 -a $MAX_TEST -ne 20 ]
+    while  [ $TEST -ne 0 -a $MAX_TEST -ne 2000 ]
     do
         echo "hello" | nc -w 1  127.0.0.1 500$id &> /dev/null
         TEST=$?
+        if [ $MAX_TEST -eq 0 ]; then
+            echo "[$nic_type $id] await port 500$id to open"
+        fi
         MAX_TEST=$(($MAX_TEST + 1))
-        sleep 0.2
+        sudo netstat -palnt | grep 500$id &> /dev/null
+        sleep 0.1
     done
+    sudo netstat -palnt | grep 500$id &> /dev/null
+    if [ $TEST -ne 0 ]; then
+        fail "[$nic_type $id] failed to start qemu"
+    fi
 
     sudo kill -s 0 $pid &> /dev/null
     if [ $? -ne 0 ]; then
@@ -590,6 +634,9 @@ function qemu_start {
 
     # Wait for ssh to be ready
     ssh_run_timeout $id 60 true
+    if [ $? -ne 0 ]; then
+        fail "[$nic_type $id] fail to establish connection"
+    fi
 
     # Configure IP on vhost interface
     ssh_run $id ip link set ens4 up
@@ -635,10 +682,13 @@ function qemu_start {
 
 function qemu_stop {
     id=$1
+    ssh_run $id poweroff
+    sleep 1
     rm -f $BUTTERFLY_BUILD_ROOT/qemu_pids$id
     echo "[VM $id] stopping (pid ${qemu_pids[$id]})"
     sudo kill -15 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
-    sleep 0.3
+    sleep 1
+    sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
 }
 
 function qemus_stop {
@@ -1384,15 +1434,20 @@ function clean_pcaps {
 }
 
 function clean_all {
-    sudo pkill -9 qemu &> /dev/null
+    sudo pkill qemu
+    sleep 0.5
+    sudo pkill -9 qemu
     sudo killall butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sleep 0.5
     sudo killall -15 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
     sleep 0.5
+    sudo killall -9 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
+    sleep 0.5
     rm -rf $BUTTERFLY_BUILD_ROOT/qemu_pids*
     rm -rf $BUTTERFLY_BUILD_ROOT/*-butterfly_size
     rm -rf /tmp/*-butterfly_size
+    sleep 2
 }
 
 function fail {
@@ -1426,8 +1481,11 @@ check_bin sudo qemu-system-x86_64 -h
 check_bin sudo socat -h
 check_bin kill -l
 check_bin killall -l
+check_bin pkill -h
 check_bin nc -h
 check_bin wget -h
+check_bin netstat -h
+check_bin ncat -h
 
 clean_all
 clean_pcaps
@@ -1438,5 +1496,10 @@ chmod og-rw $BUTTERFLY_BUILD_ROOT/vm.rsa
 sudo chown $USER:$USER -R $BUTTERFLY_BUILD_ROOT/api/
 
 # run sudo one time
+echo "=========== Attention ============"
+echo "this script performe a lot of strange operation, and killing"
+echo "when trying to clean itself it kill all qemus, butterflyd and socat"
+echo "on your system. so be smart"
+echo "DON'T USE THAT ON A MACHINE THAT WASN'T MADE FOR TESTSING/DEVELOPING BUTTERFLY"
 sudo echo "ready to roll !"
 
