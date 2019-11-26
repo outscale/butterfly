@@ -5,6 +5,7 @@
 
 # [tap 1] <----> [Butterfly 0] <-------> [Butterfly 1] <----> [tap 2]
 
+CUR_TEST="$(dirname $0)"
 BUTTERFLY_BUILD_ROOT=$1
 BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
 source $BUTTERFLY_SRC_ROOT/tests/functions.sh

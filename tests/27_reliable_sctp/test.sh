@@ -1,6 +1,7 @@
 #!/bin/bash
 
 BUTTERFLY_BUILD_ROOT=$1
+CUR_TEST="$(dirname $0)"
 BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
 source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 

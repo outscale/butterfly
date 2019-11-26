@@ -762,14 +762,12 @@ bool Graph::NicAdd(app::Nic *nic_) {
 
     if (!gn.vhost) {
         PG_ERROR_(app::pg_error);
-        printf("fail here\n");
         return false;
     }
 
     if (nic.packet_trace) {
         name = "sniffer-" + gn.id;
         gn.packet_trace_path = nic.packet_trace_path;
-        printf("sniffer path %s!\n", gn.packet_trace_path.c_str());
         gn.pcap_file = fopen(gn.packet_trace_path.c_str(), "w");
         gn.sniffer = BrickShrPtr(pg_print_new(name.c_str(), gn.pcap_file,
                                  PG_PRINT_FLAG_PCAP |

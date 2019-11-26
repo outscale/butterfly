@@ -2,6 +2,7 @@
 
 BUTTERFLY_BUILD_ROOT=$1
 BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
+CUR_TEST="$(dirname $0)"
 source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 
 network_connect 0 1

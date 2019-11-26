@@ -3,13 +3,14 @@ IMG_MD5=7bd77480631145b679bc8fac3583b163
 KEY_URL=https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/arch-260417.rsa
 KEY_MD5=eb3d700f2ee166e0dbe00f4e0aa2cef9
 
+CUR_TEST=$(basename $CUR_TEST)
+
 function usage {
     echo "Usage: test.sh BUTTERFLY_BUILD_ROOT" 1>&2
     echo "Usage: test.sh option" 1>&2
     echo "option:" 1>&2
     echo "   -h, --help : print this help" 1>&2
 }
-
 
 declare -A qemu_pids
 declare -A server_pids
@@ -22,7 +23,7 @@ function return_result {
     if [ $RETURN_CODE == 0 ]; then
         echo $CUR_TEST 'SUCESS !!!'
     else
-        echo 'FAIL !!!'
+        echo $CUR_TEST 'FAIL !!!'
     fi
     exit $RETURN_CODE
 }
@@ -81,11 +82,14 @@ function ssh_ping_ip {
     src=$2
     dst=$3
 
+    check_alive $id
+
+    
     ssh_run $id ping -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
         fail "ping on VM $id: $src ---> $dst FAIL"
     else
-        echo "ping on VM $id: $src ---> $dst OK"
+        echo "[$CUR_TEST] ping on VM $id: $src ---> $dst OK"
     fi
 }
 
@@ -94,9 +98,11 @@ function ssh_no_ping_ip {
     src=$2
     dst=$3
 
+    check_alive $id
+
     ssh_run $id ping -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "ping on VM $id: $src -/-> $dst OK"
+        echo "[$CUR_TEST] ping on VM $id: $src -/-> $dst OK"
     else
         fail "ping on VM $id: $src -/-> $dst FAIL"
     fi
@@ -107,11 +113,13 @@ function ssh_ping_ip6 {
     src=$2
     dst=$3
 
+    check_alive $id
+
     ssh_run $id ping -6 -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
         fail "ping6 on VM $id: $src ---> $dst FAIL"
     else
-        echo "ping6 on VM $id: $src ---> $dst OK"
+        echo "[$CUR_TEST] ping6 on VM $id: $src ---> $dst OK"
     fi
 }
 
@@ -120,9 +128,11 @@ function ssh_no_ping_ip6 {
     src=$2
     dst=$3
 
+    check_alive $id
+
     ssh_run $id ping -6 -c 1 -W 2 -I $src $dst &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "ping on VM $id: $src -/-> $dst OK"
+        echo "[$CUR_TEST] ping on VM $id: $src -/-> $dst OK"
     else
         fail "ping6 on VM $id: $src -/-> $dst FAIL"
     fi
@@ -145,7 +155,7 @@ function ssh_ping {
     if [ $? -ne 0 ]; then
         fail "ping VM $id1 ---> VM $id2 FAIL"
     else
-        echo "ping VM $id1 ---> VM $id2 OK"
+        echo "[$CUR_TEST] ping VM $id1 ---> VM $id2 OK"
     fi
 }
 
@@ -173,7 +183,7 @@ function ssh_ping6 {
     if [ $? -ne 0 ]; then
         fail "ping6 VM $id1 ---> VM $id2 FAIL"
     else
-        echo "ping6 VM $id1 ---> VM $id2 OK"
+        echo "[$CUR_TEST] ping6 VM $id1 ---> VM $id2 OK"
     fi
 }
 
@@ -185,7 +195,7 @@ function ssh_no_ping6 {
     check_alive $id2
     ssh_run $id1 ping -6 2001:db8:2000:aff0::$id2 -c 1 -W 2 &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "ping6 VM $id1 -/-> VM $id2 OK"
+        echo "[$CUR_TEST] ping6 VM $id1 -/-> VM $id2 OK"
     else
         fail "ping6 VM $id1 -/-> VM $id2 FAIL"
     fi
@@ -196,9 +206,8 @@ function tap_ping {
     id2=$2
     sudo ip netns exec ns$id1 ping 42.0.0.$id2 -c 5
     ret=$?
-    echo ret $ret
     if [ $ret -eq 0 ]; then
-        echo "ping TAP ns$id1 -/-> $id2 OK"
+        echo "[$CUR_TEST] ping TAP ns$id1 -/-> $id2 OK"
     else
         fail "ping TAP ns$id1 -/-> $id2 FAIL"
     fi
@@ -215,7 +224,7 @@ function tap_iperf3_tcp {
     if [ $? -ne 0 ]; then
         fail "iperf3 tcp ns $id1 ---> $id2 FAIL"
     else
-        echo "iperf3 tcp ns $id1 ---> $id2 OK"
+        echo "[$CUR_TEST] iperf3 tcp ns $id1 ---> $id2 OK"
     fi
     kill -15 $server_pid &> /dev/null
 }
@@ -233,7 +242,7 @@ function ssh_iperf_tcp {
     if [ $? -ne 0 ]; then
         fail "iperf tcp VM $id1 ---> VM $id2 FAIL"
     else
-        echo "iperf tcp VM $id1 ---> VM $id2 OK"
+        echo "[$CUR_TEST] iperf tcp VM $id1 ---> VM $id2 OK"
     fi
     kill -15 $server_pid &> /dev/null
 }
@@ -253,7 +262,7 @@ function ssh_iperf_udp {
     if [ $ret -ne 0 ] || [ ".$res" != ".0" ]; then
         fail "iperf udp VM $id1 ---> VM $id2 FAIL"
     else
-        echo "iperf udp VM $id1 ---> VM $id2 OK"
+        echo "[$CUR_TEST] iperf udp VM $id1 ---> VM $id2 OK"
     fi
     kill -15 server_pid &> /dev/null
     rm /tmp/iperf_tmp_results
@@ -292,7 +301,7 @@ function ssh_iperf3_udp {
     if [ "$res" == "0" ] || [ "$ret" != "0" ]; then
         fail "iperf3 udp VM $id1 ---> VM $id2 FAIL"
     else
-        echo "iperf3 udp VM $id1 ---> VM $id2 OK"
+        echo "[$CUR_TEST] iperf3 udp VM $id1 ---> VM $id2 OK"
     fi
     kill -15 $server_pid &> /dev/null
     rm /tmp/iperf3_tmp_results
@@ -417,7 +426,7 @@ function ssh_connection_test {
 
     ssh_connection_test_file $id2 $protocol $id1 $port
     if [ "$?" == "0" ]; then
-        echo -e "$protocol test VM $id1 ---> VM $id2 OK"
+        echo -e "[$CUR_TEST] $protocol test VM $id1 ---> VM $id2 OK"
     else
         fail "$protocol test VM $id1 ---> VM $id2 FAIL"
     fi
@@ -441,14 +450,14 @@ function ssh_no_connection_test {
         if [ "$?" == "0" ]; then
             fail "$protocol test VM $id1 -/-> VM $id2 FAIL"
         else
-            echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
+            echo -e "[$CUR_TEST] $protocol test VM $id1 -/-> VM $id2 OK"
         fi
     else
         ssh_run $id2 [ -s "/tmp/test" ]
         if [ "$?" == "0" ]; then
             fail "$protocol test VM $id1 -/-> VM $id2 FAIL"
         else
-            echo -e "$protocol test VM $id1 -/-> VM $id2 OK"
+            echo -e "[$CUR_TEST] $protocol test VM $id1 -/-> VM $id2 OK"
         fi
     fi
 
@@ -462,6 +471,9 @@ function qemu_add_ipv4 {
     for ip in $ips; do
         echo "[VM $id] add ipv4 $ip"
         ssh_run $id ip addr add $ip dev ens4
+        if [ "$?" -ne 0 ]; then
+            fail "[VM $id] fail to add $ip ip to ens4"
+        fi
     done
 }
 
@@ -480,6 +492,9 @@ function qemu_add_ipv6 {
     for ip in $ips; do
         echo "[VM $id] add ipv6 $ip"
         ssh_run $id ip -6 addr add $ip dev ens4
+        if [ "$?" -ne 0 ]; then
+            fail "[VM $id] failt to add ipv6 to ens4"
+        fi
     done
 }
 
@@ -515,6 +530,13 @@ function qemus_start_ {
     qemus_start_ $@
 }
 
+# WARNING the sync mode seems broken if call multiple time with the same id
+# example:
+# qemus_start 1 2 3
+# qemus_stop 1 2 3
+# qemus_start 1 2 3
+# if you need to do that, you need to call qemu_start
+# (so without the s in non syncronous mode)
 function qemus_start {
     qemus_start_ $@
     qemus_wait $@
@@ -551,7 +573,19 @@ function qemu_wait {
         fail "[VM $id] qemu timeout"
         return
     fi
-    qemu_pids["$id"]=$(< $BUTTERFLY_BUILD_ROOT/qemu_pids$id)
+    echo "[VM $id] qemu started"
+    ssh_run $id ip link | grep ens4 | grep UP
+    MAX_TEST=0
+    TEST=1
+    while  [ $TEST -ne 0 -a $MAX_TEST -ne 200 ]; do
+        ssh_run $id ip link | grep ens4 | grep UP
+        TEST=$?
+        MAX_TEST=$(($MAX_TEST + 1))
+        sleep 0.2
+    done
+    if [ $TEST -ne 0 ]; then
+        fail "[VM $id] wait timeout"
+    fi
 }
 
 function qemu_start {
@@ -602,7 +636,7 @@ function qemu_start {
         CMD="sudo qemu-system-x86_64 -netdev user,id=network0,hostfwd=tcp::500${id}-:22 -device e1000,netdev=network0 -m 124M -enable-kvm -chardev socket,id=char0,path=$SOCKET_PATH -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce -device virtio-net-pci,csum=off,gso=off,mac=$MAC,netdev=mynet1 -object memory-backend-file,id=mem,size=124M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc -drive file=$IMG_PATH -snapshot -display none"
         nic_type="VM"
     fi
-    exec $CMD &#> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
+    exec $CMD &> $BUTTERFLY_BUILD_ROOT/qemu_${id}_output &
     have_start=$?
     pid=$!
     echo have start $have_start '?' $pid
@@ -640,6 +674,9 @@ function qemu_start {
 
     # Configure IP on vhost interface
     ssh_run $id ip link set ens4 up
+    if [ $? -ne 0 ]; then
+        fail "[$nic_type $id] can't set ens4 UP"
+    fi
     if [ "$ip" == "dhcp-server" ]; then
         qemu_add_ipv4 $id 42.0.0.$id/24
         qemu_add_ipv6 $id 2001:db8:2000:aff0::$id/64
@@ -676,19 +713,27 @@ function qemu_start {
         qemu_add_ipv4 $id 42.0.0.$id/24
         qemu_add_ipv6 $id 2001:db8:2000:aff0::$id/64
     fi
+    # TODO: UPDATE VMs and make this work
+    # ssh_run $id tcpdump -i ens4 &> $id-ens4-capture &
 
     echo $pid > $BUTTERFLY_BUILD_ROOT/qemu_pids$id
 }
 
 function qemu_stop {
     id=$1
+    echo "[VM $id] trying to kill nicely"
     ssh_run $id poweroff
     sleep 1
     rm -f $BUTTERFLY_BUILD_ROOT/qemu_pids$id
+    sudo kill -s 0 ${qemu_pids[$id]} &> /dev/null ;
     echo "[VM $id] stopping (pid ${qemu_pids[$id]})"
     sudo kill -15 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
     sleep 1
     sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
+    while sudo kill -s 0 ${qemu_pids[$id]} &> /dev/null ; do
+        sleep 0.1
+    done
+    sleep 1
 }
 
 function qemus_stop {
@@ -1082,7 +1127,7 @@ function print_message {
 }
 
 function test_size {
-    declare -A my_arry  
+    declare -A my_arry
     path_lists=${@:1}
     ret=0;
 
@@ -1438,6 +1483,7 @@ function clean_all {
     sleep 0.5
     sudo pkill -9 qemu
     sudo killall butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
+    sudo pkill ip
     sleep 0.5
     sudo killall -15 butterflyd butterfly qemu-system-x86_64 socat &> /dev/null
     sudo rm -rf /tmp/*vhost* /dev/hugepages/* /mnt/huge/*  &> /dev/null
@@ -1447,11 +1493,11 @@ function clean_all {
     rm -rf $BUTTERFLY_BUILD_ROOT/qemu_pids*
     rm -rf $BUTTERFLY_BUILD_ROOT/*-butterfly_size
     rm -rf /tmp/*-butterfly_size
-    sleep 2
+    sleep 0.5
 }
 
 function fail {
-    echo $1
+    echo "$CUR_TEST:" $1
     clean_all
     exit 1
 }
@@ -1501,5 +1547,6 @@ echo "this script performe a lot of strange operation, and killing"
 echo "when trying to clean itself it kill all qemus, butterflyd and socat"
 echo "on your system. so be smart"
 echo "DON'T USE THAT ON A MACHINE THAT WASN'T MADE FOR TESTSING/DEVELOPING BUTTERFLY"
+echo "=================================="
 sudo echo "ready to roll !"
 
