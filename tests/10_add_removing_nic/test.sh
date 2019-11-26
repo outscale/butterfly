@@ -2,13 +2,18 @@
 
 BUTTERFLY_BUILD_ROOT=$1
 BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
+CUR_TEST="$(dirname $0)"
 source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 
 network_connect 0 1
 
+LOOP_NB=0
+
 # All combinations is too long (2^4 = 16 scenario)
 # for big in {\ +,-t+}{nic_add+,nic_add_bypass+}{nic_add+,nic_add_bypass+}{nic_add+,nic_add_bypass+} ; do
 # Remove some cases
+#
+
 for big in \
     +nic_add+nic_add+nic_add+ \
     +nic_add+nic_add_bypass+nic_add+ \
@@ -18,6 +23,9 @@ for big in \
     -t+nic_add_bypass+nic_add_bypass+nic_add_bypass+
     do
 
+    echo "+===================================================+"
+    printf "10_add_removing_nic step (%d): %s|\n" $LOOP_NB "$big"
+    echo "+===================================================+"
     _server_start_options=$(echo $big | cut -d '+' -f 1)
     _nic_add_1=$(echo $big | cut -d '+' -f 2)
     _nic_add_2=$(echo $big | cut -d '+' -f 3)
@@ -28,7 +36,8 @@ for big in \
     server_start_options 1 $_server_start_options -t
     nic_add 0 1 42 sg-1
     nic_add 1 2 42 sg-1
-    qemus_start 1 2
+    qemu_start 1
+    qemu_start 2
     sg_rule_add_icmp 0 sg-1
     sg_rule_add_icmp 1 sg-1
     ssh_ping 1 2
@@ -61,6 +70,7 @@ for big in \
     qemus_stop 1 2
     server_stop 0
     server_stop 1
-
+    LOOP_NB=$(($LOOP_NB + 1))
 done
 network_disconnect 0 1
+return_result

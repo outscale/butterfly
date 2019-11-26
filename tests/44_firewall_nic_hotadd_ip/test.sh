@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CUR_TEST="$(dirname $0)"
 BUTTERFLY_BUILD_ROOT=$1
 BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
 source $BUTTERFLY_SRC_ROOT/tests/functions.sh
@@ -16,7 +17,7 @@ for i in $(seq 1 10); do
     nic_update 0 2 --ip 42.0.0.2
     sleep 1
     ssh_ping 1 2
-    nic_update 0 2 --ip
+    nic_update 0 2 --ip 0.0.0.0
     sleep 1
 done
 
