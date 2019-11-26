@@ -27,6 +27,10 @@ extern "C" {
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <limits.h>
 #include <memory>
 #include "api/server/app.h"
 #include "api/server/graph.h"
@@ -445,8 +449,6 @@ struct pg_error *pg_error;
 
 }  // namespace app
 
-#define BASH(STR) if (system(("/bin/bash -c \"" + (STR) + "\"").c_str()))
-
 static const char *SrcCgroup() {
     if (!access("/sys/fs/cgroup/cpu/cpu.shares", R_OK)) {
         return "/sys/fs/cgroup/cpu";
@@ -456,34 +458,60 @@ static const char *SrcCgroup() {
     return NULL;
 }
 
+int setCgroups(std::string file1, std::string file2){        
+	std::ifstream ifs(file1);
+	std::ofstream ofs(file2);
+    if((!ifs.is_open()) || (!ofs.is_open())){
+	return -1;
+    } else {
+	ofs << ifs.rdbuf();
+	return 0;
+    }
+}
+
 static int InitCgroup(int multiplier) {
     const char *cgroupPath = SrcCgroup();
-
+    int check = 0;
+    
     if (!cgroupPath)
         return -1;
-    std::string create_dir("mkdir " + std::string(cgroupPath) + "/butterfly");
-
-    BASH(create_dir) {
-        LOG_WARNING_("can't create butterfly cgroup, fail cmd '%s'",
-                     create_dir.c_str());
+    std::string directory = std::string(cgroupPath) + "/butterfly" ; 
+    check = mkdir((char*)directory.c_str(),S_IWGRP );
+    if (check != 0){
+	    LOG_WARNING_("can't create directory already exists\n");
     }
-    BASH("echo $(( `cat " + std::string(cgroupPath) + "/cpu.shares` * " +
-         std::to_string(multiplier) + " )) > " +
-         cgroupPath + "/butterfly/cpu.shares") {
-        LOG_WARNING_("can't set cgroup priority");
+    
+    std::string fileToRead = std::string(cgroupPath) + "/cpu.shares";
+    std::string fileToWrite = std::string(cgroupPath) + "/butterfly/cpu.shares";
+    std::ifstream in(fileToRead);
+    std::ofstream out(fileToWrite);
+    if ((!in.is_open()) || (!out.is_open())){
+	    LOG_WARNING_("can't set cgroup priority");
+    } else {
+	    std::string s;
+	    while (getline(in, s)){
+		    s = std::to_string(std::atoi(s.c_str()) * multiplier);
+		    out << s << std::endl;
+	    }
     }
 
     // new cgroup use a diferent directory for cpushare and cpu
     // if not, we need to initilize some files
-    BASH(std::string("! cat ") + cgroupPath + "/cpuset.mems >> /dev/null") {
-            BASH("echo `cat " + std::string(cgroupPath) + "/cpuset.mems` > " +
-                 cgroupPath + "/butterfly/cpuset.mems") {
-                    LOG_WARNING_("can't set cgroup cpuset.mems");
-            }
-            BASH("echo `cat " + std::string(cgroupPath) + "/cpuset.cpus` > " +
-                 cgroupPath + "/butterfly/cpuset.cpus") {
+    fileToRead = std::string(cgroupPath) + "/cpuset.mems";
+    if (!access(fileToRead.c_str(), R_OK)){
+	    //printf("access to file OK  \n");
+	    fileToWrite = std::string(cgroupPath) + "/butterfly/cpuset.mems";
+	    check = setCgroups(fileToRead, fileToWrite);
+	    if (check != 0){
+		    LOG_WARNING_("can't set cgroup cpuset.mems");
+	    }
+
+	    fileToRead = std::string(cgroupPath) + "/cpuset.cpus";
+	    fileToWrite = std::string(cgroupPath) + "/butterfly/cpuset.mems";
+	    check = setCgroups(fileToRead, fileToWrite);
+	    if (check != 0){
                     LOG_WARNING_("can't set cgroup cpuset.cpus");
-            }
+            }    
     }
     return 0;
 }
@@ -494,38 +522,51 @@ void app::SetCgroup() {
     std::string setStr;
     std::string unsetOtherStr;
     std::ostringstream oss;
-
-    oss << app::config.tid;
-    setStr = "echo " + oss.str() + " > " + SrcCgroup() + "/butterfly/tasks";
-    unsetOtherStr = "grep -v " + oss.str() + " " + SrcCgroup() +
-                    "/butterfly/tasks | while read ligne; do echo $ligne > " +
-                    SrcCgroup() + "/tasks ; done";
-
-    BASH(setStr) {
-        LOG_WARNING_("can't set cgroup pid");
+    int check = 0;
+    std::string fileToWrite = std::string(SrcCgroup()) + "/butterfly/tasks";
+    check = setCgroups(oss.str(), fileToWrite);
+    if (!check){
+	    LOG_WARNING_("can't set cgroup pid");
     }
-    BASH(unsetOtherStr) {
-        LOG_WARNING_("can't properly set cgroup pid");
+    std::ifstream ifs(oss.str());
+    std::ofstream ofs(fileToWrite);
+    std::string word, ligne;
+    while (ifs>>word){
+	    if (oss.str().compare(word)){
+		    LOG_WARNING_("can't properly set cgroup pid");
+		    return ;
+	    } else {
+		    ofs<<word ;
+	    }
     }
 }
 
 void app::DestroyCgroup() {
     if (!SrcCgroup())
         return;
-    BASH("cat " + std::string(SrcCgroup()) +
-         "/butterfly/tasks | while read ligne; do echo $ligne > " +
-         SrcCgroup() + "/bin/bash /tasks ; done") {
-        LOG_WARNING_("can't unset task from butterfly cgroup");
+
+    std::string fileToRead = std::string(SrcCgroup()) + "/butterfly/tasks";
+    std::string fileToWrite = std::string(SrcCgroup()) + "/bin/bash /tasks";
+    std::ifstream in(fileToRead);
+    std::ofstream out(fileToWrite);
+    if ((!in.is_open()) || (!out.is_open())){
+	    LOG_WARNING_("can't set cgroup priority");
+    } else {
+            std::string s;
+            if (getline(in, s)){
+                    out << s << std::endl;
+	    }
     }
-    BASH("rmdir " + std::string(SrcCgroup()) + "/butterfly") {
-        LOG_WARNING_("can't destroy cgroup");
+
+    int check = 0;
+    std::string dirToRemove = std::string(SrcCgroup()) + "/butterfly";
+    check = rmdir(dirToRemove.c_str());
+    if (!check){
+	    LOG_WARNING_("can't destroy cgroup");
     }
 }
 
-#undef BASH
-
-int
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     try {
         // Register signals
         app::SignalRegister();
