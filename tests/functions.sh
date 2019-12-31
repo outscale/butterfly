@@ -207,9 +207,9 @@ function tap_ping {
     sudo ip netns exec ns$id1 ping 42.0.0.$id2 -c 5
     ret=$?
     if [ $ret -eq 0 ]; then
-        echo "[$CUR_TEST] ping TAP ns$id1 -/-> $id2 OK"
+        echo "[$CUR_TEST] ping TAP ns$id1 ---> $id2 OK"
     else
-        fail "ping TAP ns$id1 -/-> $id2 FAIL"
+        fail "ping TAP ns$id1 ---> $id2 FAIL"
     fi
 }
 
