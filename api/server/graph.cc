@@ -495,7 +495,7 @@ void *Graph::Poller(void *graph) {
         /* Let's see if there is any update every 100 000 pools. */
 
         if (POLLER_CHECK(cnt)) {
-            if (likely(g->PollerUpdate(&q))) {
+            if (likely(g->PollerUpdate(&q, poll_err))) {
                 if (q) {
                 list = &q->update_poll;
                 size = list->size;
@@ -554,7 +554,7 @@ int Graph::SetSched() {
 }
 #undef gettid
 
-bool Graph::PollerUpdate(struct RpcQueue **list) {
+bool Graph::PollerUpdate(struct RpcQueue **list, struct pg_error *err) {
     struct RpcQueue *a;
     struct RpcQueue *tmp;
 
@@ -567,27 +567,27 @@ bool Graph::PollerUpdate(struct RpcQueue **list) {
                 return false;
             case VHOST_START:
                 if (pg_vhost_start(app::config.socket_folder.c_str(),
-                                   &app::pg_error) < 0) {
-                    PG_ERROR_(app::pg_error);
+                                   &err) < 0) {
+                    PG_ERROR_(err);
                 }
                 break;
             case VHOST_STOP:
                 pg_vhost_stop();
                 break;
             case LINK:
-                if (pg_brick_link(a->link.w, a->link.e, &app::pg_error) < 0)
-                    PG_ERROR_(app::pg_error);
+                if (pg_brick_link(a->link.w, a->link.e, &err) < 0)
+                    PG_ERROR_(err);
                 break;
             case UNLINK:
-                pg_brick_unlink(a->unlink.b, &app::pg_error);
-                if (pg_error_is_set(&app::pg_error))
-                    PG_ERROR_(app::pg_error);
+                pg_brick_unlink(a->unlink.b, &err);
+                if (pg_error_is_set(&err))
+                    PG_ERROR_(err);
                 break;
             case UNLINK_EDGE:
                 pg_brick_unlink_edge(a->unlink_edge.w, a->unlink_edge.e,
-                                    &app::pg_error);
-                if (pg_error_is_set(&app::pg_error))
-                    PG_ERROR_(app::pg_error);
+                                    &err);
+                if (pg_error_is_set(&err))
+                    PG_ERROR_(err);
                 break;
             case ADD_VNI:
                 if (isVtep6_) {
@@ -595,15 +595,15 @@ bool Graph::PollerUpdate(struct RpcQueue **list) {
                                         a->add_vni.neighbor,
                                         a->add_vni.vni,
                                         a->add_vni.multicast_ip6,
-                                        &app::pg_error) < 0)
-                        PG_ERROR_(app::pg_error);
+                                        &err) < 0)
+                        PG_ERROR_(err);
                 } else {
                     if (pg_vtep_add_vni(a->add_vni.vtep,
                                         a->add_vni.neighbor,
                                         a->add_vni.vni,
                                         a->add_vni.multicast_ip4,
-                                        &app::pg_error) < 0)
-                        PG_ERROR_(app::pg_error);
+                                        &err) < 0)
+                        PG_ERROR_(err);
                 }
                 break;
             case UPDATE_POLL:
@@ -614,15 +614,15 @@ bool Graph::PollerUpdate(struct RpcQueue **list) {
                 break;
             case FW_RELOAD:
                 if (pg_firewall_reload(a->fw_reload.firewall,
-                                       &app::pg_error) < 0)
-                    PG_ERROR_(app::pg_error);
+                                       &err) < 0)
+                    PG_ERROR_(err);
                 break;
             case FW_NEW:
                 *(a->fw_new.result) = pg_firewall_new(a->fw_new.name,
                                                       a->fw_new.flags,
-                                                      &app::pg_error);
-                if (pg_error_is_set(&app::pg_error))
-                    PG_ERROR_(app::pg_error);
+                                                      &err);
+                if (pg_error_is_set(&err))
+                    PG_ERROR_(err);
                 break;
             case BRICK_DESTROY:
                 pg_brick_destroy(a->brick_destroy.b);
