@@ -231,7 +231,7 @@ class Graph {
      * @param    list list of bricks the poller needs (struct RpcUpdatePoll)
      * @return  true if poller must continue polling, otherwhise exit.
      */
-    inline bool PollerUpdate(struct RpcQueue **list);
+    inline bool PollerUpdate(struct RpcQueue **list, struct pg_error *err);
 
     /**
      * Build a rule string based on a rule model
