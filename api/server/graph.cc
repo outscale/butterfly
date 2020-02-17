@@ -156,7 +156,7 @@ void rx_rcv_callback(struct pg_brick *b, pg_packet_t **burst,
         binfo->ipdest = pdata->ip.ip_src.s_addr;
         binfo->ipsrc = pdata->ip.ip_dst.s_addr;
         binfo->seq = pdata->icmp.icmp_seq;
-        binfo->time = pdata->icmp.icmp_otime;
+        binfo->time = htonl(pdata->icmp.icmp_otime);
     }
 }
 
@@ -233,7 +233,8 @@ void rx_snd_callback(struct pg_brick *b, pg_packet_t **burst,
         if (ncksum != cksum) {
             continue;
         }
-        t = time - hdr->icmp.icmp_otime;
+
+        t = time - htonl(hdr->icmp.icmp_otime);
         bsnd->mean += t;
         if (t > bsnd->max_time)
             bsnd->max_time = t;
