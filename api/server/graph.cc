@@ -194,8 +194,9 @@ void rx_snd_callback(struct pg_brick *b, pg_packet_t **burst,
         return;
 
     if (unlikely(bsnd->not_droped + len >= 1024)) {
-        printf("ping time for %d pkts: min/mean/max %d us %d us %d us\n",
-               bsnd->not_droped, bsnd->min_time, bsnd->mean / bsnd->not_droped,
+        printf("ping time for %d pkts: min/mean/max %d us %.2f us %d us\n",
+               bsnd->not_droped, bsnd->min_time,
+               static_cast<double>(((bsnd->mean * 100) / bsnd->not_droped)/100),
                bsnd->max_time);
         bsnd->not_droped = 0;
         bsnd->mean = 0;
