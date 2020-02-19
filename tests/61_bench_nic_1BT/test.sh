@@ -9,6 +9,7 @@
 
 BUTTERFLY_BUILD_ROOT=$1
 BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
+
 source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 
 network_connect 0 1
@@ -21,8 +22,10 @@ bench_lat_snd_add 0 1 2 42 sg-1
 
 sleep 0.5
 
+server_stop 0
 network_disconnect 0 1
 
-server_stop 0
+check_bench_ping 3 5
 
 return_result
+
