@@ -25,4 +25,6 @@ network_disconnect 0 1
 server_stop 0
 server_stop 1
 
+check_bench_ping 32000 45000
+
 return_result

@@ -21,7 +21,7 @@ RETURN_CODE=0
 function return_result {
     clean_all
     if [ $RETURN_CODE == 0 ]; then
-        echo $CUR_TEST 'SUCESS !!!'
+        echo $CUR_TEST 'SUCCESS !!!'
     else
         echo $CUR_TEST 'FAIL !!!'
     fi
@@ -1500,6 +1500,27 @@ function fail {
     echo "$CUR_TEST:" $1
     clean_all
     exit 1
+}
+
+#Use: check_bench_ping [maximum average delay all bursts] [maximum average delay one burst]
+function check_bench_ping {
+    tmp_ping_file="/tmp/butterfly_bench_ping"
+    sed -n -e '/^ping/p' $BUTTERFLY_BUILD_ROOT/butterflyd_0_output > $tmp_ping_file
+    max_average_ping_time="$(awk '{ ($9 > max) ? max = $9 : max = max }END {printf max}' ${tmp_ping_file})"
+    average_ping_time="$(awk '{ total += $9; i+=1 }END {printf total/i}' ${tmp_ping_file})"
+    rm ${tmp_ping_file}
+    if [ -z $average_ping_time ]; then
+        echo "[Error]: bench: no successfull ping."
+        RETURN_CODE=1
+    elif (( $(echo "$max_average_ping_time > $2" | bc -l) )); then
+        echo "[Error]: bench: at least one burst have an average ping time to big."
+        RETURN_CODE=1
+    elif (( $(echo "$average_ping_time > $1" | bc -l) )); then
+        echo "[Error]: bench: average ping time to big."
+        RETURN_CODE=1
+    else
+        echo "[Info]: bench: ping test successfull."
+    fi
 }
 
 if [ "$BUTTERFLY_BUILD_ROOT" = "-h" ] || [ "$BUTTERFLY_BUILD_ROOT" = "--help" ] ||
