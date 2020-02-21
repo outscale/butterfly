@@ -1,20 +1,21 @@
-DESCRIPTION
+# DESCRIPTION
 
-## Packets come from VM (VHOST)
+What's exactly going on inside each brick.
 
-### Poll:
+## Vhost brick
+
+### Poll (Packets coming from VM):
 
 - We collect VM packets in the queue. If not packet in the queue it return.
 - We count and collect all packets from the queue and build they metadata(packets size; layers size and type)
 - We add packets size to the brick packets counter(so yes we can retrieve information about how much packets have been burst/receive).
 - We burst packets.
 
-## Packets go to VM (VHOST)
+### Burst (Packets going to VM):
 
-### Burst:
 - Vhost bricks got all packet
 - Copy packets in vhosts queue.
-- We count all packets bytes that have been busted and we add it to packet count.
+- We count all packets bytes that have been bursted and we add it to packet count.
 
 ## PRINT (SNIFFER)
 
