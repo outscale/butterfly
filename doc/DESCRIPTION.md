@@ -57,7 +57,7 @@ Firewall use BPF rules, that can be pass to packetgraph API.
 
 ## VTEP
 
-### POLL (To VTEP)
+### Burst (To VXLAN)
 
 If mac tables are dead, we try to rebuild them. If it fails, we return an error.
 - We verify if destination IP address is multicast or unicast.
@@ -66,7 +66,7 @@ If mac tables are dead, we try to rebuild them. If it fails, we return an error.
 - We collect VNI corresponding to communication port, build and arrange needful headers (ip, udp, vxlan ...) VxLAN packets encapsulations.
 - Burst them all.
 
-### Burst (From VTEP)
+### Burst (From VXLAN)
 
 If mac tables are dead, we try to rebuild them. If it fails, we return an error.
 
