@@ -32,11 +32,11 @@ This brick is optional
 
 ### Burst:
 
-Antispoof Brick have 2 parameter: a Mac Address and a boolean value
-- We let pass incoming packets into VM.
+Antispoof Brick have 2 parameters: a MAX address and a boolean value
+- We allow incoming packets to go into VM.
 - If packets are coming from VM:
 - We block all reverse ARP packets.
-- We verify that packet mac address source with Brick mac address are the same.
+- We verify that packet's source mac address found in level 1 (physical layer) of OSI is matching with the one found in level 3 (network layer).
 - If all verifiction are OK (is ARP reverse packet, is IPv4 or IPv6), we burst packet.
 
 ## NPF (FIREWALL)
