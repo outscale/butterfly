@@ -1530,7 +1530,7 @@ check_bin killall -l
 check_bin pkill -h
 check_bin nc -h
 check_bin wget -h
-check_bin netstat -h
+check_bin netstat -l
 check_bin ncat -h
 
 clean_all
