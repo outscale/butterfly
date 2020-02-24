@@ -50,10 +50,10 @@ Firewall use BPF rules, that can be pass to packetgraph API.
 ## SWITCH
 
 - Switches are automatically added in network graphs when two or more VM connect to VTEP bricks with the same VNI on the same host.
-- If mac tables are death, we try to rebuild them. If it fail, we return an error.
+- If the MAC table is dead, restart learning it. If it fails, we return an error.
 - We collect packet source address and port, (build metadata for each packet).
-- For each non-multicast mac address, we associate mac address to corresponding source port, store it in mac table and burst packets to corresponding ports.
-- For multicast mac and unknow one, we burst to all but incoming brick
+- For each non-multicast mac address, we associate mac address to corresponding source port if known by the mac table and burst packets to corresponding ports. Else, we broadcast to all ports except the one the packet is coming from it and learn where the destination is by the answer.
+- For multicast mac, we burst to all ports except the one the packet is coming from.
 
 ## VTEP
 
