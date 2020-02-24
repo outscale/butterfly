@@ -823,11 +823,7 @@ bool Graph::NicAdd(app::Nic *nic_) {
         }
 
         BrickShrPtr head1 = vni.nics.begin()->second.head;
-        if (pg_brick_unlink_edge(vtep_.get(), head1.get(),
-                                 &app::pg_error) < 0) {
-            PG_ERROR_(app::pg_error);
-            return false;
-        }
+        unlink_edge(vtep_, head1);
         link(vtep_, vni.sw);
         add_vni(vtep_, vni.sw, nic.vni);
         link(vni.sw, head1);
