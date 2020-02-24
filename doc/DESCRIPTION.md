@@ -78,7 +78,7 @@ for each packet:
 
 ### Poll (From the outer world to the inner one).
 
-- We collect packets in nic, store them in an array.
+- We collect packets fro the nic, store them in an array.
 - We rebuild all metadata for each packet
 - Burst all packets in opposite direction
 
