@@ -174,7 +174,7 @@ void Api0::NicDetails(const MessageV0_Request &req,
     if (id.length() > 0) {
         auto it = m.nics.find(id);
         if (it == m.nics.end()) {
-            BuildNokRes(res, "NIC not found");
+            BuildNokRes(res, "NIC: "+ id + " not found");
             return;
         }
 
