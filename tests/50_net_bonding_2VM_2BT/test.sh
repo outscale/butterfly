@@ -5,10 +5,10 @@ BUTTERFLY_BUILD_ROOT=$1
 BUTTERFLY_SRC_ROOT=$(cd "$(dirname $0)/../.." && pwd)
 source $BUTTERFLY_SRC_ROOT/tests/functions.sh
 
-network_connect 0 1
 for i in `seq 0 5`; do
     if [ "$i" -le "3" ]; then
         echo "===== net_Bonding mode $i ===="
+        network_connect 0 1
         server_start_bonding 0 $i
         server_start_bonding 1 $i
         nic_add 0 1 42 sg-1
@@ -28,10 +28,10 @@ for i in `seq 0 5`; do
         qemu_stop 2
         server_stop 0
         server_stop 1
+        network_disconnect 0 1
     else
         echo "net_bonding mode $i doesn't work yet"
     fi
 done
-network_disconnect 0 1
 return_result
 
