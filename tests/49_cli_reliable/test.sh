@@ -14,6 +14,8 @@ cli 0 0 --help
 cli 0 1 badcommand
 cli 0 1 --not-a-command
 
+cli 0 0 request help
+
 cli 0 1 nic
 cli 0 0 nic help
 

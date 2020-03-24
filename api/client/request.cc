@@ -44,6 +44,10 @@ int SubRequest(int argc, char **argv, const GlobalOptions &options) {
         return 1;
     }
     string request_file_path = string(argv[2]);
+    if (request_file_path == "help") {
+        Help();
+        return 0;
+    }
     RequestOptions r_options;
     r_options.Parse(argc, argv);
 
