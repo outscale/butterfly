@@ -12,7 +12,6 @@ function usage {
     echo "   -h, --help : print this help" 1>&2
 }
 
-declare -A qemu_pids
 declare -A server_pids
 declare -A socat_pids
 
@@ -664,8 +663,6 @@ function qemu_start {
     if [ $? -ne 0 ]; then
         fail "failed to start qemu, check qemu_${id}_output file"
     fi
-    qemu_pids["$id"]=$pid
-
     # Wait for ssh to be ready
     ssh_run_timeout $id 60 true
     if [ $? -ne 0 ]; then
@@ -724,16 +721,24 @@ function qemu_stop {
     echo "[VM $id] trying to kill nicely"
     ssh_run $id poweroff
     sleep 1
+    ret_check=0
+    sudo kill -s 0 "$(cat $BUTTERFLY_BUILD_ROOT/qemu_pids$id)" &> /dev/null;
+    ret_check=$?
+    echo "[VM $id] stopping (pid $(cat $BUTTERFLY_BUILD_ROOT/qemu_pids$id))"
+    if [ "$ret_check" -eq 0 ] ; then
+        sudo kill -15 "$(cat $BUTTERFLY_BUILD_ROOT/qemu_pids$id)" &>/dev/null;
+        sleep 1
+        sudo kill -s 0 "$(cat $BUTTERFLY_BUILD_ROOT/qemu_pids$id)" &> /dev/null;
+        ret_check=$?
+        if [ "$ret_check" != "1" ]; then
+            for i in {1..3}; do
+                sleep 0.1
+                sudo pkill -9 -f ::500$id &> /dev/null;
+                sudo kill -s 9 "$(cat $BUTTERFLY_BUILD_ROOT/qemu_pids$id)" &> /dev/null;
+            done
+        fi
+    fi
     rm -f $BUTTERFLY_BUILD_ROOT/qemu_pids$id
-    sudo kill -s 0 ${qemu_pids[$id]} &> /dev/null ;
-    echo "[VM $id] stopping (pid ${qemu_pids[$id]})"
-    sudo kill -15 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
-    sleep 1
-    sudo kill -9 $(ps --ppid ${qemu_pids[$id]} -o pid=) &> /dev/null
-    while sudo kill -s 0 ${qemu_pids[$id]} &> /dev/null ; do
-        sleep 0.1
-    done
-    sleep 1
 }
 
 function qemus_stop {
@@ -809,9 +814,14 @@ function do_kill {
     should_do=$1
     signal=$2
 
-    if [ $should_skip -ne 0 ]; then
+    if [ "$should_do" != "0" ]; then
         sudo kill $signal $(ps --ppid ${server_pids[$id]} -o pid=) &> /dev/null
         sleep 0.2
+        sudo kill -s 0 ${server_pids[$id]} &> /dev/null
+        if [ "$?" != "1" ]; then
+            sudo kill -9 $(ps --ppid ${server_pids[$id]} -o pid=) &> /dev/null
+            sleep 0.2
+        fi
         sudo kill -s 0 ${server_pids[$id]} &> /dev/null
         return $?
     fi
@@ -821,16 +831,15 @@ function do_kill {
 function server_stop {
     id=$1
     echo "[butterfly-$id] stopping"
-    ret=do_kill 1 -2
-    ret=do_kill $ret -2
-    ret=do_kill $ret -2
-    ret=do_kill $ret -15
-    ret=do_kill $ret -15
-    while sudo kill -s 0 ${server_pids[$id]} &> /dev/null ; do
-        sudo kill -9 $(ps --ppid ${server_pids[$id]} -o pid=) &> /dev/null
-        sleep 0.1
-    done
-    sleep 1
+    sudo kill -15 $(ps --ppid ${server_pids[$id]} -o pid=) &> /dev/null
+    sleep 0.2
+    sudo kill -s 0 ${server_pids[$id]} &> /dev/null
+    if [ "$?" != "1" ]; then
+        for t in {1..3}; do
+            sudo pkill -9 -f but$id &> /dev/null
+            sleep 0.1
+        done
+    fi
 }
 
 function server_start_ipv4 {
@@ -1468,7 +1477,7 @@ function sg_member_del {
 function check_bin {
     run=${@:1}
     $run &> /dev/null
-    if [ ! "$?" == "0" ]; then
+    if [ "$?" != "0" ]; then
         echo "cannot execute $run: not found"
         exit 1
     fi
