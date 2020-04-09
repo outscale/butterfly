@@ -809,7 +809,7 @@ function do_kill {
     should_do=$1
     signal=$2
 
-    if [ $should_skip -ne 0 ]; then
+    if [ $should_do -ne 0 ]; then
         sudo kill $signal $(ps --ppid ${server_pids[$id]} -o pid=) &> /dev/null
         sleep 0.2
         sudo kill -s 0 ${server_pids[$id]} &> /dev/null
@@ -821,11 +821,11 @@ function do_kill {
 function server_stop {
     id=$1
     echo "[butterfly-$id] stopping"
-    ret=do_kill 1 -2
-    ret=do_kill $ret -2
-    ret=do_kill $ret -2
-    ret=do_kill $ret -15
-    ret=do_kill $ret -15
+    ret=$( do_kill 1 -2 )
+    ret=$( do_kill $ret -2 )
+    ret=$( do_kill $ret -2 )
+    ret=$( do_kill $ret -15 )
+    ret=$( do_kill $ret -15 )
     while sudo kill -s 0 ${server_pids[$id]} &> /dev/null ; do
         sudo kill -9 $(ps --ppid ${server_pids[$id]} -o pid=) &> /dev/null
         sleep 0.1
