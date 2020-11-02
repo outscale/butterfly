@@ -124,10 +124,18 @@ $ wget http://cbs.centos.org/kojifiles/packages/jemalloc/3.6.0/8.el7.centos/x86_
 $ sudo rpm -i jemalloc-devel-3.6.0-8.el7.centos.x86_64.rpm jemalloc-3.6.0-8.el7.centos.x86_64.rpm
 ```
 
-On ubuntu: <br>
+On ubuntu (you will have to install protobuf manually): <br>
 
 ```
-$ sudo apt-get install autoconf autogen unzip
+$ sudo apt-get install autoconf autogen unzip libssl-dev clang
+$ git clone https://github.com/protocolbuffers/protobuf.git
+$ cd protobuf
+$ git submodule update --init --recursive
+$ ./autogen.sh
+$ ./configure
+$ make
+$ sudo make install
+$ sudo ldconfig
 ```
 
 Build Butterfly:
