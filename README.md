@@ -77,7 +77,7 @@ for more details.
 
 Here is an example of Butterfly with 6 VMs isolated in three networks (VNI 42, 51 and 1337).
 
-![Butterfly execution](https://osu.eu-west-2.outscale.com/jerome.jutteau/16d1bc0517de5c95aa076a0584b43af6/butterfly.svg)
+![Butterfly execution](doc/butterfly.svg)
 
 Butterfly binds a dedicated NIC to send/receive VXLAN packets and binds a socket
 (default: tcp) to listen to queries on its API. If you use a DPDK compatible
