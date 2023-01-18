@@ -1,3 +1,5 @@
+[![Project Incubating](https://docs.outscale.com/fr/userguide/_images/Project-Incubating-blue.svg)](https://docs.outscale.com/en/userguide/Open-Source-Projects.html)
+
 Butterfly
 =========
 Butterfly connects Virtual Machines (VM) and controls their traffic flow.
