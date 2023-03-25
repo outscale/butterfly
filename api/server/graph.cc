@@ -991,17 +991,24 @@ void Graph::NicConfigAntiSpoof(const app::Nic &nic, bool enable) {
 void Graph::LinkSniffer(const app::Nic &nic, Graph::BrickShrPtr n_sniffer) {
     Graph::GraphNic *g_nic = FindNic(nic);
 
-    if (nic.bypass_filtering) {
-        unlink(g_nic->vhost);
-        g_nic->head = n_sniffer;
-        link(n_sniffer, g_nic->vhost);
-        link(vtep_, g_nic->head);
-        add_vni(vtep_, g_nic->head, nic.vni);
-    } else {
-        unlink_edge(g_nic->antispoof, g_nic->vhost);
-        g_nic->head = n_sniffer;
-        link(g_nic->antispoof, n_sniffer);
-        link(n_sniffer, g_nic->vhost);
+    auto it = vnis_.find(nic.vni);
+    if (it != vnis_.end()) {
+        struct GraphVni &g_vni = it->second;
+        if (nic.bypass_filtering) {
+            unlink(g_nic->vhost);
+            link(n_sniffer, g_nic->vhost);
+            if (g_vni.nics.size() == 0) {
+                link(vtep_, n_sniffer);
+                add_vni(vtep_, g_nic->head, nic.vni);
+            } else {
+                link(g_vni.sw, n_sniffer);
+                add_vni(g_vni.sw, g_nic->head, nic.vni);
+            }
+        } else {
+            unlink_edge(g_nic->antispoof, g_nic->vhost);
+            link(g_nic->antispoof, n_sniffer);
+            link(n_sniffer, g_nic->vhost);
+        }
     }
 }
 
@@ -1069,7 +1076,7 @@ void Graph::NicConfigPacketTracePath(const app::Nic &nic,
     FILE *n_pcap_file;
     std::string name;
     if (nic.packet_trace_path == update_path) {
-        LOG_INFO_("packet trace path %s is already exist",
+         LOG_INFO_("packet trace path %s is already exist",
                   update_path.c_str());
          return;
     }
